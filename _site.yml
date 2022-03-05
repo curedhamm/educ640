@@ -1,0 +1,53 @@
+name: EDUC 640
+output_dir: "."
+navbar:
+  title: "EDUC 640"
+  
+  left:
+  - text: Syllabus
+    href: syllabus.html
+  - text: Schedule
+    href: schedule.html
+  - text: Units
+    menu: 
+      - text: "Unit 0: Intro & Sci Principles"
+        href: ./slides/EDUC641_1_intro.html
+      - text: "Unit 1: Categorical descriptives"
+        href: ./slides/EDUC641_2_categ_1.html
+      - text: "Unit 1: Categorical descriptives"
+        href: ./slides/EDUC641_2_categ_1.html
+  - text: Unit 2
+    menu: 
+      - text: "Unit 0: Intro & Sci Principles"
+        href: ./slides/EDUC641_1_intro.html
+      - text: "Unit 1: Categorical descriptives"
+        href: ./slides/EDUC641_2_categ_1.html
+  - text: Unit 3
+    menu: 
+      - text: "Unit 0: Intro & Sci Principles"
+        href: ./slides/EDUC641_1_intro.html
+      - text: "Unit 1: Categorical descriptives"
+        href: ./slides/EDUC641_2_categ_1.html
+  - text: Unit 4
+    menu: 
+      - text: "Unit 0: Intro & Sci Principles"
+        href: ./slides/EDUC641_1_intro.html
+      - text: "Unit 1: Categorical descriptives"
+        href: ./slides/EDUC641_2_categ_1.html
+  - text: Unit 5
+    menu: 
+      - text: "Unit 0: Intro & Sci Principles"
+        href: ./slides/EDUC641_1_intro.html
+      - text: "Unit 1: Categorical descriptives"
+        href: ./slides/EDUC641_2_categ_1.html    
+  
+  right:
+  - text: Assignments
+    href: assignments.html
+  - icon: fa-github
+    href: 
+
+output:
+  html_document:
+   lib_dir: site_libs
+   self_contained: no
