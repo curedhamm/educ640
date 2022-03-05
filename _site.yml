@@ -12,11 +12,11 @@ navbar:
     menu: 
       - text: "Unit 1: One-Way between-subjects ANOVA"
         href: ./slides/EDUC641_2_categ_1.html
-      - text: "Unit 2: Two-way between-subjects ANOVA"
-        href: ./slides/EDUC641_2_categ_1.html
+  - text: "Unit 2: Two-way between-subjects ANOVA"
+    menu:
       - text: "Unit 3: Within-subjects ANOVA, one-way and two-way models"
         href: ./slides/EDUC641_2_categ_1.html
-      - text: "Unit 4: Balanced/unbalanced ANOVA and non-parametric analyses"
+      - text: "Unit 4: Mixed ANOVA, more complex designs"
         href: ./slides/EDUC641_1_intro.html
       - text: "Unit 5: Balanced/unbalanced ANOVA and non-parametric analyses"
         href: ./slides/EDUC641_1_intro.html
