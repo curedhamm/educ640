@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
   tidy=FALSE,     # display code as typed
   size="small")   # slightly smaller font for code
 
-needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix)
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych)
 
 # Set default behavior of ggplot2 graphs to be black/white theme
 theme_set(theme_bw())
