@@ -2,18 +2,4 @@
 title: "EDUC 640: Introduction to Data Analysis in Education and the Social Sciences"
 subtitle: "College of Education, University of Oregon"
 author: "Mark Hammond"
-
-site: distill::distill_website
-output:
-  html_document:
-    toc: TRUE
-    toc_depth: 2
-    toc_float: TRUE
-    theme: cosmo
 ---
-
-# Course Overview
-
-# Meeting time and location
-
-# Instructors
