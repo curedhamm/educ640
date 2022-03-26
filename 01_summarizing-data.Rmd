@@ -8,22 +8,19 @@ Packages used in this tutorial
 
 # Introduction
 
-```{r, echo=FALSE}
-# Set my default chunk options 
-knitr::opts_chunk$set( 
-  fig.height=3,   # Default figure size is 3 inches
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+    fig.height=3,   # Default figure size is 3 inches
   cache=TRUE,     # Cache the R code Run to Run
   tidy=FALSE,     # display code as typed
   size="small")   # slightly smaller font for code
 
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix)
+
 # Set default behavior of ggplot2 graphs to be black/white theme
 theme_set(theme_bw())
-```
 
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-needs(tidyverse, rio, here, knitr, kableExtra, misty)
 data <- read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = T)
 ```
 
@@ -42,29 +39,30 @@ install.packages("needs")
 Normally we would use the `import()` function to import our data. However, with the SPSS `.sav` files we don't get factor labels.
 
 ``` {r}
-data_import <- import(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"))
+data_import <- import(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav")) %>% 
+  clean_names()
 
 head(data_import)
-str(data_import)
 ```
 
-Notice how we have 1s down the Group column.
+Notice how we have 1s down the group column.
 
 ## The Fix
 For now, when working with `.sav` files we will use the `read.sav()` function from the `misty` package. `use.value.labels = TRUE` tells it to use the labels as the cell values.
 
 ``` {r}
 needs(misty)
-l2_data <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE)
+l2_data <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE) %>% 
+  clean_names()
 
 head(l2_data)
 ```
 
-# Checking The Assumptions of ANOVA
-In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:
-- *Homogeneity of variance*: The variance between the batches should be similar.
-- *Independence of observations*: Observations should be independent of one another.
-- *Normality*: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.
+## Checking The Assumptions of ANOVA
+In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:  
+- *Homogeneity of variance*: The variance between the batches should be similar.  
+- *Independence of observations*: Observations should be independent of one another.  
+- *Normality*: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.  
 
 ## Descriptive Statistics
 
@@ -99,22 +97,30 @@ d <- as.data.frame(d) %>%
 rmarkdown::paged_table(d)
 ```
 
-- Group is a categorical variable, so skew and kurtosis can be ignored. 
+- group is a categorical variable, so skew and kurtosis can be ignored. 
+
+
+## Shapiro's test of Normality
+We can also provide some empirical evidence to support the assumption of normality using `shapiro.test()` function.
+
+```{r, echo = TRUE, eval = FALSE}
+shapiro.test(l2_data$school_funding)
+```
 
 ## Visual Inspection for Normality
 - For the most part, plots will be wrapped using the `ggplot()` function.
 
 ### Histogram
 ```{r, echo = TRUE, eval = FALSE}
-ggplot(data = l2_data, aes(x = SchoolFunding)) +
+ggplot(data = l2_data, aes(x = school_funding)) +
   geom_histogram()
 ```
 
-- `aes()` refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our `x` (i.e., `x = Group`).
+- `aes()` refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our `x` (i.e., `x = group`).
 
 ## Histograms
 ```{r, echo = TRUE, eval = TRUE, message = F, fig.width = 8, fig.height= 6, fig.align='center'}
-ggplot(data = l2_data, aes(x = SchoolFunding)) +
+ggplot(data = l2_data, aes(x = school_funding)) +
   geom_histogram()
 ```
 
@@ -122,16 +128,57 @@ ggplot(data = l2_data, aes(x = SchoolFunding)) +
 - To get boxplots, we just substitute `geom_histogram()` for `geom_boxplot()` and modify our aesthetics.
 
 ```{r, echo = TRUE, fig.width = 6, fig.height= 4, fig.align='center'}
-ggplot(data = l2_data, aes(x = Group, y = SchoolFunding)) +
+ggplot(data = l2_data, aes(x = group, y = school_funding)) +
   geom_boxplot()
 ```
 
 ## Homogeneity of Variance
-Homogeneity test is a separate analysis. We'll just use the `leveneTest()` function for the `car` package. Formula is the same as for the ANOVA we want to run. Specify `center = "mean"` (function's default is median).
+Homogeneity test is a separate analysis that we can conduct using the `car` package's `leveneTest()` function. The formula is the same as for the ANOVA we want to run. Specify `center = "mean"` (function's default is median).
 
 ``` {r}
 needs(car)
-car::leveneTest(SchoolFunding ~ Group, data = l2_data, center = "mean")
+car::leveneTest(school_funding ~ group, data = l2_data, center = "mean")
 ```
 
 Our significant result shows error variance around the *mean* is equal across groups.
+
+# Computing the F-Ratio
+
+##
+The lines of code below return the original data, which was in wide format, by using the `spread()` function (from `tidyr` within `tidyverse` packages).
+
+``` {r}
+df_wide <- spread(l2_data, group, school_funding) %>% 
+            select(2:4) %>% 
+            clean_names()
+
+head(df_wide)
+```
+
+```{r}
+# calculate the between group variance
+SSE.m <- sum( (l2_data$school_funding - mean(l2_data$school_funding))^2 ) 
+
+# calculate the within group variance, for each group
+SSE.1 <- (df_wide$lower_than_expected - mean(df_wide$lower_than_expected, na.rm = T))^2
+SSE.2 <- (df_wide$as_expected - mean(df_wide$as_expected, na.rm = T))^2
+SSE.3 <- (df_wide$better_than_expected - mean(df_wide$better_than_expected, na.rm = T))^2
+
+SSE <- sum(SSE.1, SSE.2, SSE.3, na.rm = T)
+
+SSR <- SSE.m-SSE
+
+MSR <- SSR/2   # (p - 1) or 2 degrees of freedom
+MSE <- SSE/635  # (n - p) or 20 degrees of freedom
+
+Fratio <- MSR/MSE
+
+p.val  <- pf(Fratio, 2, 635, lower.tail=FALSE)
+p.val
+```
+The function `pf()` compares our F-ratio to the distribution of FHo values one would expect to get if the means between seasons were not different. The two numbers following the F-ratio value are the degrees of freedom for the MSR and the MSE calculated from (p−1) and (n−p) respectively.
+
+```{r}
+anova_test(data = l2_data, formula = school_funding ~ group,
+           effect.size = "pes")
+```

@@ -857,17 +857,7 @@ $(document).ready(function () {
 <nav class="distill-site-nav distill-site-header">
 <div class="nav-left">
 <a href="index.html" class="title">EDUC 640</a>
-<a href="schedule.html">Schedule</a>
-<div class="nav-dropdown">
-<button class="nav-dropbtn">
-Descriptives and GLM
- 
-<span class="down-arrow">&#x25BE;</span>
-</button>
-<div class="nav-dropdown-content">
 <a href="01_summarizing-data.html">Summarizing Data</a>
-</div>
-</div>
 <span class="nav-dropdown-header">One-Way between-subjects ANOVA</span>
 <span class="nav-dropdown-header">Two-way between-subjects ANOVA</span>
 <span class="nav-dropdown-header">Within-subjects ANOVA, one-way and two-way models</span>
@@ -875,7 +865,6 @@ Descriptives and GLM
 <span class="nav-dropdown-header">Balanced/unbalanced ANOVA and non-parametric analyses</span>
 </div>
 <div class="nav-right">
-<a href="assignments.html">Assignments</a>
 <a>
 <i class="fa fa-github" aria-hidden="true"></i>
 </a>
@@ -900,19 +889,7 @@ Descriptives and GLM
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="schedule.html">Schedule</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Descriptives and GLM
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="01_summarizing-data.html">Summarizing Data</a>
-    </li>
-  </ul>
+  <a href="01_summarizing-data.html">Summarizing Data</a>
 </li>
 <li class="dropdown-header">One-Way between-subjects ANOVA</li>
 <li class="dropdown-header">Two-way between-subjects ANOVA</li>
@@ -922,9 +899,6 @@ Descriptives and GLM
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="assignments.html">Assignments</a>
-</li>
-<li>
   <a>
     <span class="fa fa-github"></span>
      
@@ -945,36 +919,6 @@ Descriptives and GLM
 
 
 <p>Packages used in this tutorial</p>
-<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-## ✓ tibble  3.1.6     ✓ dplyr   1.0.8
-## ✓ tidyr   1.2.0     ✓ stringr 1.4.0
-## ✓ readr   2.1.2     ✓ forcats 0.5.1</code></pre>
-<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre><code>## here() starts at /Users/markhammond/Documents/GitHub/educ640</code></pre>
-<pre><code>## 
-## Attaching package: &#39;psych&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:ggplot2&#39;:
-## 
-##     %+%, alpha</code></pre>
-<pre><code>## Loading required package: carData</code></pre>
-<pre><code>## 
-## Attaching package: &#39;car&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:psych&#39;:
-## 
-##     logit</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     recode</code></pre>
-<pre><code>## The following object is masked from &#39;package:purrr&#39;:
-## 
-##     some</code></pre>
-<pre><code>## |-------------------------------------|
-## | misty 0.4.4 (2022-02-24)            |
-## | Miscellaneous Functions T. Yanagida |
-## |-------------------------------------|</code></pre>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <div id="installing-the-needs-package" class="section level2">
@@ -989,50 +933,42 @@ Descriptives and GLM
 <div id="importing-the-data" class="section level2">
 <h2>Importing the Data</h2>
 <p>Normally we would use the <code>import()</code> function to import our data. However, with the SPSS <code>.sav</code> files we don’t get factor labels.</p>
-<pre class="r"><code>data_import &lt;- import(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;))
+<pre class="r"><code>data_import &lt;- import(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;)) %&gt;% 
+  clean_names()
 
 head(data_import)</code></pre>
-<pre><code>##   SchoolFunding AdministratorSupport Group
-## 1      6.777857             2.765169     1
-## 2      4.920581             2.476562     1
-## 3     10.292754             5.950275     1
-## 4      8.024894             7.691846     1
-## 5      8.418270             4.319460     1
-## 6     10.063933             6.092292     1</code></pre>
-<pre class="r"><code>str(data_import)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    638 obs. of  3 variables:
-##  $ SchoolFunding       : num  6.78 4.92 10.29 8.02 8.42 ...
-##   ..- attr(*, &quot;label&quot;)= chr &quot;School district funding&quot;
-##   ..- attr(*, &quot;format.spss&quot;)= chr &quot;F8.2&quot;
-##  $ AdministratorSupport: num  2.77 2.48 5.95 7.69 4.32 ...
-##   ..- attr(*, &quot;label&quot;)= chr &quot;Effective adminstrative support&quot;
-##   ..- attr(*, &quot;format.spss&quot;)= chr &quot;F8.2&quot;
-##  $ Group               : num  1 1 1 1 1 1 1 1 1 1 ...
-##   ..- attr(*, &quot;label&quot;)= chr &quot;Test Performance Group&quot;
-##   ..- attr(*, &quot;format.spss&quot;)= chr &quot;F8.2&quot;
-##   ..- attr(*, &quot;labels&quot;)= Named num [1:3] 1 2 3
-##   .. ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;Lower-than-expected&quot; &quot;As-expected&quot; &quot;Better-than-expected&quot;</code></pre>
-<p>Notice how we have 1s down the Group column.</p>
+<pre><code>##   school_funding administrator_support group
+## 1       6.777857              2.765169     1
+## 2       4.920581              2.476562     1
+## 3      10.292754              5.950275     1
+## 4       8.024894              7.691846     1
+## 5       8.418270              4.319460     1
+## 6      10.063933              6.092292     1</code></pre>
+<p>Notice how we have 1s down the group column.</p>
 </div>
 <div id="the-fix" class="section level2">
 <h2>The Fix</h2>
 <p>For now, when working with <code>.sav</code> files we will use the <code>read.sav()</code> function from the <code>misty</code> package. <code>use.value.labels = TRUE</code> tells it to use the labels as the cell values.</p>
 <pre class="r"><code>needs(misty)
-l2_data &lt;- misty::read.sav(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;), use.value.labels = TRUE)
+l2_data &lt;- misty::read.sav(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;), use.value.labels = TRUE) %&gt;% 
+  clean_names()
 
 head(l2_data)</code></pre>
-<pre><code>##   SchoolFunding AdministratorSupport               Group
-## 1      6.777857             2.765169 Lower-than-expected
-## 2      4.920581             2.476562 Lower-than-expected
-## 3     10.292754             5.950275 Lower-than-expected
-## 4      8.024894             7.691846 Lower-than-expected
-## 5      8.418270             4.319460 Lower-than-expected
-## 6     10.063933             6.092292 Lower-than-expected</code></pre>
+<pre><code>##   school_funding administrator_support               group
+## 1       6.777857              2.765169 Lower-than-expected
+## 2       4.920581              2.476562 Lower-than-expected
+## 3      10.292754              5.950275 Lower-than-expected
+## 4       8.024894              7.691846 Lower-than-expected
+## 5       8.418270              4.319460 Lower-than-expected
+## 6      10.063933              6.092292 Lower-than-expected</code></pre>
 </div>
+<div id="checking-the-assumptions-of-anova" class="section level2">
+<h2>Checking The Assumptions of ANOVA</h2>
+<p>In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:<br />
+- <em>Homogeneity of variance</em>: The variance between the batches should be similar.<br />
+- <em>Independence of observations</em>: Observations should be independent of one another.<br />
+- <em>Normality</em>: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.</p>
 </div>
-<div id="checking-the-assumptions-of-anova" class="section level1">
-<h1>Checking The Assumptions of ANOVA</h1>
-<p>In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA: - <em>Homogeneity of variance</em>: The variance between the batches should be similar. - <em>Independence of observations</em>: Observations should be independent of one another. - <em>Normality</em>: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.</p>
 <div id="descriptive-statistics" class="section level2">
 <h2>Descriptive Statistics</h2>
 <p>Make sure the <code>psych</code> package is installed and loaded:</p>
@@ -1041,7 +977,7 @@ head(l2_data)</code></pre>
 <pre class="r"><code>describe(data)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["sd"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["median"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["trimmed"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["mad"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["min"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["max"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["range"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[13],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"8.995423","4":"2.3518758","5":"9.057931","6":"8.991344","7":"2.339004","8":"2.222134","9":"16.65277","10":"14.43063","11":"0.04951927","12":"0.08466184","13":"0.09311166","_rn_":"SchoolFunding"},{"1":"2","2":"638","3":"3.862226","4":"3.1175929","5":"3.762032","6":"3.803935","7":"3.208966","8":"-4.005356","9":"13.94929","10":"17.95464","11":"0.16674309","12":"-0.27588903","13":"0.12342669","_rn_":"AdministratorSupport"},{"1":"3","2":"638","3":"1.741379","4":"0.6343486","5":"2.000000","6":"1.677734","7":"0.000000","8":"1.000000","9":"3.00000","10":"2.00000","11":"0.27576963","12":"-0.67936816","13":"0.02511410","_rn_":"Group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["sd"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["median"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["trimmed"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["mad"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["min"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["max"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["range"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[13],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"8.995423","4":"2.3518758","5":"9.057931","6":"8.991344","7":"2.339004","8":"2.222134","9":"16.65277","10":"14.43063","11":"0.04951927","12":"0.08466184","13":"0.09311166","_rn_":"school_funding"},{"1":"2","2":"638","3":"3.862226","4":"3.1175929","5":"3.762032","6":"3.803935","7":"3.208966","8":"-4.005356","9":"13.94929","10":"17.95464","11":"0.16674309","12":"-0.27588903","13":"0.12342669","_rn_":"administrator_support"},{"1":"3","2":"638","3":"1.741379","4":"0.6343486","5":"2.000000","6":"1.677734","7":"0.000000","8":"1.000000","9":"3.00000","10":"2.00000","11":"0.27576963","12":"-0.67936816","13":"0.02511410","_rn_":"group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1061,12 +997,17 @@ head(l2_data)</code></pre>
 </ul>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"0.04951927","4":"0.08466184","_rn_":"SchoolFunding"},{"1":"2","2":"638","3":"0.16674309","4":"-0.27588903","_rn_":"AdministratorSupport"},{"1":"3","2":"638","3":"0.27576963","4":"-0.67936816","_rn_":"Group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"0.04951927","4":"0.08466184","_rn_":"school_funding"},{"1":"2","2":"638","3":"0.16674309","4":"-0.27588903","_rn_":"administrator_support"},{"1":"3","2":"638","3":"0.27576963","4":"-0.67936816","_rn_":"group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <ul>
-<li>Group is a categorical variable, so skew and kurtosis can be ignored.</li>
+<li>group is a categorical variable, so skew and kurtosis can be ignored.</li>
 </ul>
+</div>
+<div id="shapiros-test-of-normality" class="section level2">
+<h2>Shapiro’s test of Normality</h2>
+<p>We can also provide some empirical evidence to support the assumption of normality using <code>shapiro.test()</code> function.</p>
+<pre class="r"><code>shapiro.test(l2_data$school_funding)</code></pre>
 </div>
 <div id="visual-inspection-for-normality" class="section level2">
 <h2>Visual Inspection for Normality</h2>
@@ -1075,16 +1016,16 @@ head(l2_data)</code></pre>
 </ul>
 <div id="histogram" class="section level3">
 <h3>Histogram</h3>
-<pre class="r"><code>ggplot(data = l2_data, aes(x = SchoolFunding)) +
+<pre class="r"><code>ggplot(data = l2_data, aes(x = school_funding)) +
   geom_histogram()</code></pre>
 <ul>
-<li><code>aes()</code> refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our <code>x</code> (i.e., <code>x = Group</code>).</li>
+<li><code>aes()</code> refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our <code>x</code> (i.e., <code>x = group</code>).</li>
 </ul>
 </div>
 </div>
 <div id="histograms" class="section level2">
 <h2>Histograms</h2>
-<pre class="r"><code>ggplot(data = l2_data, aes(x = SchoolFunding)) +
+<pre class="r"><code>ggplot(data = l2_data, aes(x = school_funding)) +
   geom_histogram()</code></pre>
 <p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
@@ -1093,20 +1034,67 @@ head(l2_data)</code></pre>
 <ul>
 <li>To get boxplots, we just substitute <code>geom_histogram()</code> for <code>geom_boxplot()</code> and modify our aesthetics.</li>
 </ul>
-<pre class="r"><code>ggplot(data = l2_data, aes(x = Group, y = SchoolFunding)) +
+<pre class="r"><code>ggplot(data = l2_data, aes(x = group, y = school_funding)) +
   geom_boxplot()</code></pre>
 <p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 <div id="homogeneity-of-variance" class="section level2">
 <h2>Homogeneity of Variance</h2>
-<p>Homogeneity test is a separate analysis. We’ll just use the <code>leveneTest()</code> function for the <code>car</code> package. Formula is the same as for the ANOVA we want to run. Specify <code>center = "mean"</code> (function’s default is median).</p>
+<p>Homogeneity test is a separate analysis that we can conduct using the <code>car</code> package’s <code>leveneTest()</code> function. The formula is the same as for the ANOVA we want to run. Specify <code>center = "mean"</code> (function’s default is median).</p>
 <pre class="r"><code>needs(car)
-car::leveneTest(SchoolFunding ~ Group, data = l2_data, center = &quot;mean&quot;)</code></pre>
+car::leveneTest(school_funding ~ group, data = l2_data, center = &quot;mean&quot;)</code></pre>
 <pre><code>## Levene&#39;s Test for Homogeneity of Variance (center = &quot;mean&quot;)
 ##        Df F value Pr(&gt;F)
 ## group   2  2.0602 0.1283
 ##       635</code></pre>
 <p>Our significant result shows error variance around the <em>mean</em> is equal across groups.</p>
+</div>
+</div>
+<div id="computing-the-f-ratio" class="section level1">
+<h1>Computing the F-Ratio</h1>
+<div id="section" class="section level2">
+<h2></h2>
+<p>The lines of code below return the original data, which was in wide format, by using the <code>spread()</code> function (from <code>tidyr</code> within <code>tidyverse</code> packages).</p>
+<pre class="r"><code>df_wide &lt;- spread(l2_data, group, school_funding) %&gt;% 
+            select(2:4) %&gt;% 
+            clean_names()
+
+head(df_wide)</code></pre>
+<pre><code>##   lower_than_expected as_expected better_than_expected
+## 1                  NA          NA              16.5892
+## 2                  NA    9.916529                   NA
+## 3                  NA   12.759629                   NA
+## 4                  NA    4.316976                   NA
+## 5                  NA    8.792685                   NA
+## 6                  NA    9.911427                   NA</code></pre>
+<pre class="r"><code># calculate the between group variance
+SSE.m &lt;- sum( (l2_data$school_funding - mean(l2_data$school_funding))^2 ) 
+
+# calculate the within group variance, for each group
+SSE.1 &lt;- (df_wide$lower_than_expected - mean(df_wide$lower_than_expected, na.rm = T))^2
+SSE.2 &lt;- (df_wide$as_expected - mean(df_wide$as_expected, na.rm = T))^2
+SSE.3 &lt;- (df_wide$better_than_expected - mean(df_wide$better_than_expected, na.rm = T))^2
+
+SSE &lt;- sum(SSE.1, SSE.2, SSE.3, na.rm = T)
+
+SSR &lt;- SSE.m-SSE
+
+MSR &lt;- SSR/2   # (p - 1) or 2 degrees of freedom
+MSE &lt;- SSE/635  # (n - p) or 20 degrees of freedom
+
+Fratio &lt;- MSR/MSE
+
+p.val  &lt;- pf(Fratio, 2, 635, lower.tail=FALSE)
+p.val</code></pre>
+<pre><code>## [1] 0.01147869</code></pre>
+<p>The function <code>pf()</code> compares our F-ratio to the distribution of FHo values one would expect to get if the means between seasons were not different. The two numbers following the F-ratio value are the degrees of freedom for the MSR and the MSE calculated from (p−1) and (n−p) respectively.</p>
+<pre class="r"><code>anova_test(data = l2_data, formula = school_funding ~ group,
+           effect.size = &quot;pes&quot;)</code></pre>
+<pre><code>## Coefficient covariances computed by hccm()</code></pre>
+<pre><code>## ANOVA Table (type II tests)
+## 
+##   Effect DFn DFd     F     p p&lt;.05   pes
+## 1  group   2 635 4.499 0.011     * 0.014</code></pre>
 </div>
 </div>
 
