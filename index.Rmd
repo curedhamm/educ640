@@ -1,5 +1,5 @@
 ---
 title: "EDUC 640: Introduction to Data Analysis in Education and the Social Sciences"
 subtitle: "College of Education, University of Oregon"
-author: "Mark Hammond"
+authors: "Mark Hammond & Anwesha Guha"
 ---
