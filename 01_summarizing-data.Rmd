@@ -4,12 +4,6 @@ title: "Summarizing Data"
 
 Packages used in this tutorial
 ```{r packages, echo = FALSE, cache= FALSE}
-library("tidyverse")
-library("here")
-library("psych")
-library("needs")
-library("car")
-library("misty")
 ```
 
 # Introduction
@@ -21,6 +15,9 @@ knitr::opts_chunk$set(
   cache=TRUE,     # Cache the R code Run to Run
   tidy=FALSE,     # display code as typed
   size="small")   # slightly smaller font for code
+
+# Set default behavior of ggplot2 graphs to be black/white theme
+theme_set(theme_bw())
 ```
 
 
@@ -48,6 +45,7 @@ Normally we would use the `import()` function to import our data. However, with 
 data_import <- import(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"))
 
 head(data_import)
+str(data_import)
 ```
 
 Notice how we have 1s down the Group column.
@@ -63,9 +61,10 @@ head(l2_data)
 ```
 
 # Checking The Assumptions of ANOVA
-- Independence of observations
-- Normality
-- Homogeneity of variance
+In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:
+- *Homogeneity of variance*: The variance between the batches should be similar.
+- *Independence of observations*: Observations should be independent of one another.
+- *Normality*: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.
 
 ## Descriptive Statistics
 
@@ -136,37 +135,3 @@ car::leveneTest(SchoolFunding ~ Group, data = l2_data, center = "mean")
 ```
 
 Our significant result shows error variance around the *mean* is equal across groups.
-
-# Computing the F-Ratio
-
-##
-The lines of code below return the original data, which was in wide format, by using the `spread()` function (from `tidyr` within `tidyverse` packages).
-
-``` {r}
-df_wide <- spread(l2_data, Group, SchoolFunding)
-df_wide
-```
-
-##
-
-```{r}
-SSE.m <- sum( (dat.long$Value - mean(dat.long$Value))^2 ) 
-
-SSE <- sum( (dat$Summer - mean(dat$Summer))^2 +
-            (dat$Fall - mean(dat$Fall))^2 +
-            (dat$Winter - mean(dat$Winter))^2
-            )
-
-SSR <- SSE.m-SSE
-
-MSR <- SSR/2   # (p - 1) or 2 degrees of freedom
-
-MSE <- SSE/20  # (n - p) or 20 degrees of freedom
-
-Fratio <- MSR/MSE
-
-p.val  <- pf(Fratio, 2, 20, lower.tail=FALSE)
-```
-
-
-The function `pf()` compares our F-ratio to the distribution of FHo values one would expect to get if the means between seasons were not different. The two numbers following the F-ratio value are the degrees of freedom for the MSR and the MSE calculated from (p−1) and (n−p) respectively.

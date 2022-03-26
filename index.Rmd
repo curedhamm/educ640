@@ -12,11 +12,6 @@ output:
     theme: cosmo
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  echo = FALSE)
-```
-
 # Course Overview
 
 # Meeting time and location

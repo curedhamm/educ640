@@ -1,15 +1,10 @@
-name: EDUC 640
+name: "EDUC 640"
 output_dir: "."
 navbar:
   title: "EDUC 640"
-  
   left:
-  - text: Schedule
-    href: schedule.html
-  - text: "Descriptives and GLM"
-    menu: 
-      - text: "Summarizing Data"
-        href: 01_summarizing-data.html
+  - text: "Summarizing Data"
+    href: 01_summarizing-data.html
   - text: "One-Way between-subjects ANOVA"
     menu: 
   - text: "Two-way between-subjects ANOVA"
@@ -19,8 +14,6 @@ navbar:
   - text: "Balanced/unbalanced ANOVA and non-parametric analyses"
 
   right:
-  - text: Assignments
-    href: assignments.html
   - icon: fa-github
     href: 
 
