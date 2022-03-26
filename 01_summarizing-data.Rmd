@@ -1,656 +1,172 @@
 ---
 title: "Summarizing Data"
-author: "Mark Hammond"
-date: "3/24/2022"
-output: html_document
 ---
 
-# Summary Statistics and Graphing
-
-When confronted with a large amount of data, we seek to summarize the data into statistics that capture the essence of the data with as few numbers as possible. Graphing the data has a similar goal: To reduce the data to an image representing all the raw data's critical aspects. In short, we seek to simplify the data to understand the trends while not obscuring essential structures. 
-
-
-```{r, message=FALSE, warning=FALSE}
-# Every chapter, we will load all the libraries we will use at the beginning
-# of the chapter. These commands will start most every homework assignment
-# for this class, and likely, every R script you write.
-suppressPackageStartupMessages({
-  library(tidyverse)
-  library(knitr)
-})
-# Set default behavior of ggplot2 graphs to be black/white theme
-theme_set(theme_bw())
+Packages used in this tutorial
+```{r packages, echo = FALSE, cache= FALSE}
+library("tidyverse")
+library("here")
+library("psych")
+library("needs")
+library("car")
+library("misty")
 ```
 
-For this chapter, we will consider data from a the 2005 Cherry Blossom 10 mile 
-run that occurs in Washington DC. This data set has 8636 observations that includes 
-the runners state of residence, official time (gun to finish, in seconds), net 
-time (start line to finish, in seconds), age, and gender of the runners. 
-
-```{r}
-data(TenMileRace, package='mosaicData')
-head(TenMileRace)   # examine the first few rows of the data
-```
-
-## Variable Types
-
-We will distinguish variables into two principal categories: categorical and 
-numerical.
-This distinction will become important because the manner in which we visualize
-and model the data will depend on the variable types. For example we use box plots
-to graph a continuous vs categorical variable relationship but a scatter plot for
-a continuous vs continuous relationship.
-
-
-*  **Categorical variables** are variables whose elements take on non-numerical entries. 
-
-    Examples within the `TenMileRace` set include the *state* and *sex* variables.
-    Categorical variables are typically un-ordered, such that if we chose to order 'NM' 
-    before 'AZ' in an evaluation of the *state* variable, there would be no impact on 
-    our analysis. Categorical variables that have an implied order are termed **ordinal** 
-    variables. Examples include the common A, B, C, D, F grade-scale system. The 
-    variable entries are non-numerical, but there is an implied order that 
-    A > B > C > D > F. Such an ordering could influence the way the data is evaluated.
-
-
-* **Numerical variables** are broadly classified as variables with numerical elements.  
-Numerical variables within the `TenMileRace` set include the *time*, *net*, and *age* 
-variables.  Numerical variables are sub-classified as either discrete or continuous.  
-    
-    * **Numerical Discrete variables** are numerical variables have values coming 
-        from a countable set of possible values. Data that is numerical discrete 
-        can take on a countable number of numerical entries. Some examples are:
-        - The number of offspring an adult has
-        - The number of items in a shopping cart.
-        - The value of a die roll.
-        - The number of students in a classroom. 
-        
-        Discrete variables often have an upper bound on their possible value, but 
-        theoretically could be countably infinite and listed as ${0,1,2,\dots}$.
-        Although there is no largest value within the list, the number of potential entries 
-        is still countable. 
-        Infinite valued discrete variables will serve the basis for important 
-        distributions, such as the Poisson distribution, while the finite valued variables
-        serve as the basis for distributions such as the binomial, Bernoulli, and discrete
-        uniform.
-    
-    * **Continuous variables** have entries that take on numerical values that lie on an interval.
-        
-        Continuous variables are also numerical variables but the values come from an
-        uncountable set of values. This distinction between Discrete and Continuous 
-        variable types is important from a statistical theory point of view, but is less
-        helpful in statistical practice. Instead we can consider the question:
-        “Does a fraction of a value make sense?” If so, then the data is continuous.
-
-The `TenMileRace` data, the variables `time` and `net` are both recorded in 
-seconds, and in this case seem to conform to discrete.
-However, if we had instead recorded the minutes with fractions of a minute present, 
-such as 75.25 minutes instead of 4515 seconds, we might realize these variables 
-are more likely to be considered continuous. 
-Continuous variables constitute a large set of distributions that will be studied, 
-the most commonly known being the Normal distribution.
-For the Normal distribution, it is theoretically possible to see values ranging from 
-$(-\infty, \infty)$.  This constitutes an interval, albeit a very large interval. 
-Thus, elements of the variables lie on an interval, and it is not possible to 
-list out all possible entries.
-Another simple example will be the Uniform distribution, whose entries lie on the 
-interval $(a,b)$, where $a$ and $b$ are any real valued number. 
-Again, all potential observation of the variable can be found in the interval, 
-but it is not possible to list out all possible outcomes.
-
-## Randomization and Sampling
-
-An important aspect of working within statistics is the concept that the data we 
-are working with has been collected randomly.  We think of having a **population**, 
-the collection of all possible observations under consideration. 
-We often consider population summary quantities, such as the population mean 
-which we will denote as $\mu$. For example, we might care about the mean age
-of all NAU students, or the average income of Hispanic residents of Arizona.
-
-Usually we will not have data on all individuals within the population and we
-are forced to rely on a **sample**. A sample is a subset of the population 
-for which information is gathered.  
-The fundamental idea in the theory of statistics is:
-
-*  The sample is a representative subset of the population and quantities
-   calculated from the sample (called *s*ample *s*tatistics) are reasonable estimates
-   of the corresponding population quantity (called *p*opulation *p*arameters).
-
-The way we select our samples is done to ensure that the sample is representative
-of the population and that there is no unknown lurking correlation between 
-variables.  
-
-We will distinguish between the usually unknown population parameters and the
-sample estimating quantities by using Greek letters such as 
-$\mu, \sigma, \rho,$ or $\beta$ for the population values and either 
-Roman characters such as $\bar{x}$, s, r, or b or add a "hat" on-top of the 
-parameter such as $\hat{\mu}, \hat{\sigma}, \hat{\rho}$ or $\hat{\beta}$. As
-for the Population and sample sizes, we will use $N$ to represent the number of
-individuals in the population, and $n$ to represent the number of individuals
-in the sample.
-
-### Sampling Techniques
-
-We will cover three broad sampling techniques that help ensure the sample is
-representative of the population and the randomization of the samples collected.
-
-
-*  **Simple Random Sampling (SRS)** is when every sample of size $n$ is equally
-   likely. In practice this almost always implemented as randomly selecting 
-   member of the population is equally-likely to be chosen.
-
-For SRS to be used, we also ensure that every member of the population is 
-selected independently.  Let us take the a university of having 30,000 students 
-enrolled to be our population of which we would like to selected 1,000 as a 
-sample.  To use SRS, we would assign every member of the population a value 
-`{1, 2, ..., 30,000}` and then draw numbers, without replacement, from our list 
-of values.  Such random numbers can be drawn using a random number generator, 
-or traditionally through the use of a random number table. Below we show a simple 
-method in R to draw 1,000 from 30,000 without replacement.
-
-```{r, eval=FALSE}
-sample(1:30000, 1000, replace=FALSE)
-```
-
-
-Using this method would ensure that we obtain a random sampling drawn from the 
-entire University.  What we cannot do is draw a student, then also draw all of 
-their siblings.  If we were to use such a method, we would be introducing 
-correlation within our samples.  We must ensure that the students are all drawn 
-randomly and that the selection is done independently.
-
-* **Random Cluster Sampling** draws entire clusters based on a division of the population.
-
-In cluster sampling, the idea is perform a hierarchical sampling where that we 
-will use a SRS to select clusters and then observe every individual in that cluster. 
-For example, if we were taking a 
-sample of NAU students, we might first randomly select a certain set of classes
-and then interview every student in each class. Another example would have a 
-tree ecologist randomly select GIS locations in a study area and then measure 
-every tree within 20 meters of the location.
-
-Cluster sampling is usually done to make it more convenient to carry out the 
-sample, but introduces correlation among the observations that will need to be
-accounted for in the statistical analysis (e.g. using mixed models).
-
-
-As an example of a bad cluster sample design, let us consider cluster sampling
-the `TenMileRace` population based on *state*. If one was to view this variable, 
-they would find there are 62 unique *state* identifiers.  This is due to there 
-being several countries listed in this variable, as well as the inclusion of 
-Washington, DC as its own state, and because it is real data, there is also one 
-blank. The main concept though if we chose to cluster by *state*, we would produce 
-62 clusters, all of which are imbalanced in size. To complete cluster random sampling, 
-we then use SRS to draw X states from the 62 clusters produced, such as say 10 
-from 62. From those 10, we would sample ALL participants within those clusters. 
-Thus, if I were to draw the AZ cluster, I would sample all 3 participants. 
-If I drew the VA cluster, we would sample all 3689 participants. Although this 
-type of sampling is easier to produce larger samples with less randomization, we 
-can see that clusters can be highly imbalanced, and it is unlikely that clustering 
-will allow me to sub-sample from the entire population.  Just in our example, 
-I would not gather information from 52 of the 62 states, if I only was to draw 
-10 clusters.
-
-
-
-* **Stratified Sampling** draws samples using proportionality based on 
-homogeneous groupings known as strata.
-
-It is often easy to confuse Clustering and Stratified sampling, but the major 
-difference here is that we will draw random samples from within the strata, 
-unlike clustering where we take all individuals from the chosen clusters. 
-Let us consider for exampling producing a random stratified sample using *sex* 
-as our strata.  Here, our homogeneous grouping is simply *sex*.  Other examples 
-might include stratifying animals by breed, stratifying the atmosphere by height 
-above ground, or stratifying soil by depth.  The main idea behind a strata is 
-every member should be homogenized: in our example, we homogenized by 'Male' and
-'Female'.
+# Introduction
 
 ```{r, echo=FALSE}
-TenMileRace %>%
-  group_by(sex) %>%
-  count() %>%
-  group_by() %>%
-  mutate(Proportion = round(n / sum(n), digits=3)) %>%
-  kable()
+# Set my default chunk options 
+knitr::opts_chunk$set( 
+  fig.height=3,   # Default figure size is 3 inches
+  cache=TRUE,     # Cache the R code Run to Run
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
 ```
 
-Above shows a table for the number of 'Male' and 'Female' participants.  We see that these two strata are nearly equivalent, but we suppose we want to ensure we draw the samples based on proportionality.  In total, we have 8636 participants.  Let us say we want to draw $800$ of these participants, but through stratification using *sex*.  We must then ensure that when we draw a random sample, we obtain a sub-sample that has nearly equivalent proportions to that observed in the population.  We must therefore draw 
 
-| sex    |  Sample size           |
-|:------:|:----------------------:|
-|  F     |  $800 * 0.501 = 401$   |
-|  M     |  $800 * 0.499 = 399$   |
-
-And if we do this sub-sampling, then our sample proportions will necessarily be the same as our population proportions. This can have desirable consequences, mainly that stratifying ensures samples are taken from all potential sources, here the sources are the different categories within our *sex* variable.  If I did draw samples using only SRS with no stratifying, I might get proportions of 'Male' and 'Female' that are wildly different than the original sample, and stratification forces us to **not** select those unrepresentative samples. Stratifying guarantees we reproduce the proportions, while sampling from all homogeneous groupings.
-
-## Graphical Summaries
-
-### Barcharts/Barplots (Univariate - Categorical)
-
-If we have univariate data about a number of groups, often the best way to display it is using barplots. They have the advantage over pie-charts that groups are easily compared.  The bars do NOT touch indicating that the order is not required, and the same information could be gained if we plotted them in a slightly different order. Below we compare the counts of 'Male' and 'Female' participants.
-
-```{r, echo=TRUE}
-ggplot(TenMileRace, aes(x=sex)) + geom_bar()
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+needs(tidyverse, rio, here, knitr, kableExtra, misty)
+data <- read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = T)
 ```
 
-One thing that can be misleading is if the zero on the y-axis is removed. In the following graph it looks like there are twice as many female runners as male until you examine the y-axis closely.  In general, the following is a very misleading graph.
+## Installing the `needs` Package
 
-```{r}
-ggplot(TenMileRace, aes(x=sex)) + 
-  geom_bar() +
-  coord_cartesian(ylim = c(4300, 4330))
+- Can install packages and load them
+- No longer need `install.packages()` and `library()`
+- It will ask if you would like to load it every time RStudio opens. Select yes.
+
+```{r, eval = FALSE}
+install.packages("needs")
 ```
 
-### Histogram (Univariate - Numerical)
 
-A histogram looks very similar to a bar plot, but is used to represent numerical data instead of categorical and therefore the bars will actually be touching. 
+## Importing the Data
+Normally we would use the `import()` function to import our data. However, with the SPSS `.sav` files we don't get factor labels.
 
-```{r, warning=FALSE, message=FALSE}
-ggplot(TenMileRace, aes(x=net)) + 
+``` {r}
+data_import <- import(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"))
+
+head(data_import)
+```
+
+Notice how we have 1s down the Group column.
+
+## The Fix
+For now, when working with `.sav` files we will use the `read.sav()` function from the `misty` package. `use.value.labels = TRUE` tells it to use the labels as the cell values.
+
+``` {r}
+needs(misty)
+l2_data <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE)
+
+head(l2_data)
+```
+
+# Checking The Assumptions of ANOVA
+- Independence of observations
+- Normality
+- Homogeneity of variance
+
+## Descriptive Statistics
+
+Make sure the `psych` package is installed and loaded:
+```{r, echo = TRUE}
+needs(psych)
+```
+
+`describe()` from the `psych` package is one of the more popular functions for descriptive statistics.
+
+```{r, echo = TRUE, eval = FALSE}
+describe(data)
+```
+
+```{r echo = FALSE, eval = TRUE}
+d <- describe(l2_data)
+rmarkdown::paged_table(d)
+```
+
+## Independence of Observations
+ - Do participants cross groups?
+ - We know this if we know the study design
+ - In this study, each student experienced one and only one lecture
+
+## Normality
+- We can check the skew and kurtosis values from our `describe()` output.
+- 0 ± 2 is a good rule of thumb for a tenable assumption of normality.
+
+```{r echo = FALSE, eval = TRUE}
+d <- as.data.frame(d) %>% 
+  select(vars, n, skew, kurtosis)
+rmarkdown::paged_table(d)
+```
+
+- Group is a categorical variable, so skew and kurtosis can be ignored. 
+
+## Visual Inspection for Normality
+- For the most part, plots will be wrapped using the `ggplot()` function.
+
+### Histogram
+```{r, echo = TRUE, eval = FALSE}
+ggplot(data = l2_data, aes(x = SchoolFunding)) +
   geom_histogram()
 ```
 
-Often when a histogram is presented, the y-axis is labeled as “frequency” or “count” which is the number of observations that fall within a particular bin. However, it is often desirable to scale the y-axis so that if we were to sum up the area $(height * width)$ then the total area would sum to 1. The re-scaling that accomplishes this is
+- `aes()` refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our `x` (i.e., `x = Group`).
 
-$$density=\frac{\#\;observations\;in\;bin}{total\;number\;observations}\cdot\frac{1}{bin\;width}$$
-
-We can force the histogram created within `ggplot` to be display density by using the `y=..density..` command.
-
-```{r, warning=FALSE, message=FALSE}
-ggplot(TenMileRace, aes(x=net)) + 
-  geom_histogram(aes(y=..density..))
+## Histograms
+```{r, echo = TRUE, eval = TRUE, message = F, fig.width = 8, fig.height= 6, fig.align='center'}
+ggplot(data = l2_data, aes(x = SchoolFunding)) +
+  geom_histogram()
 ```
- 
 
-### Boxplot (Bivariate - Categorical vs Numerical)
+## Boxplot
+- To get boxplots, we just substitute `geom_histogram()` for `geom_boxplot()` and modify our aesthetics.
 
-We often wish to compare response levels from two or more groups of interest. To do this, we often use side-by-side box plots. Notice that each observation is associated with a continuous response value and a categorical value. 
-
-
-```{r}
-ggplot(TenMileRace, aes(x=sex, y=net)) + 
+```{r, echo = TRUE, fig.width = 6, fig.height= 4, fig.align='center'}
+ggplot(data = l2_data, aes(x = Group, y = SchoolFunding)) +
   geom_boxplot()
 ```
 
-In this graph, the edges of the box are defined by the 25% and 75% percentiles. That is to say, 25% of the data is to the below of the box, 50% of the data is in the box, and the final 25% of the data is to the above of the box. The line in the center of the box represents the 50% percentile, more commonly called the median. The dots are data points that are traditionally considered outliers. We will define the Inter-Quartile Range (IQR) as the length of the box. It is conventional to define any observation more than 1.5*IQR from the box as an outlier.  In the above graph it is easy to see that the median time for the males is lower than for females, but the box width (one measure of the spread of the data) is approximately the same.
+## Homogeneity of Variance
+Homogeneity test is a separate analysis. We'll just use the `leveneTest()` function for the `car` package. Formula is the same as for the ANOVA we want to run. Specify `center = "mean"` (function's default is median).
 
-Because boxplots simplify the distribution to just 5 numbers, looking at side-by-side histograms might give similar information.
-
-```{r, warning=FALSE, message=FALSE}
-ggplot(TenMileRace, aes(x=net)) + 
-  geom_histogram() +
-  facet_grid( . ~ sex )  # side-by-side plots based on sex
+``` {r}
+needs(car)
+car::leveneTest(SchoolFunding ~ Group, data = l2_data, center = "mean")
 ```
 
-Orientation of graphs can certainly matter. In this case, it makes sense to stack the two graphs to facilitate comparisons in where the centers are and it is more obvious that the center of the female distribution is about 500 to 600 seconds higher than then center of the male distribution. 
+Our significant result shows error variance around the *mean* is equal across groups.
 
-```{r, warning=FALSE, message=FALSE}
-ggplot(TenMileRace, aes(x=net)) + 
-  geom_histogram() +
-  facet_grid( sex ~ . )  # side-by-side plots based on sex
+# Computing the F-Ratio
+
+##
+The lines of code below return the original data, which was in wide format, by using the `spread()` function (from `tidyr` within `tidyverse` packages).
+
+``` {r}
+df_wide <- spread(l2_data, Group, SchoolFunding)
+df_wide
 ```
 
-
-### Scatterplot (Bivariate - Numerical vs Numerical)
-
-Finally we might want to examine the relationship between two numerical random variables. For example, we might wish to explore the relationship between a runners age and their net time.
+##
 
 ```{r}
-ggplot(TenMileRace, aes(x=age, y=net, color=sex)) + 
-  geom_point()
-```
+SSE.m <- sum( (dat.long$Value - mean(dat.long$Value))^2 ) 
 
-## Summary Statistics
+SSE <- sum( (dat$Summer - mean(dat$Summer))^2 +
+            (dat$Fall - mean(dat$Fall))^2 +
+            (dat$Winter - mean(dat$Winter))^2
+            )
 
-Often we want to take a set of data and summarize it using just a few numbers. 
-These numbers are called summary statistics and different statistics measure
-different aspects of the data.
+SSR <- SSE.m-SSE
 
-### Measures of Centrality
+MSR <- SSR/2   # (p - 1) or 2 degrees of freedom
 
-The most basic question to ask of any dataset is 'What is the typical value?' There are several ways to answer that question and they should be familiar to most students.
+MSE <- SSE/20  # (n - p) or 20 degrees of freedom
 
-#### Mean
+Fratio <- MSR/MSE
 
-Often called the average, or arithmetic mean, we will denote this special statistic with a bar. We define $$\bar{x}=\frac{1}{n}\sum_{i=1}^{n}x_{i}=\frac{1}{n}\left(x_{1}+x_{2}+\dots+x_{n}\right)$$
- 
-
-If we want to find the mean of five numbers $\left\{ 3,6,4,8,2\right\}$  the calculation is 
-$$\bar{x}	=	\frac{1}{5}\left(3+6+4+8+2\right)
-	=	\frac{1}{5}\left(23\right)
-	=	23/5
-	=	4.6$$
- 
-
-This can easily be calculated in R by using the function `mean()`. We first extract the column we are interested in using the notation: `DataSet$ColumnName` where the $ signifies grabbing the column.
-
-```{r}
-mean( TenMileRace$net ) # Simplest way of doing this calculation
-# Using the dplyr package we first specify the data set 
-# Then specify we wish to summarize() the data set
-# The summary we want to do is to calculate the mean of the 'net' column.
-# and we want to name what we are about to create as Calculated.Mean
-# The .groups='drop' is telling R to ungroup() the data.
-TenMileRace %>% 
-  summarise( Calculated.Mean = mean(net), .groups='drop' )  
-```
-
-#### Median
-
-If the data were to be ordered, the median would be the middle most observation (or, in the case that $n$ is even, the mean of the two middle most values).
-
-In our simple case of five observations $\left\{ 3,6,4,8,2\right\}$, we first sort the data into $\left\{ 2,3,4,6,8\right\}$  and then the middle observation is clearly $4$.
-
-In R the median is easily calculated by the function `median()`.
-
-```{r}
-# median( TenMileRace$net )
-TenMileRace %>% 
-  summarise( Median = median(net) ) 
-```
-
-#### Mode
-
-This is peak in the distribution. A distribution might have a single peak or multiple peaks.This measure of "center" is not often used in quantitative analyses, but is often helps provide a nice description.
-
-When creating a histogram from a set of data, often the choice of binwidth will affect the modes of the graph. Consider the following graphs of $n=200$ data points, where we have slightly different binwidths. 
-
-```{r, echo=FALSE}
-N <- 120
-seed <- round(runif(1, 0, 10000)); set.seed(seed); #set.seed(2398)
-data <- TenMileRace %>% sample_n(200)
-#  data.frame(x=c( rnorm(N, mean=2, sd=3), rnorm(N/2, mean=6, sd=2)))
-P1 <- ggplot(data, aes(x=net)) + geom_histogram(binwidth=120) + ggtitle('Binwidth: 120 sec')
-P2 <- ggplot(data, aes(x=net)) + geom_histogram(binwidth=240) + ggtitle('Binwidth: 240 sec')
-P3 <- ggplot(data, aes(x=net)) + geom_histogram(binwidth=600) + ggtitle('Binwidth: 600 sec')
-Rmisc::multiplot(P1, P2, P3, cols = 3)
-```
-
-With the two smaller binwidths, sample randomness between adjacent bins obscures the overall shape and we have many different modes. However the *larger* binwidth results in a histogram that more effectively communicates the shape of the distribution and has just a single mode at around 6000 seconds. When making histograms, the choice of binwidth (or equivalently, the number of bins) should not be ignored and a balance should be struck between simplifying the data too much vs seeing too much of the noise resulting from the sample randomness.
-
-#### Examples 
-
-*  Suppose a retired professor were to become bored and enroll in the author's 
-   STA 570 course, how would that affect the mean and median age of the STA 570 students? 
-    + The mean would move much more than the median. Suppose the class has 5 
-      people right now, ages 21, 22, 23, 23, 24 and therefore the median is 23. 
-      When the retired professor joins, the ages will be 21, 22, 23, 23, 24, 72 
-      and the median will remain 23. However, the mean would move because we add 
-      in such a large outlier. Whenever we are dealing with skewed data, the mean 
-      is pulled toward the outlying observations.
-
-* In 2010, the median NFL player salary was $770,000 while the mean salary was $1.9 million. Why the difference?
-    + Because salary data is skewed by superstar players that make huge salaries (in excess of $20,000,000) while the minimum salary for a rookie is $375,000. Financial data often reflects a highly skewed distribution and the median is often a better measure of centrality in these cases.
-
-### Measures of Spread
-
-The second question to ask of a dataset is 'How much spread is in the data?' The fancier (and eventually more technical) word for spread is 'variability'. As with centrality, there are several ways to measure this. 
-
-#### Range
-
-Range is the distance from the largest to the smallest value in the dataset.
-
-```{r}
-TenMileRace %>% summarise( Range = max(net) - min(net) )
-```
-
-We usually aren't interested in the range because it can be highly affected by
-a single observation. For example, in the `TenMileRace` data, only two runners 
-out of 8600 were in their 80s, but the range is calculated using the most extreme
-values of a 10 and 87 year old even though the majority of the runners were between
-28 and 44. 
-
-#### Inter-Quartile Range (IQR)
-
-The p-th percentile is the observation (or observations) that has at most $p$ 
-percent of the observations below it and $(1-p)$ above it, where $p$ is between 
-0 and 100. The median is the $50$th percentile. Often we are interested in 
-splitting the data into four equal sections using the $25$th, $50$th, and $75$th 
-percentiles (which, because it splits the data into four sections, we often call 
-these the $1$st, $2$nd, and $3$rd quartiles). 
-
-In general we could be interested in dividing the data up into an arbitrary number 
-of sections, and refer to those as quantiles of my data.
-
-```{r}
-quantile( TenMileRace$net ) # gives the 5-number summary by default
-```
-
-The IQR is defined as the distance between the $3$rd and $1$st quantiles. 
-
-```{r}
-# IQR( TenMileRace$net )
-TenMileRace %>% summarise( CalcIQR = IQR(net) ) 
-```
-
-Notice that we've defined IQR before when we looked at boxplots, and that the 
-IQR is exactly the length of the box. 
-
-### Variance
-
-One way to measure the spread of a distribution is to ask “what is the typical 
-distance of an observation to the mean?” We could define the $i$th deviation as 
-$$e_{i}=x_{i}-\bar{x}$$
-and then ask what is the average deviation? The problem with this approach is 
-that the sum (and thus the average) of all deviations is always 0.
-$$\sum_{i=1}^{n}(x_{i}-\bar{x})	=	\sum_{i=1}^{n}x_{i}-\sum_{i=1}^{n}\bar{x}
-	=	n\frac{1}{n}\sum_{i=1}^{n}x_{i}-n\bar{x}
-	=	n\bar{x}-n\bar{x}
-	=	0$$
- 
-The big problem is that about half the deviates are negative and the others are 
-positive. What we really care is the distance from the mean, not the sign. So we 
-could either take the absolute value, or square it. 
-
-There are some really good theoretical reasons to chose the square option. Squared 
-terms are easier to deal with computationally when compared to absolute values. 
-More importantly, the spread of the normal distribution is parameterized via 
-squared distances from the mean. Because the normal distribution is so important, 
-we've chosen to define the sample variance so it matches up with the natural 
-spread parameter of the normal distribution. So we square the deviations and 
-find the average deviation size (approximately) and call that the sample variance.
-$$s^{2}=\frac{1}{n-1}\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}$$
- Why do we divide by $n-1$ instead of $n$? 
-
-1.  If we divide by $n$, then on average, we would tend to underestimate the 
-    population variance $\sigma^{2}$. 
-2.  The reason is because we are using the same set of data to estimate 
-    $\sigma^{2}$ as we did to estimate the population mean ($\mu$). If we could use   
-    $$\frac{1}{n}\sum_{i=1}^{n}\left(x_{i}-\mu\right)^{2}$$
-    as the estimator, we would be fine. But because we have to replace 
-    $\mu$ with $\bar{x}$ we have to pay a price.
-3.  Because the estimation of $\sigma^{2}$ requires the estimation of one other 
-    quantity, we have used one degree of freedom on estimating the mean and we need 
-    to adjust the formula accordingly.
-
-In later chapters we'll give this quantity a different name, so we'll introduce 
-the necessary vocabulary here. Let $e_{i}=x_{i}-\bar{x}$ be the error left after 
-fitting the sample mean. This is the deviation from the observed value to the 
-“expected value” $\bar{x}$. We can then define the Sum of Squared Error as 
-$$SSE=\sum_{i=1}^{n}e_{i}^{2}$$
-and the Mean Squared Error as $$MSE=\frac{SSE}{df}=\frac{SSE}{n-1}=s^{2}$$ 
-where $df=n-1$ is the appropriate degrees of freedom.
-
-Calculating the variance of our small sample of five observations 
-$\left\{ 3,6,4,8,2\right\}$, recall that the sample mean was $\bar{x}=4.6$ 
-
-| $x_i$ |  $(x_i-\bar{x})$  |  $(x_i-\bar{x})^2$ |
-|:-----:|:-----------------:|:-------------------:|
-|  3    |       -1.6        |    2.56            |
-|  6    |        1.4        |    1.96            |
-|  4    |       -0.6        |    0.36            |
-|  8    |        3.4        |   11.56            |
-|  2    |       -2.6        |    6.76            |
-|       |      Sum = 0      |  SSE = 23.2        |
-
-and so the sample variance is 
-$$s^2 = \frac{SSE}{n-1} = \frac{23.2}{(n-1)} = \frac{23.2}{4}=5.8$$
- 
-Clearly this calculation would get very tedious to do by hand and computers will 
-be much more accurate in these calculations. In R, the sample variance is easily 
-calculated by the function `var()`.  Given below is an example calculation done 
-using `dplyr` commands.
-
-```{r}
-ToyData <- data.frame( x=c(3,6,4,8,2) )
-#var(ToyData$x)
-ToyData %>% summarise( s2 = var(x) )
-```
-
-For the larger `TenMileRace` data set, the variance of the *net* time to complete 
-the race is calculated just as easily.
-
-```{r}
-TenMileRace %>% summarise( s2 = var(net) )
-```
-
-#### Standard Deviation
-
-The biggest problem with the sample variance statistic is that the units are the 
-original units-squared. That means if you are looking at data about car fuel 
-efficiency, then the values would be in mpg$^{2}$ which are units that I can't 
-really understand. The solution is to take the positive square root, which we 
-will call the sample standard deviation. $$s=\sqrt{s^{2}}$$
-
-Why do we even bother to define the variance? Mathematically the variance is more 
-useful and most distributions (such as the normal) are defined by the variance 
-term. Practically, standard deviation is easier to think about and becomes an 
-informative quantity when discussing sample error.
-
-The sample standard deviation is important enough for R to have a function 
-`sd()` that will calculate it for you. 
-
-```{r}
-# sd( TenMileRace$net )
-TenMileRace %>% summarise( s = sd(net) )
+p.val  <- pf(Fratio, 2, 20, lower.tail=FALSE)
 ```
 
 
-#### Coefficient of Variation
-
-While the IQR and standard deviation are the most common ways to evaluate spread,
-they are not the only measures.
-Suppose we had a group of animals and the sample standard deviation of the animals 
-lengths was 15 cm. If the animals were elephants, you would be amazed at their 
-uniformity in size, but if they were insects, you would be astounded at the 
-variability. To account for that, the coefficient of variation takes the sample 
-standard deviation and divides by the absolute value of the sample mean 
-(to keep everything positive)
-
-$$CV=\frac{s}{\vert\bar{x}\vert}$$
-
-Below is sample code to quickly grab the summary metrics of interest, with a 
-calculation of the CV.
-
-```{r}
-TenMileRace %>% 
-  summarise( s = sd(net), 
-             xbar = mean(net), 
-             CV = s / abs(xbar) )
-```
-
-One final example showing how we can get information about grouped variables. 
-Here, we would like to to calculate the same summary statistics as above, but 
-would like to know them specificall for each factor with *sex*; that is, we 
-want to compare 'Male' and 'Female'.
-
-```{r}
-# Previously using dplyr notation didn't help too much, but if we wanted
-# to calculate the statistics separately for each sex, the dplyr solution
-# is MUCH easier.
-TenMileRace %>%                     # Summarize the Ten Mile Race Data
-  group_by(sex) %>%                 # Group actions using sex
-  summarise( xbar = mean(net),      #    
-             s    = sd(net),        #
-             cv   = s / abs(xbar) ) # Calculate three different summary stats
-```
-
-#### Empirical Rules
-
-For any data that are normally distributed (or approximately normal), the following are resourceful rules of thumb:
-
-|  Interval        |     Approximate percent of Measurements   |
-|:----------------:|:-----------------------------------------:|  
-| $\bar{x}\pm s$   |               68%                         |  
-| $\bar{x}\pm 2s$  |               95%                         |
-| $\bar{x}\pm 3s$  |               99.7%                       |
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-n <- 1000
-Line.Data <- data.frame(x=seq(-4,4,length=n)) %>%
-  mutate(y=dnorm(x))
-Text.Data1 <- data.frame(x=0, y=.25, label='bar(x) %+-% s',  group="1 Std Dev") %>%
-        rbind(data.frame(x=0, y=.25, label='bar(x) %+-% 2*s', group="2 Std Dev")) %>%
-        rbind(data.frame(x=0, y=.25, label='bar(x) %+-% 3*s', group="3 Std Dev")) 
-Text.Data2 <- data.frame(x=0, y=.15, label='68%',   group="1 Std Dev") %>%
-        rbind(data.frame(x=0, y=.15, label='95%',   group="2 Std Dev")) %>%
-        rbind(data.frame(x=0, y=.15, label='99.7%', group="3 Std Dev")) 
-Area.Data <- Line.Data %>% filter(abs(x)<1) %>% mutate(group="1 Std Dev")   %>%
-      rbind( Line.Data %>% filter(abs(x)<2) %>% mutate(group="2 Std Dev") ) %>%
-      rbind( Line.Data %>% filter(abs(x)<3) %>% mutate(group="3 Std Dev") ) 
-ggplot( Area.Data, aes(x=x)) +
-  geom_line( data=Line.Data, aes(x=x, y=y)) +
-  geom_area(data=Area.Data, aes(x=x,y=y), fill='grey', alpha=.6) +
-  geom_text( data=Text.Data1, aes(x=x, y=y, label=label), parse=TRUE) +
-  geom_text( data=Text.Data2, aes(x=x, y=y, label=label)) +
-  facet_grid( group ~ .) +
-  labs(y='', x='') +
-  scale_y_continuous(breaks=NULL) + 
-  scale_x_continuous(     
-    breaks=c(-3,-2,-1,0,1,2,3), minor_breaks = NULL,    
-    labels = c( expression(bar(x)-3*s ),
-                expression(bar(x)-2*s ),
-                expression(bar(x)-s ),
-                expression(bar(x)),
-                expression(bar(x)+s ),
-                expression(bar(x)+2*s),
-                expression(bar(x)+3*s))) 
-```
-
-## Shape
-Vocabulary for discussing the shape of a distribution is discussed. These 
-descriptors can be very useful for understanding the distribution, and as 
-understanding develops, also tell us about relationships between the mean and 
-median, or other informative quantities.
-
-### Symmetry
-A distribution is said to be **symmetric** if there is a point along the x-axis 
-(which we'll call $\mu$) which acts as a mirror.  Mathematically, a distribution 
-is symmetric around $m$ if and only if 
-$f( -\lvert x-\mu \rvert ) = f( \lvert x-\mu \rvert )$.  The following graphs 
-give the point of symmetry marked with a red line.
-
-```{r, echo=FALSE}
-data <- data.frame(x=seq(-3,3, length=1000)) %>% mutate( y = dnorm(x, mean=0, sd=1))
-P1 <- ggplot(data, aes(x=x, y=y)) + geom_line() + geom_vline(xintercept=0, color='red') +
-  labs(x=NULL, y=NULL) + scale_x_continuous(labels=NULL) + scale_y_continuous(labels=NULL)
-data <- data.frame(x=seq(-5,5,length=1000)) %>% 
-  mutate( y = (dnorm(x, mean=-2, sd=1) + dnorm(x,mean=2,sd=1))/2 )
-P2 <- ggplot(data, aes(x=x, y=y)) + geom_line() + geom_vline(xintercept=0, color='red') +
-  labs(x=NULL, y=NULL) + scale_x_continuous(labels=NULL) + scale_y_continuous(labels=NULL)
-Rmisc::multiplot(P1, P2, cols = 2)
-```
-
-A distribution that is not symmetric is said to be asymmetric.
-
-### Unimodal or Multi-modal
-Recall one measure of centrality was mode.  If there is just a single mode, then 
-we refer to the distribution as unimodal. If there is two or more we would refer 
-to it as bimodal or multi-modal.
-
-### Skew
-If a distribution has a heavier tail on one side or the other, we refer to it as 
-a *skewed* distribution and the direction of the skew is towards the heavier tail. 
-Usually (but not always), an asymmetric distribution is skewed. 
-
-```{r, echo=FALSE}
-N <- 20000
-data <- data.frame(x = rexp(N, 1))
-P1 <- ggplot(data, aes(x=x)) + geom_histogram(bins=50) + ggtitle('Right Skewed') +
-  labs(x=NULL, y=NULL) + scale_x_continuous(labels=NULL) + scale_y_continuous(labels=NULL) 
-data <- data.frame(x = -1 * rgamma(N, shape = 4, scale = 5))
-P2 <- ggplot(data, aes(x=x)) + geom_histogram(bins=50) + ggtitle('Left Skewed') +
-  labs(x=NULL, y=NULL) + scale_x_continuous(labels=NULL) + scale_y_continuous(labels=NULL)
-Rmisc::multiplot(P2, P1, cols = 2)
-```
+The function `pf()` compares our F-ratio to the distribution of FHo values one would expect to get if the means between seasons were not different. The two numbers following the F-ratio value are the degrees of freedom for the MSR and the MSE calculated from (p−1) and (n−p) respectively.

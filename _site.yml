@@ -4,14 +4,12 @@ navbar:
   title: "EDUC 640"
   
   left:
-  - text: Syllabus
-    href: syllabus.html
   - text: Schedule
     href: schedule.html
   - text: "Descriptives and GLM"
     menu: 
       - text: "Summarizing Data"
-        href: ./01_summarizing-data.html
+        href: 01_summarizing-data.html
   - text: "One-Way between-subjects ANOVA"
     menu: 
   - text: "Two-way between-subjects ANOVA"
