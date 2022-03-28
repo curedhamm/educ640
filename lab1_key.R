@@ -19,6 +19,10 @@ ggplot(data = df, aes(x = vocab)) +
 ggplot(data = df, aes(x = instruct, y = vocab)) +
   geom_boxplot()
 
+# Homogeneity of variance
+needs(car)
+car::leveneTest(vocab ~ instruct, data = df, center = "mean")
+
 # F-ratio
 ## calculate the between group variance (i.e., grand mean difference)
 SSE.m <- sum( (df$vocab - mean(df$vocab))^2 )
@@ -31,19 +35,19 @@ df_wide <- spread(df, instruct, vocab) %>%
 SSE.1 <- (df_wide$physical_science - mean(df_wide$physical_science, na.rm = T))^2
 SSE.2 <- (df_wide$social_science - mean(df_wide$social_science, na.rm = T))^2
 
-## sum within group variance
+## sum within group variance (sum of squares error)
 SSE <- sum(SSE.1, SSE.2, na.rm = T)
 
 ## calculate difference for between group variance (grand mean difference) and group variance
 SSR <- SSE.m-SSE
 
-## calculate mean square
+## calculate mean square regression (difference between groups)
 MSR <- SSR/1   # (no. of groups - 1) or 1 degrees of freedom
 
-## calculate mean square
+## calculate mean square error (difference within groups)
 MSE <- SSE/22  # (sample size - no. of groups) or 22 degrees of freedom
 
-## produce F ratio statistic
+## produce F-ratio statistic 
 Fratio <- MSR/MSE
 
 ## produce p-value for F-ratio

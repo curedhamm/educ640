@@ -2,29 +2,25 @@
 title: "Summarizing Data"
 ---
 
-Packages used in this tutorial
-```{r packages, echo = FALSE, cache= FALSE}
-```
-
 # Introduction
+This is a tutorial to accompany Lab 1, providing the needed code for running your analyses as well as doing some data wrangling. Data for this tutorial are from your textbook's eResources (Kamden & Mwavita) and can be accessed here:[insert hyperlink] .
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  echo = TRUE,
-    fig.height=3,   # Default figure size is 3 inches
-  cache=TRUE,     # Cache the R code Run to Run
-  tidy=FALSE,     # display code as typed
-  size="small")   # slightly smaller font for code
-
-needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych)
-
-# Set default behavior of ggplot2 graphs to be black/white theme
-theme_set(theme_bw())
-
-data <- read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = T)
+Packages used in this tutorial include:
+```{r packages, message = FALSE}
+library(needs)
+library(tidyverse) 
+library(rio)
+library(here)
+library(knitr)
+library(kableExtra)
+library(misty)
+library(janitor)
+library(rstatix) 
+library(psych)
 ```
 
-## Installing the `needs` Package
+## Importing the Data
+### Installing the `needs` Package
 
 - Can install packages and load them
 - No longer need `install.packages()` and `library()`
@@ -34,28 +30,25 @@ data <- read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), 
 install.packages("needs")
 ```
 
-
-## Importing the Data
 Normally we would use the `import()` function to import our data. However, with the SPSS `.sav` files we don't get factor labels.
 
 ``` {r}
-data_import <- import(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav")) %>% 
-  clean_names()
+data_import <- import(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"))
 
 head(data_import)
 ```
 
-Notice how we have 1s down the group column.
+Notice how we have 1s down the group column. Also, the variable labels and values are not optimized for working in R, which is case sensitive and doesn't do well with spaces.
 
-## The Fix
+### The Solution
 For now, when working with `.sav` files we will use the `read.sav()` function from the `misty` package. `use.value.labels = TRUE` tells it to use the labels as the cell values.
 
 ``` {r}
 needs(misty)
-l2_data <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE) %>% 
+l1_data <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE) %>% 
   clean_names()
 
-head(l2_data)
+head(l1_data)
 ```
 
 ## Checking The Assumptions of ANOVA
@@ -78,7 +71,7 @@ describe(data)
 ```
 
 ```{r echo = FALSE, eval = TRUE}
-d <- describe(l2_data)
+d <- describe(l1_data)
 rmarkdown::paged_table(d)
 ```
 
@@ -104,81 +97,91 @@ rmarkdown::paged_table(d)
 We can also provide some empirical evidence to support the assumption of normality using `shapiro.test()` function.
 
 ```{r, echo = TRUE, eval = FALSE}
-shapiro.test(l2_data$school_funding)
+shapiro.test(l1_data$school_funding)
 ```
 
 ## Visual Inspection for Normality
 - For the most part, plots will be wrapped using the `ggplot()` function.
 
-### Histogram
+### Histograms
 ```{r, echo = TRUE, eval = FALSE}
-ggplot(data = l2_data, aes(x = school_funding)) +
+ggplot(data = l1_data, aes(x = school_funding)) +
   geom_histogram()
 ```
 
 - `aes()` refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our `x` (i.e., `x = group`).
 
-## Histograms
 ```{r, echo = TRUE, eval = TRUE, message = F, fig.width = 8, fig.height= 6, fig.align='center'}
-ggplot(data = l2_data, aes(x = school_funding)) +
+ggplot(data = l1_data, aes(x = school_funding)) +
   geom_histogram()
 ```
 
-## Boxplot
+### Boxplot
 - To get boxplots, we just substitute `geom_histogram()` for `geom_boxplot()` and modify our aesthetics.
 
 ```{r, echo = TRUE, fig.width = 6, fig.height= 4, fig.align='center'}
-ggplot(data = l2_data, aes(x = group, y = school_funding)) +
+ggplot(data = l1_data, aes(x = group, y = school_funding)) +
   geom_boxplot()
 ```
 
 ## Homogeneity of Variance
+### Levene's Test
 Homogeneity test is a separate analysis that we can conduct using the `car` package's `leveneTest()` function. The formula is the same as for the ANOVA we want to run. Specify `center = "mean"` (function's default is median).
 
 ``` {r}
 needs(car)
-car::leveneTest(school_funding ~ group, data = l2_data, center = "mean")
+car::leveneTest(school_funding ~ group, data = l1_data, center = "mean")
 ```
 
 Our significant result shows error variance around the *mean* is equal across groups.
 
 # Computing the F-Ratio
 
-##
-The lines of code below return the original data, which was in wide format, by using the `spread()` function (from `tidyr` within `tidyverse` packages).
+## Data wrangling
+As it stands, our data are in a long format, where each observation has a row. This works for many uses, such as calculating our total sum of squares; however, we need the data to be in a wide format to calculate within group variance for each group. We can do this is in just a few lines of code using the `spread()` function (from `tidyr` within `tidyverse` packages). This function takes values from a column and turns them into column labels, thus widening our data. In this example, we also use the `select()` function to keep columns 2-4, as we are not interested in examining the first column in the matrix. Lastly, we call on the `clean_names()` function again, to reformat the newly made columns into our new data frame, `df_wide`.
 
 ``` {r}
-df_wide <- spread(l2_data, group, school_funding) %>% 
+df_wide <- spread(l1_data, group, school_funding) %>% 
             select(2:4) %>% 
             clean_names()
 
 head(df_wide)
 ```
-
+## Calculating between and within group variances
 ```{r}
-# calculate the between group variance
-SSE.m <- sum( (l2_data$school_funding - mean(l2_data$school_funding))^2 ) 
-
-# calculate the within group variance, for each group
-SSE.1 <- (df_wide$lower_than_expected - mean(df_wide$lower_than_expected, na.rm = T))^2
-SSE.2 <- (df_wide$as_expected - mean(df_wide$as_expected, na.rm = T))^2
-SSE.3 <- (df_wide$better_than_expected - mean(df_wide$better_than_expected, na.rm = T))^2
-
-SSE <- sum(SSE.1, SSE.2, SSE.3, na.rm = T)
-
-SSR <- SSE.m-SSE
-
-MSR <- SSR/2   # (p - 1) or 2 degrees of freedom
-MSE <- SSE/635  # (n - p) or 20 degrees of freedom
-
-Fratio <- MSR/MSE
-
-p.val  <- pf(Fratio, 2, 635, lower.tail=FALSE)
-p.val
+# calculating total sum of squares (SST)
+SST <- sum( (l1_data$school_funding - mean(l1_data$school_funding))^2 )
 ```
-The function `pf()` compares our F-ratio to the distribution of FHo values one would expect to get if the means between seasons were not different. The two numbers following the F-ratio value are the degrees of freedom for the MSR and the MSE calculated from (p−1) and (n−p) respectively.
+
 
 ```{r}
-anova_test(data = l2_data, formula = school_funding ~ group,
-           effect.size = "pes")
+# calculating within group variance for each group
+SSW.1 <- (df_wide$lower_than_expected - mean(df_wide$lower_than_expected, na.rm = T))^2
+SSW.2 <- (df_wide$as_expected - mean(df_wide$as_expected, na.rm = T))^2
+SSW.3 <- (df_wide$better_than_expected - mean(df_wide$better_than_expected, na.rm = T))^2
+
+# calculating within group sum of squares (SSW)
+SSW <- sum(SSW.1, SSW.2, SSW.3, na.rm = T)
+
+# calculating between group sum of squares (SSB)
+SSB <- SST-SSW
+```
+
+
+```{r}
+# calculating mean between (MSB) and within (MSB) squares
+MSB <- SSB/2   # (k - 1) or 2 degrees of freedom
+MSW <- SSW/635  # (n - k) or 20 degrees of freedom
+```
+
+F-ratio
+```{r}
+# calculating F-ratio
+Fratio <- MSB/MSW
+Fratio
+```
+
+```{r}
+# p-value using the F-ratio
+pf(Fratio, 2, 635, lower.tail=FALSE)
 ```
