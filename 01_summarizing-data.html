@@ -16,7 +16,7 @@
 <script src="site_libs/header-attrs-2.13.1/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -281,7 +281,7 @@ $(document).ready(function () {
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This is a tutorial to accompany Lab 1, providing the needed code for running your analyses as well as doing some data wrangling. Data for this tutorial are from your textbook’s eResources (Kamden &amp; Mwavita) and can be accessed here:[insert hyperlink] .</p>
+<p>This is a tutorial to accompany Lab 1. Below you will find code for running your analyses using data from your textbook’s eResources (Kamden &amp; Mwavita).</p>
 <p>Packages used in this tutorial include:</p>
 <pre class="r"><code>library(needs)
 library(tidyverse) 
@@ -295,13 +295,9 @@ library(rstatix)
 library(psych)</code></pre>
 <div id="importing-the-data" class="section level2">
 <h2>Importing the Data</h2>
-<div id="installing-the-needs-package" class="section level3">
-<h3>Installing the <code>needs</code> Package</h3>
-<ul>
-<li>Can install packages and load them</li>
-<li>No longer need <code>install.packages()</code> and <code>library()</code></li>
-<li>It will ask if you would like to load it every time RStudio opens. Select yes.</li>
-</ul>
+<div id="pro-tip-installing-the-needs-package" class="section level3">
+<h3>Pro tip: Installing the <code>needs</code> Package</h3>
+<p>To ease to process of install packages and loading them, the <code>needs</code> package allows you to bypass using <code>install.packages()</code> and <code>library()</code> each time you need to install/call a new package. After you have installed <code>needs</code>, it will ask if you would like to load it every time RStudio opens. Select yes.</p>
 <pre class="r"><code>install.packages(&quot;needs&quot;)</code></pre>
 <p>Normally we would use the <code>import()</code> function to import our data. However, with the SPSS <code>.sav</code> files we don’t get factor labels.</p>
 <pre class="r"><code>data_import &lt;- import(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;))
@@ -318,7 +314,7 @@ head(data_import)</code></pre>
 </div>
 <div id="the-solution" class="section level3">
 <h3>The Solution</h3>
-<p>For now, when working with <code>.sav</code> files we will use the <code>read.sav()</code> function from the <code>misty</code> package. <code>use.value.labels = TRUE</code> tells it to use the labels as the cell values.</p>
+<p>For now, when working with <code>.sav</code> files we will use the <code>read.sav()</code> function from the <code>misty</code> package, using the <code>use.value.labels = TRUE</code> to get the labels as the cell values.</p>
 <pre class="r"><code>needs(misty)
 df &lt;- misty::read.sav(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;), use.value.labels = TRUE) %&gt;% 
   clean_names()
@@ -331,6 +327,7 @@ head(df)</code></pre>
 ## 4       8.024894              7.691846 Lower-than-expected
 ## 5       8.418270              4.319460 Lower-than-expected
 ## 6      10.063933              6.092292 Lower-than-expected</code></pre>
+<p>Now we’re ready to move onto examining data and running our analyses.</p>
 </div>
 </div>
 <div id="checking-the-assumptions-of-anova" class="section level2">
@@ -342,9 +339,10 @@ head(df)</code></pre>
 </div>
 <div id="descriptive-statistics" class="section level2">
 <h2>Descriptive Statistics</h2>
-<p>Make sure the <code>psych</code> package is installed and loaded:</p>
+<p>Before we analyze our data, we should check the descriptive statistics of our variables. Let’s use the <code>psych</code> package and <code>describe()</code> command to look at a table of descriptive statistics of our variables. Be sure to place the table into an object so we can view it.</p>
+<p>First, make sure the <code>psych</code> package is installed and loaded:</p>
 <pre class="r"><code>needs(psych)</code></pre>
-<p><code>describe()</code> from the <code>psych</code> package is one of the more popular functions for descriptive statistics.</p>
+<p>Then use <code>describe()</code> from the <code>psych</code> package.</p>
 <pre class="r"><code>describe(data)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
@@ -354,26 +352,16 @@ head(df)</code></pre>
 </div>
 <div id="independence-of-observations" class="section level2">
 <h2>Independence of Observations</h2>
-<ul>
-<li>Do participants cross groups?</li>
-<li>We know this if we know the study design</li>
-<li>In this study, each student experienced one and only one lecture</li>
-</ul>
+<p>This can be assessed based on the study design (e.g., do participants cross groups?). For this exercise, we can assume that this assumption is tenable.</p>
 </div>
 <div id="normality" class="section level2">
 <h2>Normality</h2>
-<ul>
-<li>We can check the skew and kurtosis values from our <code>describe()</code> output.</li>
-<li>0 ± 2 is a good rule of thumb for a tenable assumption of normality.</li>
-</ul>
+<p>Examine the skew and kurtosis values from our <code>describe()</code> output. Generally, 0 ± 2 is a good rule of thumb for a tenable assumption of normality.</p>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"0.04951927","4":"0.08466184","_rn_":"school_funding"},{"1":"2","2":"638","3":"0.16674309","4":"-0.27588903","_rn_":"administrator_support"},{"1":"3","2":"638","3":"0.27576963","4":"-0.67936816","_rn_":"group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<ul>
-<li>group is a categorical variable, so skew and kurtosis can be ignored.</li>
-</ul>
 </div>
 <div id="shapiros-test-of-normality" class="section level2">
 <h2>Shapiro’s test of Normality</h2>
@@ -382,28 +370,21 @@ head(df)</code></pre>
 </div>
 <div id="visual-inspection-for-normality" class="section level2">
 <h2>Visual Inspection for Normality</h2>
-<ul>
-<li>For the most part, plots will be wrapped using the <code>ggplot()</code> function.</li>
-</ul>
+<p>For the most part, we will use the <code>ggplot()</code> function to produce our plots. <code>aes()</code> refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our <code>x</code> (i.e., <code>x = group</code>).</p>
 <div id="histograms" class="section level3">
 <h3>Histograms</h3>
-<pre class="r"><code>ggplot(data = df, aes(x = school_funding)) +
+<pre class="r"><code>ggplot(data = df, 
+       aes(x = school_funding)) +
   geom_histogram()</code></pre>
-<ul>
-<li><code>aes()</code> refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our <code>x</code> (i.e., <code>x = group</code>).</li>
-</ul>
-<pre class="r"><code>ggplot(data = df, aes(x = school_funding)) +
-  geom_histogram()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 <div id="boxplot" class="section level3">
 <h3>Boxplot</h3>
-<ul>
-<li>To get boxplots, we just substitute <code>geom_histogram()</code> for <code>geom_boxplot()</code> and modify our aesthetics.</li>
-</ul>
-<pre class="r"><code>ggplot(data = df, aes(x = group, y = school_funding)) +
+<p>To further assess data spread, we can examine the quartiles using a boxplot. Just substitute <code>geom_histogram()</code> for <code>geom_boxplot()</code> and modify our aesthetics (<code>aes()</code>).</p>
+<pre class="r"><code>ggplot(data = df, 
+       aes(x = group, y = school_funding)) +
   geom_boxplot()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="homogeneity-of-variance" class="section level2">
@@ -461,24 +442,25 @@ SSW &lt;- sum(SSW.1, SSW.2, SSW.3, na.rm = T)
 # calculating between group sum of squares (SSB)
 SSB &lt;- SST-SSW</code></pre>
 <ol start="3" style="list-style-type: decimal">
-<li>Calculating the mean between and within squares, we need to divide the between group sum of squares (SSB) by the no. of groups - 1, and divide the within group sum of squares (SSB) by the sample size - no. of groups.</li>
+<li>Calculating the mean between and within squares, we need to divide the between group sum of squares (SSB) by the no. of groups - 1, and divide the within group sum of squares (SSW) by the sample size - no. of groups. You can refer back to your descriptive output to get the group and sample sizes needed.</li>
 </ol>
 <pre class="r"><code># calculating mean between (MSB) and within (MSB) squares
 MSB &lt;- SSB/2   # (k - 1) or 2 degrees of freedom
 MSW &lt;- SSW/635  # (n - k) or 635 degrees of freedom</code></pre>
 <ol start="4" style="list-style-type: decimal">
-<li>Finally, the F-ratio is the mean between group sum of squares (MSB) divided by the mean within group sum of squares (MSW)</li>
+<li>To obtain the <em>F</em>-ratio we divide the mean between group sum of squares (MSB) by the mean within group sum of squares (MSW)</li>
 </ol>
 <pre class="r"><code># calculating F-ratio
 Fratio &lt;- MSB/MSW
 Fratio</code></pre>
 <pre><code>## [1] 4.498838</code></pre>
 <ol start="5" style="list-style-type: decimal">
-<li>To determine whether the F-ratio is statistically significant, we will use the <code>pf()</code> function, entering in the degrees of freedom between groups df (df = 2) and the within groups df (df = 635). <code>lower.tail = FAlSE</code> conduct a one-way test of significance.</li>
+<li>To determine whether the <em>F</em>-ratio is statistically significant, we will use the <code>pf()</code> function, entering in the degrees of freedom between groups (<em>df</em> = 2) and the within groups (<em>df</em> = 635). <code>lower.tail = FAlSE</code> conduct a one-way test of significance.</li>
 </ol>
 <pre class="r"><code># p-value using the F-ratio
 pf(Fratio, 2, 635, lower.tail=FALSE)</code></pre>
 <pre><code>## [1] 0.01147869</code></pre>
+<p>Now we see that the <em>F</em>-ratio is statistically significant (<em>F</em>(2, 635)=4.50, <em>p</em>=.011)</p>
 </div>
 </div>
 

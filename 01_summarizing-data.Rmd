@@ -3,7 +3,7 @@ title: "Summarizing Data"
 ---
 
 # Introduction
-This is a tutorial to accompany Lab 1. Below you will find code for running your analyses. Data for this tutorial are from your textbook's eResources (Kamden & Mwavita).
+This is a tutorial to accompany Lab 1. Below you will find code for running your analyses using data from your textbook's eResources (Kamden & Mwavita).
 
 Packages used in this tutorial include:
 ```{r packages, message = FALSE}
@@ -20,11 +20,9 @@ library(psych)
 ```
 
 ## Importing the Data
-### Installing the `needs` Package
+### Pro tip: Installing the `needs` Package
 
-- Can install packages and load them
-- No longer need `install.packages()` and `library()`
-- It will ask if you would like to load it every time RStudio opens. Select yes.
+To ease to process of install packages and loading them, the `needs` package allows you to bypass using `install.packages()` and `library()` each time you need to install/call a new package. After you have installed `needs`, it will ask if you would like to load it every time RStudio opens. Select yes.
 
 ```{r, eval = FALSE}
 install.packages("needs")
@@ -41,7 +39,7 @@ head(data_import)
 Notice how we have 1s down the group column. Also, the variable labels and values are not optimized for working in R, which is case sensitive and doesn't do well with spaces.
 
 ### The Solution
-For now, when working with `.sav` files we will use the `read.sav()` function from the `misty` package. `use.value.labels = TRUE` tells it to use the labels as the cell values.
+For now, when working with `.sav` files we will use the `read.sav()` function from the `misty` package, using the `use.value.labels = TRUE` to get the labels as the cell values.
 
 ``` {r}
 needs(misty)
@@ -51,6 +49,8 @@ df <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sa
 head(df)
 ```
 
+Now we're ready to move onto examining data and running our analyses.
+
 ## Checking The Assumptions of ANOVA
 In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:  
 - *Homogeneity of variance*: The variance between the batches should be similar.  
@@ -58,7 +58,6 @@ In addition to requiring that the response variable (or dependent variable) must
 - *Normality*: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.  
 
 ## Descriptive Statistics
-
 Before we analyze our data, we should check the descriptive statistics of our variables. Let’s use the `psych` package and `describe()` command to look at a table of descriptive statistics of our variables. Be sure to place the table into an object so we can view it.
 
 First, make sure the `psych` package is installed and loaded:
@@ -66,7 +65,7 @@ First, make sure the `psych` package is installed and loaded:
 needs(psych)
 ```
 
-Then use `describe()` from the `psych` package is one of the more popular functions for descriptive statistics.
+Then use `describe()` from the `psych` package.
 
 ```{r, echo = TRUE, eval = FALSE}
 describe(data)
@@ -78,7 +77,7 @@ rmarkdown::paged_table(d)
 ```
 
 ## Independence of Observations
-This can be assessed based on the study design (e.g., do participants cross groups?). In this study, schools do not share funding streams and we can assume that this assumption is tenable.
+This can be assessed based on the study design (e.g., do participants cross groups?). For this exercise, we can assume that this assumption is tenable.
 
 ## Normality
 Examine the skew and kurtosis values from our `describe()` output. Generally, 0 ± 2 is a good rule of thumb for a tenable assumption of normality.
@@ -97,18 +96,12 @@ shapiro.test(df$school_funding)
 ```
 
 ## Visual Inspection for Normality
-- For the most part, plots will be wrapped using the `ggplot()` function.
+For the most part, we will use the `ggplot()` function to produce our plots. `aes()` refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our `x` (i.e., `x = group`).
 
 ### Histograms
-```{r, echo = TRUE, eval = FALSE}
-ggplot(data = df, aes(x = school_funding)) +
-  geom_histogram()
-```
-
-- `aes()` refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our `x` (i.e., `x = group`).
-
 ```{r, echo = TRUE, eval = TRUE, message = F, fig.width = 8, fig.height= 6, fig.align='center'}
-ggplot(data = df, aes(x = school_funding)) +
+ggplot(data = df, 
+       aes(x = school_funding)) +
   geom_histogram()
 ```
 
@@ -116,7 +109,8 @@ ggplot(data = df, aes(x = school_funding)) +
 To further assess data spread, we can examine the quartiles using a boxplot. Just substitute `geom_histogram()` for `geom_boxplot()` and modify our aesthetics (`aes()`).
 
 ```{r, echo = TRUE, fig.width = 6, fig.height= 4, fig.align='center'}
-ggplot(data = df, aes(x = group, y = school_funding)) +
+ggplot(data = df, 
+       aes(x = group, y = school_funding)) +
   geom_boxplot()
 ```
 
@@ -166,23 +160,24 @@ SSW <- sum(SSW.1, SSW.2, SSW.3, na.rm = T)
 SSB <- SST-SSW
 ```
 
-3. Calculating the mean between and within squares, we need to divide the between group sum of squares (SSB) by the no. of groups - 1, and divide the within group sum of squares (SSB) by
-the sample size - no. of groups.
+3. Calculating the mean between and within squares, we need to divide the between group sum of squares (SSB) by the no. of groups - 1, and divide the within group sum of squares (SSW) by
+the sample size - no. of groups. You can refer back to your descriptive output to get the group and sample sizes needed.
 ```{r}
 # calculating mean between (MSB) and within (MSB) squares
 MSB <- SSB/2   # (k - 1) or 2 degrees of freedom
 MSW <- SSW/635  # (n - k) or 635 degrees of freedom
 ```
 
-4. To obtain the F-ratio we divide the mean between group sum of squares (MSB) by the mean within group sum of squares (MSW)
+4. To obtain the _F_-ratio we divide the mean between group sum of squares (MSB) by the mean within group sum of squares (MSW)
 ```{r}
 # calculating F-ratio
 Fratio <- MSB/MSW
 Fratio
 ```
 
-5. To determine whether the F-ratio is statistically significant, we will use the `pf()` function, entering in the degrees of freedom between groups df (df = 2) and the within groups df (df = 635). `lower.tail = FAlSE` conduct a one-way test of significance.
+5. To determine whether the _F_-ratio is statistically significant, we will use the `pf()` function, entering in the degrees of freedom between groups (_df_ = 2) and the within groups (_df_ = 635). `lower.tail = FAlSE` conduct a one-way test of significance.
 ```{r}
 # p-value using the F-ratio
 pf(Fratio, 2, 635, lower.tail=FALSE)
 ```
+Now we see that the _F_-ratio is statistically significant (_F_(2, 635)=4.50, _p_=.011)
