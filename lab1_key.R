@@ -11,7 +11,7 @@ df <- misty::read.sav(here("assignments_data/Lab1_Vocab.sav"),
 describe(df) %>% 
   select(n, mean, sd, skew, kurtosis, se)
 
-# Histograms
+# Histogram
 ggplot(data = df, aes(x = vocab)) +
   geom_histogram(bins = 20)
 
@@ -35,21 +35,24 @@ df_wide <- spread(df, instruct, vocab) %>%
 SSW.1 <- (df_wide$physical_science - mean(df_wide$physical_science, na.rm = T))^2
 SSW.2 <- (df_wide$social_science - mean(df_wide$social_science, na.rm = T))^2
 
-## sum within group variance (sum of squares error)
+## sum within group variance (sum of squares within)
 SSW <- sum(SSW.1, SSW.2, na.rm = T)
 
-## calculate difference for between group variance (grand mean difference) and group variance
-SSR <- SST-SSW
+## calculate difference for between group variance and group variance
+SSB <- SST-SSW
 
-## calculate mean square regression (difference between groups)
+## calculate mean square between
 MSB <- SSB/1   # (no. of groups - 1) or 1 degrees of freedom
 
-## calculate mean square error (difference within groups)
+## calculate mean square within
 MSW <- SSW/22  # (sample size - no. of groups) or 22 degrees of freedom
 
 ## produce F-ratio statistic 
 Fratio <- MSB/MSW
+Fratio
 
 ## produce p-value for F-ratio
 p.val  <- pf(Fratio, 1, 22, lower.tail=FALSE)
 p.val
+
+
