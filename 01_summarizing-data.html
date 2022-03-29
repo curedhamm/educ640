@@ -16,7 +16,7 @@
 <script src="site_libs/header-attrs-2.13.1/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -281,7 +281,7 @@ $(document).ready(function () {
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This is a tutorial to accompany Lab 1. Below you will find code for running your analyses using data from your textbook’s eResources (Kamden &amp; Mwavita).</p>
+<p>This is a tutorial to accompany Lab 1. Below you will find code for running your analyses using data from your textbook’s eResources (Strunk &amp; Mwavita, 2020).</p>
 <p>Packages used in this tutorial include:</p>
 <pre class="r"><code>library(needs)
 library(tidyverse) 
@@ -332,10 +332,11 @@ head(df)</code></pre>
 </div>
 <div id="checking-the-assumptions-of-anova" class="section level2">
 <h2>Checking The Assumptions of ANOVA</h2>
-<p>In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:<br />
-- <em>Homogeneity of variance</em>: The variance between the batches should be similar.<br />
-- <em>Independence of observations</em>: Observations should be independent of one another.<br />
-- <em>Normality</em>: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.</p>
+<p>In addition to requiring that the dependent variable (DV) be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:<br />
+<strong>1. Homogeneity of variance</strong>: Variances between the groups should be the same.<br />
+<strong>2. Independence of observations</strong>: Observations should be independent of one another.<br />
+<strong>3. Normality</strong>: The distribution of the dependent variable should be normal.</p>
+<p>In this tutorial, <code>school_funding</code> will be our DV and <code>group</code> will be our independent variable (IV).</p>
 </div>
 <div id="descriptive-statistics" class="section level2">
 <h2>Descriptive Statistics</h2>
@@ -349,6 +350,14 @@ head(df)</code></pre>
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["sd"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["median"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["trimmed"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["mad"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["min"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["max"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["range"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[13],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"8.995423","4":"2.3518758","5":"9.057931","6":"8.991344","7":"2.339004","8":"2.222134","9":"16.65277","10":"14.43063","11":"0.04951927","12":"0.08466184","13":"0.09311166","_rn_":"school_funding"},{"1":"2","2":"638","3":"3.862226","4":"3.1175929","5":"3.762032","6":"3.803935","7":"3.208966","8":"-4.005356","9":"13.94929","10":"17.95464","11":"0.16674309","12":"-0.27588903","13":"0.12342669","_rn_":"administrator_support"},{"1":"3","2":"638","3":"1.741379","4":"0.6343486","5":"2.000000","6":"1.677734","7":"0.000000","8":"1.000000","9":"3.00000","10":"2.00000","11":"0.27576963","12":"-0.67936816","13":"0.02511410","_rn_":"group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
+<p>We can also look at the structure of the data frame using the <code>str()</code> command and the variables are correct.</p>
+<pre><code>## &#39;data.frame&#39;:    638 obs. of  3 variables:
+##  $ school_funding       : num  6.78 4.92 10.29 8.02 8.42 ...
+##   ..- attr(*, &quot;label&quot;)= chr &quot;School district funding&quot;
+##  $ administrator_support: num  2.77 2.48 5.95 7.69 4.32 ...
+##   ..- attr(*, &quot;label&quot;)= chr &quot;Effective adminstrative support&quot;
+##  $ group                : Factor w/ 3 levels &quot;Lower-than-expected&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<p>The output confirms that the variables are suitable for ANOVA analyses as the IV (<code>school_funding</code>) is a continuous variable (i.e., “num” for numeric) and the DV (<code>group</code>) is a categorical/nominal variable (i.e., “Factor” with three groups/levels).</p>
 </div>
 <div id="independence-of-observations" class="section level2">
 <h2>Independence of Observations</h2>
@@ -376,7 +385,7 @@ head(df)</code></pre>
 <pre class="r"><code>ggplot(data = df, 
        aes(x = school_funding)) +
   geom_histogram()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 <div id="boxplot" class="section level3">
 <h3>Boxplot</h3>
@@ -384,7 +393,7 @@ head(df)</code></pre>
 <pre class="r"><code>ggplot(data = df, 
        aes(x = group, y = school_funding)) +
   geom_boxplot()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="homogeneity-of-variance" class="section level2">

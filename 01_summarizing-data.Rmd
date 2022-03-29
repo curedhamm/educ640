@@ -3,7 +3,7 @@ title: "Summarizing Data"
 ---
 
 # Introduction
-This is a tutorial to accompany Lab 1. Below you will find code for running your analyses using data from your textbook's eResources (Kamden & Mwavita).
+This is a tutorial to accompany Lab 1. Below you will find code for running your analyses using data from your textbook's eResources (Strunk & Mwavita, 2020).
 
 Packages used in this tutorial include:
 ```{r packages, message = FALSE}
@@ -52,10 +52,12 @@ head(df)
 Now we're ready to move onto examining data and running our analyses.
 
 ## Checking The Assumptions of ANOVA
-In addition to requiring that the response variable (or dependent variable) must be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:  
-- *Homogeneity of variance*: The variance between the batches should be similar.  
-- *Independence of observations*: Observations should be independent of one another.  
-- *Normality*: The distribution of values within each group should be normally distributed. If a transformation is applied to the data, it should be applied to all batches. Note that the distribution of values for all combined batches need not be normally distributed.  
+In addition to requiring that the dependent variable (DV) be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:  
+**1. Homogeneity of variance**: Variances between the groups should be the same.  
+**2. Independence of observations**: Observations should be independent of one another.  
+**3. Normality**: The distribution of the dependent variable should be normal.
+
+In this tutorial, `school_funding` will be our DV and `group` will be our independent variable (IV).
 
 ## Descriptive Statistics
 Before we analyze our data, we should check the descriptive statistics of our variables. Let’s use the `psych` package and `describe()` command to look at a table of descriptive statistics of our variables. Be sure to place the table into an object so we can view it.
@@ -75,6 +77,11 @@ describe(data)
 d <- describe(df)
 rmarkdown::paged_table(d)
 ```
+We can also look at the structure of the data frame using the `str()` command and the variables are correct.
+```{r echo = FALSE, eval = TRUE}
+str(df)
+```
+The output confirms that the variables are suitable for ANOVA analyses as the IV (`school_funding`) is a continuous variable (i.e., "num" for numeric) and the DV (`group`) is a categorical/nominal variable (i.e., "Factor" with three groups/levels).
 
 ## Independence of Observations
 This can be assessed based on the study design (e.g., do participants cross groups?). For this exercise, we can assume that this assumption is tenable.
