@@ -12,6 +12,12 @@ navbar:
   - text: Lab 7
   - text: Lab 8
   - text: Lab 9
+
 output:
   html_document:
    theme: yeti
+   includes:
+   in_header: header.html
+   after_body: footer.html
+   lib_dir: site_libs
+   self_contained: no

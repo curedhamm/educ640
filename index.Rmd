@@ -3,6 +3,6 @@ title: "EDUC 640: Introduction to Data Analysis in Education and the Social Scie
 subtitle: "College of Education, University of Oregon"
 ---
 
-This website houses the supporting materials for completing assignments for the course EDUC 640 at the University of Oregon, instructed by Mark Hammond and Anwesha Guha. These materials are intended support students using the free and open-source statistical programming language R.
+This website houses supporting materials for the course EDUC 640 at the University of Oregon, instructed by Mark Hammond and Anwesha Guha. These materials are intended to support students with completing their assignments using the free and open-source statistical programming language R.
 
 
