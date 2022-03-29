@@ -320,10 +320,10 @@ head(data_import)</code></pre>
 <h3>The Solution</h3>
 <p>For now, when working with <code>.sav</code> files we will use the <code>read.sav()</code> function from the <code>misty</code> package. <code>use.value.labels = TRUE</code> tells it to use the labels as the cell values.</p>
 <pre class="r"><code>needs(misty)
-l1_data &lt;- misty::read.sav(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;), use.value.labels = TRUE) %&gt;% 
+df &lt;- misty::read.sav(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;), use.value.labels = TRUE) %&gt;% 
   clean_names()
 
-head(l1_data)</code></pre>
+head(df)</code></pre>
 <pre><code>##   school_funding administrator_support               group
 ## 1       6.777857              2.765169 Lower-than-expected
 ## 2       4.920581              2.476562 Lower-than-expected
@@ -378,7 +378,7 @@ head(l1_data)</code></pre>
 <div id="shapiros-test-of-normality" class="section level2">
 <h2>Shapiro’s test of Normality</h2>
 <p>We can also provide some empirical evidence to support the assumption of normality using <code>shapiro.test()</code> function.</p>
-<pre class="r"><code>shapiro.test(l1_data$school_funding)</code></pre>
+<pre class="r"><code>shapiro.test(df$school_funding)</code></pre>
 </div>
 <div id="visual-inspection-for-normality" class="section level2">
 <h2>Visual Inspection for Normality</h2>
@@ -387,12 +387,12 @@ head(l1_data)</code></pre>
 </ul>
 <div id="histograms" class="section level3">
 <h3>Histograms</h3>
-<pre class="r"><code>ggplot(data = l1_data, aes(x = school_funding)) +
+<pre class="r"><code>ggplot(data = df, aes(x = school_funding)) +
   geom_histogram()</code></pre>
 <ul>
 <li><code>aes()</code> refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our <code>x</code> (i.e., <code>x = group</code>).</li>
 </ul>
-<pre class="r"><code>ggplot(data = l1_data, aes(x = school_funding)) +
+<pre class="r"><code>ggplot(data = df, aes(x = school_funding)) +
   geom_histogram()</code></pre>
 <p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
@@ -401,7 +401,7 @@ head(l1_data)</code></pre>
 <ul>
 <li>To get boxplots, we just substitute <code>geom_histogram()</code> for <code>geom_boxplot()</code> and modify our aesthetics.</li>
 </ul>
-<pre class="r"><code>ggplot(data = l1_data, aes(x = group, y = school_funding)) +
+<pre class="r"><code>ggplot(data = df, aes(x = group, y = school_funding)) +
   geom_boxplot()</code></pre>
 <p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
@@ -412,7 +412,7 @@ head(l1_data)</code></pre>
 <h3>Levene’s Test</h3>
 <p>Homogeneity test is a separate analysis that we can conduct using the <code>car</code> package’s <code>leveneTest()</code> function. The formula is the same as for the ANOVA we want to run. Specify <code>center = "mean"</code> (function’s default is median).</p>
 <pre class="r"><code>needs(car)
-car::leveneTest(school_funding ~ group, data = l1_data, center = &quot;mean&quot;)</code></pre>
+car::leveneTest(school_funding ~ group, data = df, center = &quot;mean&quot;)</code></pre>
 <pre><code>## Levene&#39;s Test for Homogeneity of Variance (center = &quot;mean&quot;)
 ##        Df F value Pr(&gt;F)
 ## group   2  2.0602 0.1283
@@ -425,8 +425,8 @@ car::leveneTest(school_funding ~ group, data = l1_data, center = &quot;mean&quot
 <h1>Computing the F-Ratio</h1>
 <div id="data-wrangling" class="section level2">
 <h2>Data wrangling</h2>
-<p>As it stands, our data are in a long format, where each observation has a row. This works for many uses, such as calculating our total sum of squares; however, we need the data to be in a wide format to calculate within group variance for each group. We can do this is in just a few lines of code using the <code>spread()</code> function (from <code>tidyr</code> within <code>tidyverse</code> packages). This function takes values from a column and turns them into column labels, thus widening our data. In this example, we also use the <code>select()</code> function to keep columns 2-4, as we are not interested in examining the first column in the matrix. Lastly, we call on the <code>clean_names()</code> function again, to reformat the newly made columns into our new data frame, <code>df_wide</code>.</p>
-<pre class="r"><code>df_wide &lt;- spread(l1_data, group, school_funding) %&gt;% 
+<p>As it stands, our data are in a long format, where each observation has a row. This works for many uses, such as calculating our total sum of squares; however, we need the data to be in a wide format to calculate within group variance for each group. We can do this is in just a few lines of code using the <code>spread()</code> function (from <code>tidyr</code> within <code>tidyverse</code> packages). This function takes column values and turns them into column labels, thus widening the data frame. In this example, we also use the <code>select()</code> function to keep columns 2-4, because we are not using the first column in the matrix. Lastly, we call on the <code>clean_names()</code> function again, to reformat the newly made columns into our new data frame, <code>df_wide</code>.</p>
+<pre class="r"><code>df_wide &lt;- spread(df, group, school_funding) %&gt;% 
             select(2:4) %&gt;% 
             clean_names()
 
@@ -438,11 +438,18 @@ head(df_wide)</code></pre>
 ## 4                  NA    4.316976                   NA
 ## 5                  NA    8.792685                   NA
 ## 6                  NA    9.911427                   NA</code></pre>
+<p>Our new wide data frame has three columns, one for each group, with rows of values for the level of school funding.</p>
 </div>
 <div id="calculating-between-and-within-group-variances" class="section level2">
 <h2>Calculating between and within group variances</h2>
-<pre class="r"><code># calculating total sum of squares (SST)
-SST &lt;- sum( (l1_data$school_funding - mean(l1_data$school_funding))^2 )</code></pre>
+<ol style="list-style-type: decimal">
+<li>To start, we will calculate the total sum of squares using the original long-format data frame <code>df</code> using the following code.</li>
+</ol>
+<pre class="r"><code># calculating sum of squares total (SST)
+SST &lt;- sum( (df$school_funding - mean(df$school_funding))^2 )</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Next, we need to create the within-group variances for each of the groups. We will use our wide-format data frame <code>df_wide</code>, calculating each within-group variance separately before summing them, and subtracting them from the previously calculated sum-of-squares total.</li>
+</ol>
 <pre class="r"><code># calculating within group variance for each group
 SSW.1 &lt;- (df_wide$lower_than_expected - mean(df_wide$lower_than_expected, na.rm = T))^2
 SSW.2 &lt;- (df_wide$as_expected - mean(df_wide$as_expected, na.rm = T))^2
@@ -453,14 +460,22 @@ SSW &lt;- sum(SSW.1, SSW.2, SSW.3, na.rm = T)
 
 # calculating between group sum of squares (SSB)
 SSB &lt;- SST-SSW</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Calculating the mean between and within squares, we need to divide the between group sum of squares (SSB) by the no. of groups - 1, and divide the within group sum of squares (SSB) by the sample size - no. of groups.</li>
+</ol>
 <pre class="r"><code># calculating mean between (MSB) and within (MSB) squares
 MSB &lt;- SSB/2   # (k - 1) or 2 degrees of freedom
-MSW &lt;- SSW/635  # (n - k) or 20 degrees of freedom</code></pre>
-<p>F-ratio</p>
+MSW &lt;- SSW/635  # (n - k) or 635 degrees of freedom</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Finally, the F-ratio is the mean between group sum of squares (MSB) divided by the mean within group sum of squares (MSW)</li>
+</ol>
 <pre class="r"><code># calculating F-ratio
 Fratio &lt;- MSB/MSW
 Fratio</code></pre>
 <pre><code>## [1] 4.498838</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>To determine whether the F-ratio is statistically significant, we will use the <code>pf()</code> function, entering in the degrees of freedom between groups df (df = 2) and the within groups df (df = 635). <code>lower.tail = FAlSE</code> conduct a one-way test of significance.</li>
+</ol>
 <pre class="r"><code># p-value using the F-ratio
 pf(Fratio, 2, 635, lower.tail=FALSE)</code></pre>
 <pre><code>## [1] 0.01147869</code></pre>

@@ -1,17 +1,15 @@
-name: "EDUC 640"
+name: EDUC 640
 output_dir: "."
 navbar:
-  title: "EDUC 640"
+  title: EDUC 640
   left:
-  - text: "Summarizing Data"
+  - text: Summarizing Data
     href: 01_summarizing-data.html
-  - text: "One-Way between-subjects ANOVA"
-    menu: 
-  - text: "Two-way between-subjects ANOVA"
-    menu:
-  - text: "Within-subjects ANOVA, one-way and two-way models"
-  - text: "Mixed ANOVA, more complex designs"
-  - text: "Balanced/unbalanced ANOVA and non-parametric analyses"
+  - text: One-Way between-subjects ANOVA
+  - text: Two-way between-subjects ANOVA
+  - text: Within-subjects ANOVA, one-way and two-way models
+  - text: Mixed ANOVA, more complex designs
+  - text: Balanced/unbalanced ANOVA and non-parametric analyses
 
   right:
   - icon: fa-github
