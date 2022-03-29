@@ -11,7 +11,7 @@
 
 
 
-<title>Lab 1: ANOVA assumptions and F-test</title>
+<title>Lab 1: ANOVA Assumptions and F-test</title>
 
 <script src="site_libs/header-attrs-2.13.1/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -248,13 +248,15 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="01_summarizing-data.html">Summarizing Data</a>
+  <a href="01_summarizing-data.html">Lab 1</a>
 </li>
-<li class="dropdown-header">One-Way between-subjects ANOVA</li>
-<li class="dropdown-header">Two-way between-subjects ANOVA</li>
-<li class="dropdown-header">Within-subjects ANOVA, one-way and two-way models</li>
-<li class="dropdown-header">Mixed ANOVA, more complex designs</li>
-<li class="dropdown-header">Balanced/unbalanced ANOVA and non-parametric analyses</li>
+<li class="dropdown-header">Lab 2 &amp; 3</li>
+<li class="dropdown-header">Lab 4</li>
+<li class="dropdown-header">Lab 5</li>
+<li class="dropdown-header">Lab 6</li>
+<li class="dropdown-header">Lab 7</li>
+<li class="dropdown-header">Lab 8</li>
+<li class="dropdown-header">Lab 9</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -267,7 +269,7 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Lab 1: ANOVA assumptions and F-test</h1>
+<h1 class="title toc-ignore">Lab 1: ANOVA Assumptions and F-test</h1>
 
 </div>
 
@@ -343,7 +345,7 @@ head(df)</code></pre>
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["sd"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["median"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["trimmed"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["mad"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["min"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["max"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["range"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[13],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"8.995423","4":"2.3518758","5":"9.057931","6":"8.991344","7":"2.339004","8":"2.222134","9":"16.65277","10":"14.43063","11":"0.04951927","12":"0.08466184","13":"0.09311166","_rn_":"school_funding"},{"1":"2","2":"638","3":"3.862226","4":"3.1175929","5":"3.762032","6":"3.803935","7":"3.208966","8":"-4.005356","9":"13.94929","10":"17.95464","11":"0.16674309","12":"-0.27588903","13":"0.12342669","_rn_":"administrator_support"},{"1":"3","2":"638","3":"1.741379","4":"0.6343486","5":"2.000000","6":"1.677734","7":"0.000000","8":"1.000000","9":"3.00000","10":"2.00000","11":"0.27576963","12":"-0.67936816","13":"0.02511410","_rn_":"group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<p>We can also look at the structure of the data frame using the <code>str()</code> command and the variables are correct.</p>
+<p>We can also look at the structure of the data frame using the <code>str()</code> command to see if the variables are correctly formatted for our purposes.</p>
 <pre><code>## &#39;data.frame&#39;:    638 obs. of  3 variables:
 ##  $ school_funding       : num  6.78 4.92 10.29 8.02 8.42 ...
 ##   ..- attr(*, &quot;label&quot;)= chr &quot;School district funding&quot;
@@ -354,11 +356,11 @@ head(df)</code></pre>
 </div>
 <div id="independence-of-observations" class="section level2">
 <h2>Independence of Observations</h2>
-<p>This can be assessed based on the study design (e.g., do participants cross groups?). For this exercise, we can assume that this assumption is tenable.</p>
+<p>This can be assessed based on knowledge the study design used for the data. For this exercise, we assume that this assumption is tenable.</p>
 </div>
 <div id="normality" class="section level2">
 <h2>Normality</h2>
-<p>Examine the skew and kurtosis values from our <code>describe()</code> output. Generally, 0 ± 2 is a good rule of thumb for a tenable assumption of normality.</p>
+<p>Examine the skew and kurtosis values from our <code>describe()</code> output. Generally, values 0 ± 2 is a good rule of thumb for a tenable assumption of normality.</p>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["int"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"638","3":"0.04951927","4":"0.08466184","_rn_":"school_funding"},{"1":"2","2":"638","3":"0.16674309","4":"-0.27588903","_rn_":"administrator_support"},{"1":"3","2":"638","3":"0.27576963","4":"-0.67936816","_rn_":"group*"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
@@ -400,7 +402,7 @@ car::leveneTest(school_funding ~ group, data = df, center = &quot;mean&quot;)</c
 ##        Df F value Pr(&gt;F)
 ## group   2  2.0602 0.1283
 ##       635</code></pre>
-<p>Our significant result shows error variance around the <em>mean</em> is equal across groups.</p>
+<p>Our significant result shows that the error variance around the <em>mean</em> is equal across groups.</p>
 </div>
 </div>
 </div>
@@ -421,7 +423,7 @@ head(df_wide)</code></pre>
 ## 4                  NA    4.316976                   NA
 ## 5                  NA    8.792685                   NA
 ## 6                  NA    9.911427                   NA</code></pre>
-<p>Our new wide data frame has three columns, one for each group, with rows of values for the level of school funding.</p>
+<p>Our new wide format data frame has three columns, one for each group within our DV, with rows of values for the IV, <code>school_funding</code>.</p>
 </div>
 <div id="calculating-between-and-within-group-variances" class="section level2">
 <h2>Calculating between and within group variances</h2>
@@ -444,20 +446,20 @@ SSW &lt;- sum(SSW.1, SSW.2, SSW.3, na.rm = T)
 # calculating between group sum of squares (SSB)
 SSB &lt;- SST-SSW</code></pre>
 <ol start="3" style="list-style-type: decimal">
-<li>Calculating the mean between and within squares, we need to divide the between group sum of squares (SSB) by the no. of groups - 1, and divide the within group sum of squares (SSW) by the sample size - no. of groups. You can refer back to your descriptive output to get the group and sample sizes needed.</li>
+<li>Calculating the mean squares between (MSB) and within (MSW), we need to divide the sum of squares between (SSB) by the # of groups - 1, and divide the sum of squares within (SSW) by the sample size minus the # of groups. You can refer back to your descriptive output to get the group and sample sizes needed.</li>
 </ol>
-<pre class="r"><code># calculating mean between (MSB) and within (MSW) squares
+<pre class="r"><code># calculating mean squares between (MSB) and within (MSW)
 MSB &lt;- SSB/2   # (k - 1) or 2 degrees of freedom
 MSW &lt;- SSW/635  # (n - k) or 635 degrees of freedom</code></pre>
 <ol start="4" style="list-style-type: decimal">
-<li>To obtain the <em>F</em>-ratio we divide the mean between group sum of squares (MSB) by the mean within group sum of squares (MSW)</li>
+<li>To obtain the <em>F</em>-ratio we divide the mean squares between (MSB) by the mean squares within (MSW)</li>
 </ol>
 <pre class="r"><code># calculating F-ratio
 Fratio &lt;- MSB/MSW
 Fratio</code></pre>
 <pre><code>## [1] 4.498838</code></pre>
 <ol start="5" style="list-style-type: decimal">
-<li>To determine whether the <em>F</em>-ratio is statistically significant, we will use the <code>pf()</code> function, entering in the degrees of freedom between groups (<em>df</em> = 2) and the within groups (<em>df</em> = 635). <code>lower.tail = FAlSE</code> conduct a one-way test of significance.</li>
+<li>To determine whether the <em>F</em>-ratio is statistically significant, we will use the <code>pf()</code> function, entering in the degrees of freedom between groups (<em>df</em> = 2) and the within groups (<em>df</em> = 635). <code>lower.tail = FAlSE</code> directs the function to conduct a one-way test of significance.</li>
 </ol>
 <pre class="r"><code># p-value using the F-ratio
 pf(Fratio, 2, 635, lower.tail=FALSE)</code></pre>
