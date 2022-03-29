@@ -3,7 +3,7 @@ title: "Lab 1: ANOVA Assumptions and F-test"
 ---
 
 # Introduction
-This tutorial uses data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164) (Strunk & Mwavita, 2020) to walk through the code and output you will need for completing Lab 1. 
+This tutorial uses data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Strunk & Mwavita, 2020) to walk through the code and output you will need for completing Lab 1. For your Lab 1 assignment you will use data provided on the Canvas assignment.
 
 Packages used in this tutorial include:
 ```{r packages, message = FALSE}
@@ -93,13 +93,6 @@ Examine the skew and kurtosis values from our `describe()` output. Generally, va
 d <- as.data.frame(d) %>% 
   select(vars, n, skew, kurtosis)
 rmarkdown::paged_table(d)
-```
-
-## Shapiro's test of Normality
-We can also provide some empirical evidence to support the assumption of normality using `shapiro.test()` function.
-
-```{r, echo = TRUE, eval = FALSE}
-shapiro.test(df$school_funding)
 ```
 
 ## Visual Inspection for Normality
