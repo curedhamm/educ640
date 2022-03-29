@@ -11,12 +11,12 @@
 
 
 
-<title>Summarizing Data</title>
+<title>Lab 1: ANOVA assumptions and F-test</title>
 
 <script src="site_libs/header-attrs-2.13.1/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -34,8 +34,6 @@
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
 <script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -259,12 +257,7 @@ $(document).ready(function () {
 <li class="dropdown-header">Balanced/unbalanced ANOVA and non-parametric analyses</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a>
-    <span class="fa fa-github"></span>
-     
-  </a>
-</li>
+        
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -274,14 +267,14 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Summarizing Data</h1>
+<h1 class="title toc-ignore">Lab 1: ANOVA assumptions and F-test</h1>
 
 </div>
 
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This is a tutorial to accompany Lab 1. Below you will find code for running your analyses using data from your textbook’s eResources (Strunk &amp; Mwavita, 2020).</p>
+<p>This tutorial uses data from your textbook (see <a href="https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164">‘Support Materials’ on the textbook webpage</a> (Strunk &amp; Mwavita, 2020) to walk through the code and output you will need for completing Lab 1.</p>
 <p>Packages used in this tutorial include:</p>
 <pre class="r"><code>library(needs)
 library(tidyverse) 
@@ -453,7 +446,7 @@ SSB &lt;- SST-SSW</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Calculating the mean between and within squares, we need to divide the between group sum of squares (SSB) by the no. of groups - 1, and divide the within group sum of squares (SSW) by the sample size - no. of groups. You can refer back to your descriptive output to get the group and sample sizes needed.</li>
 </ol>
-<pre class="r"><code># calculating mean between (MSB) and within (MSB) squares
+<pre class="r"><code># calculating mean between (MSB) and within (MSW) squares
 MSB &lt;- SSB/2   # (k - 1) or 2 degrees of freedom
 MSW &lt;- SSW/635  # (n - k) or 635 degrees of freedom</code></pre>
 <ol start="4" style="list-style-type: decimal">
