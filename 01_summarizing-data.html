@@ -276,7 +276,7 @@ $(document).ready(function () {
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This tutorial uses data from your textbook (see <a href="https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164">‘Support Materials’ on the textbook webpage</a> (Strunk &amp; Mwavita, 2020) to walk through the code and output you will need for completing Lab 1.</p>
+<p>This tutorial uses data from your textbook (see <a href="https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164">‘Support Materials’ on the textbook webpage</a>) (Strunk &amp; Mwavita, 2020) to walk through the code and output you will need for completing Lab 1. For your Lab 1 assignment you will use data provided on the Canvas assignment.</p>
 <p>Packages used in this tutorial include:</p>
 <pre class="r"><code>library(needs)
 library(tidyverse) 
@@ -367,11 +367,6 @@ head(df)</code></pre>
   </script>
 </div>
 </div>
-<div id="shapiros-test-of-normality" class="section level2">
-<h2>Shapiro’s test of Normality</h2>
-<p>We can also provide some empirical evidence to support the assumption of normality using <code>shapiro.test()</code> function.</p>
-<pre class="r"><code>shapiro.test(df$school_funding)</code></pre>
-</div>
 <div id="visual-inspection-for-normality" class="section level2">
 <h2>Visual Inspection for Normality</h2>
 <p>For the most part, we will use the <code>ggplot()</code> function to produce our plots. <code>aes()</code> refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our <code>x</code> (i.e., <code>x = group</code>).</p>
@@ -380,7 +375,7 @@ head(df)</code></pre>
 <pre class="r"><code>ggplot(data = df, 
        aes(x = school_funding)) +
   geom_histogram()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 <div id="boxplot" class="section level3">
 <h3>Boxplot</h3>
@@ -388,7 +383,7 @@ head(df)</code></pre>
 <pre class="r"><code>ggplot(data = df, 
        aes(x = group, y = school_funding)) +
   geom_boxplot()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="homogeneity-of-variance" class="section level2">
