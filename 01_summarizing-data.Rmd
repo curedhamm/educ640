@@ -1,0 +1,183 @@
+---
+title: "Lab 1: ANOVA Assumptions and F-test"
+---
+
+# Introduction
+This tutorial uses data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Strunk & Mwavita, 2020) to walk through the code and output you will need for completing Lab 1. For your Lab 1 assignment you will use data provided on the Canvas assignment.
+
+Packages used in this tutorial include:
+```{r packages, message = FALSE}
+library(needs)
+library(tidyverse) 
+library(rio)
+library(here)
+library(knitr)
+library(kableExtra)
+library(misty)
+library(janitor)
+library(rstatix) 
+library(psych)
+```
+
+## Importing the Data
+### Pro tip: Installing the `needs` Package
+
+To ease to process of install packages and loading them, the `needs` package allows you to bypass using `install.packages()` and `library()` each time you need to install/call a new package. After you have installed `needs`, it will ask if you would like to load it every time RStudio opens. Select yes.
+
+```{r, eval = FALSE}
+install.packages("needs")
+```
+
+Normally we would use the `import()` function to import our data. However, with the SPSS `.sav` files we don't get factor labels.
+
+``` {r}
+data_import <- import(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"))
+
+head(data_import)
+```
+
+Notice how we have 1s down the group column. Also, the variable labels and values are not optimized for working in R, which is case sensitive and doesn't do well with spaces.
+
+### The Solution
+For now, when working with `.sav` files we will use the `read.sav()` function from the `misty` package, using the `use.value.labels = TRUE` to get the labels as the cell values.
+
+``` {r}
+needs(misty)
+df <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE) %>% 
+  clean_names()
+
+head(df)
+```
+
+Now we're ready to move onto examining data and running our analyses.
+
+## Checking The Assumptions of ANOVA
+In addition to requiring that the dependent variable (DV) be measured on a continuous scale, there are three assumptions that should be met before proceeding with ANOVA:  
+**1. Homogeneity of variance**: Variances between the groups should be the same.  
+**2. Independence of observations**: Observations should be independent of one another.  
+**3. Normality**: The distribution of the dependent variable should be normal.
+
+In this tutorial, `school_funding` will be our DV and `group` will be our independent variable (IV).
+
+## Descriptive Statistics
+Before we analyze our data, we should check the descriptive statistics of our variables. Let’s use the `psych` package and `describe()` command to look at a table of descriptive statistics of our variables. Be sure to place the table into an object so we can view it.
+
+First, make sure the `psych` package is installed and loaded:
+```{r, echo = TRUE}
+needs(psych)
+```
+
+Then use `describe()` from the `psych` package.
+
+```{r, echo = TRUE, eval = FALSE}
+describe(data)
+```
+
+```{r echo = FALSE, eval = TRUE}
+d <- describe(df)
+rmarkdown::paged_table(d)
+```
+We can also look at the structure of the data frame using the `str()` command to see if the variables are correctly formatted for our purposes.
+```{r echo = FALSE, eval = TRUE}
+str(df)
+```
+The output confirms that the variables are suitable for ANOVA analyses as the IV (`school_funding`) is a continuous variable (i.e., "num" for numeric) and the DV (`group`) is a categorical/nominal variable (i.e., "Factor" with three groups/levels).
+
+## Independence of Observations
+This can be assessed based on knowledge the study design used for the data. For this exercise, we assume that this assumption is tenable.
+
+## Normality
+Examine the skew and kurtosis values from our `describe()` output. Generally, values 0 ± 2 is a good rule of thumb for a tenable assumption of normality.
+
+```{r echo = FALSE, eval = TRUE}
+d <- as.data.frame(d) %>% 
+  select(vars, n, skew, kurtosis)
+rmarkdown::paged_table(d)
+```
+
+## Visual Inspection for Normality
+For the most part, we will use the `ggplot()` function to produce our plots. `aes()` refers to aesthetics. What are the variables we want represented in our plots? Since we just want counts of a single continuous variable, we just need to specify our `x` (i.e., `x = group`).
+
+### Histograms
+```{r, echo = TRUE, eval = TRUE, message = F, fig.width = 8, fig.height= 6, fig.align='center'}
+ggplot(data = df, 
+       aes(x = school_funding)) +
+  geom_histogram()
+```
+
+### Boxplot
+To further assess data spread, we can examine the quartiles using a boxplot. Just substitute `geom_histogram()` for `geom_boxplot()` and modify our aesthetics (`aes()`).
+
+```{r, echo = TRUE, fig.width = 6, fig.height= 4, fig.align='center'}
+ggplot(data = df, 
+       aes(x = group, y = school_funding)) +
+  geom_boxplot()
+```
+
+## Homogeneity of Variance
+### Levene's Test
+Homogeneity test is a separate analysis that we can conduct using the `car` package's `leveneTest()` function. The formula is the same as for the ANOVA we want to run. Specify `center = "mean"` (function's default is median).
+
+``` {r}
+needs(car)
+car::leveneTest(school_funding ~ group, data = df, center = "mean")
+```
+
+Our significant result shows that the error variance around the *mean* is equal across groups.
+
+# Computing the F-Ratio
+
+## Data wrangling
+As it stands, our data are in a long format, where each observation has a row. This works for many uses, such as calculating our total sum of squares; however, we need the data to be in a wide format to calculate within group variance for each group. We can do this is in just a few lines of code using the `spread()` function (from `tidyr` within `tidyverse` packages). This function takes column values and turns them into column labels, thus widening the data frame. In this example, we also use the `select()` function to keep columns 2-4, because we are not using the first column in the matrix. Lastly, we call on the `clean_names()` function again, to reformat the newly made columns into our new data frame, `df_wide`.
+
+``` {r}
+df_wide <- spread(df, group, school_funding) %>% 
+            select(2:4) %>% 
+            clean_names()
+
+head(df_wide)
+```
+Our new wide format data frame has three columns, one for each group within our DV, with rows of values for the IV, `school_funding`.
+
+## Calculating between and within group variances
+1. To start, we will calculate the total sum of squares using the original long-format data frame `df` using the following code.
+```{r}
+# calculating sum of squares total (SST)
+SST <- sum( (df$school_funding - mean(df$school_funding))^2 )
+```
+
+2. Next, we need to create the within-group variances for each of the groups. We will use our wide-format data frame `df_wide`, calculating each within-group variance separately before summing them, and subtracting them from the previously calculated sum-of-squares total.
+```{r}
+# calculating within group variance for each group
+SSW.1 <- (df_wide$lower_than_expected - mean(df_wide$lower_than_expected, na.rm = T))^2
+SSW.2 <- (df_wide$as_expected - mean(df_wide$as_expected, na.rm = T))^2
+SSW.3 <- (df_wide$better_than_expected - mean(df_wide$better_than_expected, na.rm = T))^2
+
+# calculating within group sum of squares (SSW)
+SSW <- sum(SSW.1, SSW.2, SSW.3, na.rm = T)
+
+# calculating between group sum of squares (SSB)
+SSB <- SST-SSW
+```
+
+3. Calculating the mean squares between (MSB) and within (MSW), we need to divide the sum of squares between (SSB) by the # of groups - 1, and divide the sum of squares within (SSW) by
+the sample size minus the # of groups. You can refer back to your descriptive output to get the group and sample sizes needed.
+```{r}
+# calculating mean squares between (MSB) and within (MSW)
+MSB <- SSB/2   # (k - 1) or 2 degrees of freedom
+MSW <- SSW/635  # (n - k) or 635 degrees of freedom
+```
+
+4. To obtain the _F_-ratio we divide the mean squares between (MSB) by the mean squares within (MSW)
+```{r}
+# calculating F-ratio
+Fratio <- MSB/MSW
+Fratio
+```
+
+5. To determine whether the _F_-ratio is statistically significant, we will use the `pf()` function, entering in the degrees of freedom between groups (_df_ = 2) and the within groups (_df_ = 635). `lower.tail = FAlSE` directs the function to conduct a one-way test of significance.
+```{r}
+# p-value using the F-ratio
+pf(Fratio, 2, 635, lower.tail=FALSE)
+```
+Now we see that the _F_-ratio is statistically significant (_F_(2, 635)=4.50, _p_=.011)
