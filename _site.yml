@@ -7,7 +7,7 @@ navbar:
   - text: Lab Assignments
     menu:
       - text: "Lab 1: Summarizing Data"
-        href: 01_summarizing-data.html
+        href: ./labs/01_summarizing-data.html
       - text: "Lab 2 & 3"
       - text: "Lab 4"
       - text: "Lab 5"
