@@ -2,16 +2,35 @@ name: EDUC 640
 output_dir: "."
 navbar:
   title: EDUC 640
+
   left:
-  - text: Lab 1
-    href: 01_summarizing-data.html
-  - text: Lab 2 & 3
-  - text: Lab 4
-  - text: Lab 5
-  - text: Lab 6
-  - text: Lab 7
-  - text: Lab 8
-  - text: Lab 9
+  - text: Lab Assignments
+    menu:
+      - text: "Lab 1: Summarizing Data"
+        href: 01_summarizing-data.html
+      - text: "Lab 2 & 3"
+      - text: "Lab 4"
+      - text: "Lab 5"
+      - text: "Lab 6"
+      - text: "Lab 7"
+      - text: "Lab 8"
+      - text: "Lab 9"
+  - text: Lab Keys
+    menu:
+      - text: "Lab 1"
+      - text: "Lab 2 & 3"
+      - text: "Lab 4"
+      - text: "Lab 5"
+      - text: "Lab 6"
+      - text: "Lab 7"
+      - text: "Lab 8"
+      - text: "Lab 9"
+  - text: Homework Keys
+    menu:
+      - text: "HW 1: One-way ANOVA"
+      - text: "HW 2: Two-way ANOVA"
+      - text: "HW 3: Two-way repeated measures ANOVA"
+      - text: "HW 4: Three-way mixed ANOVA"
 
 output:
   html_document:
