@@ -1,0 +1,39 @@
+---
+title: "Lab 2"
+---
+
+# Introduction
+
+This tutorial ... 
+
+First, load necessary packages:
+```{r packages, message = FALSE}
+needs(tidyverse) 
+needs(rio)
+needs(here)
+needs(knitr)
+needs(kableExtra)
+needs(misty)
+needs(janitor)
+needs(rstatix) 
+needs(psych)
+```
+
+First, import data. Remember, when working with `.sav` files we will use the `read.sav()` function from the `misty` package, using the `use.value.labels = TRUE` to get the labels as the cell values.
+``` {r}
+needs(misty)
+df <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE) %>% 
+  clean_names()
+
+head(df)
+```
+
+Now we're ready to move onto examining data and running our analyses.
+
+See Lab 1 for how to test ANOVA assumptions and to produce the omnibus F. 
+
+## Conduct Follow-Up Pairwise Comparisons
+
+## Generating contrasts
+
+## Generating effect sizes for contrasts
