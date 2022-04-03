@@ -1,5 +1,5 @@
 ---
-title: "Lab 2"
+title: "Lab 2 & 3"
 ---
 
 # Introduction
@@ -10,15 +10,7 @@ We will use data from your textbook (see ['Support Materials' on the textbook we
 
 First, load necessary packages:
 ```{r packages, message = FALSE}
-needs(tidyverse) 
-needs(rio)
-needs(here)
-needs(knitr)
-needs(kableExtra)
-needs(misty)
-needs(janitor)
-needs(rstatix) 
-needs(psych)
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych)
 ```
 
 Next, we will read in the data. Remember to load the `misty` package for `.sav` files and `use.value.labels = TRUE` to get the labels as the cell values.
@@ -30,9 +22,11 @@ df <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sa
 head(df)
 ```
 
+# Lab 2
+
 Now we're ready to move onto examining data and running our analyses. In this tutorial, `school_funding` will be our DV and `group` will be our independent variable (IV), like from Lab 1.
 
-See Lab 1 for how to check desriptive statistics and test the three ANOVA assumptions:
+See the Lab 1 tutorial for how to check descriptive statistics and test the three ANOVA assumptions:
 
 **1. Homogeneity of variance**: Variances between the groups should be the same.  
 **2. Independence of observations**: Observations should be independent of one another.  
@@ -42,34 +36,95 @@ See Lab 1 for how to check desriptive statistics and test the three ANOVA assump
 
 In the last lab, we learned how to compute the F statistic by hand. Luckily, we don't have to keep doing that! In the `afex` package, R has the `aov_car()` function that can compute the F-ratio for you.
 
-This function works specifically for data in the long format. Type `?aov` to learn more.
+This function works specifically for data in the long format. Type `?aov` to learn more about the function and how it can be used. In this case, plug in the formula (DV ~ IV) and add in the Error term.
 ```{r}
 needs(afex)
 aov_car(school_funding ~ group + Error(administrator_support), data = df)
 ```
 
-The omnibus F is statistically significant (F(2, 635)=4.50, p=.011). Do these values match those from Lab 1?
+The omnibus F is statistically significant (F(2, 635)=4.50, p=.011). Do these values match those you calculated in Lab 1? (Hint: ... yes)
 
 ## Conduct Follow-Up Pairwise Comparisons
 
-Compare all these today (but normally only choose one)
+Depending on your needs, you can conduct a number of pairwise comparisons in R. The most common are in the `rstatix` package: Tukey, Games-Howell, and Bonferroni. Each of them can be calculated by inputing the data and the formula; you should select which comparison works for you based on your data. 
+
+Below is the code to compare each of these, but you will normally only choose one after this lab.
 ```{r}
-needs(rstatix)
-#Tukey (will probably commonly use this going forward)
+
+#Tukey (usually more powerful when testing large numbers of means; generally preferred)
 tukey_hsd(df, formula = school_funding ~ group)
+
+#Bonferroni (usually more powerful when number of comparisons is small)
+pairwise_t_test(df, formula = school_funding ~ group,
+                p.adjust.method = "bonferroni")
 
 #Games-Howell (used if assumption of variance homogeneity is violated)
 games_howell_test(df, formula = school_funding ~ group, 
                   conf.level = 0.95,
                   detailed = FALSE)
-#Bonferroni
-pairwise_t_test(df, formula = school_funding ~ group,
-                p.adjust.method = "bonferroni")
 
 ```
 
+What differences do you see between between the test outputs? Which would you use for your lab?
+
+# Lab 3
+
 ## Generating contrasts
 
+In this case, since you have already run your analysis, contrasts are post-hoc, as well. At this point, you have a few contrast options:
 
+* Deviation - Is each group mean significantly different from the grand mean?
+* Simple - Is each group mean different from the first group or last group?
+* Difference - Is each group mean significantly different from the previous group mean? 2 vs 1, 3 vs 2, etc.
+* Repeated - (opposite of Difference) 1 vs 2, 2 vs 3 
+* Helmert - Is each group mean significantly different from all later group means? i.e. 1 vs (2, 3, 4)
+* Polynomial - Is there a linear, quadratic, cubric trend?
+
+For this lab, we will demonstrate a Helmert contrast: compare one condition to other groups/conditions combined. For example, does the better-than-expected group significantly different from both the lower-than-expected and as-expected groups?
+
+First, check the order of levels so they are in the order that you want.
+
+```{r}
+levels(df$group)
+
+# change levels to a different order using the following code (but we don't actually need to here)
+# df$group <- factor(df$group, levels = c("Lower-than-expected", "As-expected", "Better-than-expected"))
+```
+
+Since the order in the dataset looks good, we will now hand-code the contrasts.
+
+**Step 1.** Set contrasts (Helmert)
+```{r}
+contrast0 <- c(1, -.5, -.5) #better-than-expected vs others
+```
+
+**Step 2.** Bind vectors to temporary matrix, where constants are equal to 1/(length of vectors)
+```{r}
+mat.temp <- rbind(constant = 1/3, contrast0) #denominator 3 is for number of cells in the design (same as levels because only one IV)
+mat.temp
+```
+
+**Step 3.** Take the inverse of the matrix.
+```{r}
+mat <- MASS::ginv(mat.temp)
+mat
+
+#drop first column of constants
+mat <- mat[, -1]
+mat
+```
+
+**Step 4.** Run model with lm() and set contrasts: link "group" variable with contrast matrix
+```{r}
+m_contrasts <- lm(school_funding ~ group, data = df, contrasts = list(group = mat))
+#Rename (name of intercept, contrast, and everything else unnamed) to make output easier to interpret
+attr(m_contrasts$coefficients, "names") <- c("Intercept", "Better-Expected vs. Others", "")
+summary(m_contrasts)
+```
+*Remember your alphas:*
+If we are only using these two (2) contrasts, use alpha of 0.05/2 = 0.025 as the new alpha. 
+
+If you count the 3 pairwise comparisons already done in lab 2 a = 0.05/5 = 0.01. 
 
 ## Generating effect sizes for contrasts
+
