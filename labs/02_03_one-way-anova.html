@@ -170,7 +170,8 @@ pre code {
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This tutorial …</p>
+<p>This tutorial will extend the analysis using one-way ANOVA from Lab 1, specifically in illustrating pairwise comparisons, generating contrasts, and calculating effect size.</p>
+<p>We will use data from your textbook (see <a href="https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164">‘Support Materials’ on the textbook webpage</a>) (Strunk &amp; Mwavita, 2020). For your Lab 2 assignment, you will use the data provided on Canvas.</p>
 <p>First, load necessary packages:</p>
 <pre class="r"><code>needs(tidyverse) 
 needs(rio)
@@ -181,7 +182,7 @@ needs(misty)
 needs(janitor)
 needs(rstatix) 
 needs(psych)</code></pre>
-<p>First, import data. Remember, when working with <code>.sav</code> files we will use the <code>read.sav()</code> function from the <code>misty</code> package, using the <code>use.value.labels = TRUE</code> to get the labels as the cell values.</p>
+<p>Next, we will read in the data. Remember to load the <code>misty</code> package for <code>.sav</code> files and <code>use.value.labels = TRUE</code> to get the labels as the cell values.</p>
 <pre class="r"><code>needs(misty)
 df &lt;- misty::read.sav(here(&quot;kamden-mwavita_data/one-way ANOVA - Fischer et al.sav&quot;), use.value.labels = TRUE) %&gt;% 
   clean_names()
@@ -194,10 +195,58 @@ head(df)</code></pre>
 ## 4       8.024894              7.691846 Lower-than-expected
 ## 5       8.418270              4.319460 Lower-than-expected
 ## 6      10.063933              6.092292 Lower-than-expected</code></pre>
-<p>Now we’re ready to move onto examining data and running our analyses.</p>
-<p>See Lab 1 for how to test ANOVA assumptions and to produce the omnibus F.</p>
+<p>Now we’re ready to move onto examining data and running our analyses. In this tutorial, <code>school_funding</code> will be our DV and <code>group</code> will be our independent variable (IV), like from Lab 1.</p>
+<p>See Lab 1 for how to check desriptive statistics and test the three ANOVA assumptions:</p>
+<p><strong>1. Homogeneity of variance</strong>: Variances between the groups should be the same.<br />
+<strong>2. Independence of observations</strong>: Observations should be independent of one another.<br />
+<strong>3. Normality</strong>: The distribution of the dependent variable should be normal.</p>
+<div id="computing-the-f-statistic" class="section level2">
+<h2>Computing the F Statistic</h2>
+<p>In the last lab, we learned how to compute the F statistic by hand. Luckily, we don’t have to keep doing that! In the <code>afex</code> package, R has the <code>aov_car()</code> function that can compute the F-ratio for you.</p>
+<p>This function works specifically for data in the long format. Type <code>?aov</code> to learn more.</p>
+<pre class="r"><code>needs(afex)
+aov_car(school_funding ~ group + Error(administrator_support), data = df)</code></pre>
+<pre><code>## Contrasts set to contr.sum for the following variables: group</code></pre>
+<pre><code>## Anova Table (Type 3 tests)
+## 
+## Response: school_funding
+##   Effect     df  MSE      F  ges p.value
+## 1  group 2, 635 5.47 4.50 * .014    .011
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;+&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>The omnibus F is statistically significant (F(2, 635)=4.50, p=.011). Do these values match those from Lab 1?</p>
+</div>
 <div id="conduct-follow-up-pairwise-comparisons" class="section level2">
 <h2>Conduct Follow-Up Pairwise Comparisons</h2>
+<p>Compare all these today (but normally only choose one)</p>
+<pre class="r"><code>needs(rstatix)
+#Tukey (will probably commonly use this going forward)
+tukey_hsd(df, formula = school_funding ~ group)</code></pre>
+<pre><code>## # A tibble: 3 × 9
+##   term  group1 group2 null.value estimate conf.low conf.high  p.adj p.adj.signif
+## * &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;       
+## 1 group Lower… As-ex…          0    0.490   0.0218     0.958 0.0378 *           
+## 2 group Lower… Bette…          0    0.810   0.0479     1.57  0.0341 *           
+## 3 group As-ex… Bette…          0    0.320  -0.415      1.05  0.562  ns</code></pre>
+<pre class="r"><code>#Games-Howell (used if assumption of variance homogeneity is violated)
+games_howell_test(df, formula = school_funding ~ group, 
+                  conf.level = 0.95,
+                  detailed = FALSE)</code></pre>
+<pre><code>## # A tibble: 3 × 8
+##   .y.            group1    group2 estimate conf.low conf.high p.adj p.adj.signif
+## * &lt;chr&gt;          &lt;chr&gt;     &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       
+## 1 school_funding Lower-th… As-ex…    0.490   0.0212     0.959 0.038 *           
+## 2 school_funding Lower-th… Bette…    0.810  -0.0229     1.64  0.058 ns          
+## 3 school_funding As-expec… Bette…    0.320  -0.481      1.12  0.608 ns</code></pre>
+<pre class="r"><code>#Bonferroni
+pairwise_t_test(df, formula = school_funding ~ group,
+                p.adjust.method = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## # A tibble: 3 × 9
+##   .y.            group1   group2    n1    n2      p p.signif  p.adj p.adj.signif
+## * &lt;chr&gt;          &lt;chr&gt;    &lt;chr&gt;  &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;       
+## 1 school_funding Lower-t… As-ex…   232   339 0.0142 *        0.0426 *           
+## 2 school_funding Lower-t… Bette…   232    67 0.0128 *        0.0383 *           
+## 3 school_funding As-expe… Bette…   339    67 0.307  ns       0.92   ns</code></pre>
 </div>
 <div id="generating-contrasts" class="section level2">
 <h2>Generating contrasts</h2>

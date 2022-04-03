@@ -4,7 +4,9 @@ title: "Lab 2"
 
 # Introduction
 
-This tutorial ... 
+This tutorial will extend the analysis using one-way ANOVA from Lab 1, specifically in illustrating pairwise comparisons, generating contrasts, and calculating effect size.
+
+We will use data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Strunk & Mwavita, 2020). For your Lab 2 assignment, you will use the data provided on Canvas.
 
 First, load necessary packages:
 ```{r packages, message = FALSE}
@@ -19,7 +21,7 @@ needs(rstatix)
 needs(psych)
 ```
 
-First, import data. Remember, when working with `.sav` files we will use the `read.sav()` function from the `misty` package, using the `use.value.labels = TRUE` to get the labels as the cell values.
+Next, we will read in the data. Remember to load the `misty` package for `.sav` files and `use.value.labels = TRUE` to get the labels as the cell values.
 ``` {r}
 needs(misty)
 df <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sav"), use.value.labels = TRUE) %>% 
@@ -28,12 +30,46 @@ df <- misty::read.sav(here("kamden-mwavita_data/one-way ANOVA - Fischer et al.sa
 head(df)
 ```
 
-Now we're ready to move onto examining data and running our analyses.
+Now we're ready to move onto examining data and running our analyses. In this tutorial, `school_funding` will be our DV and `group` will be our independent variable (IV), like from Lab 1.
 
-See Lab 1 for how to test ANOVA assumptions and to produce the omnibus F. 
+See Lab 1 for how to check desriptive statistics and test the three ANOVA assumptions:
+
+**1. Homogeneity of variance**: Variances between the groups should be the same.  
+**2. Independence of observations**: Observations should be independent of one another.  
+**3. Normality**: The distribution of the dependent variable should be normal.
+
+## Computing the F Statistic
+
+In the last lab, we learned how to compute the F statistic by hand. Luckily, we don't have to keep doing that! In the `afex` package, R has the `aov_car()` function that can compute the F-ratio for you.
+
+This function works specifically for data in the long format. Type `?aov` to learn more.
+```{r}
+needs(afex)
+aov_car(school_funding ~ group + Error(administrator_support), data = df)
+```
+
+The omnibus F is statistically significant (F(2, 635)=4.50, p=.011). Do these values match those from Lab 1?
 
 ## Conduct Follow-Up Pairwise Comparisons
 
+Compare all these today (but normally only choose one)
+```{r}
+needs(rstatix)
+#Tukey (will probably commonly use this going forward)
+tukey_hsd(df, formula = school_funding ~ group)
+
+#Games-Howell (used if assumption of variance homogeneity is violated)
+games_howell_test(df, formula = school_funding ~ group, 
+                  conf.level = 0.95,
+                  detailed = FALSE)
+#Bonferroni
+pairwise_t_test(df, formula = school_funding ~ group,
+                p.adjust.method = "bonferroni")
+
+```
+
 ## Generating contrasts
+
+
 
 ## Generating effect sizes for contrasts
