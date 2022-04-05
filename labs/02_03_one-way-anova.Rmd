@@ -46,7 +46,9 @@ The omnibus F is statistically significant (F(2, 635)=4.50, p=.011). Do these va
 
 ## Conduct Follow-Up Pairwise Comparisons
 
-Depending on your needs, you can conduct a number of pairwise comparisons in R. The most common are in the `rstatix` package: Tukey, Games-Howell, and Bonferroni. Each of them can be calculated by inputing the data and the formula; you should select which comparison works for you based on your data. 
+Depending on your needs, you can conduct a number of pairwise comparisons in R. The most common are in the `rstatix` package: Tukey, Games-Howell, and Bonferroni. Each are different corrections for the multiple comparisons family-wise error rate and results in a p-adjusted value (`p.adj`) to examine.
+
+Each of these corrections can be calculated by inputing the data and the formula; you should select which comparison works for you based on your data. 
 
 Below is the code to compare each of these, but you will normally only choose one after this lab.
 ```{r}
@@ -64,6 +66,7 @@ games_howell_test(df, formula = school_funding ~ group,
                   detailed = FALSE)
 
 ```
+
 
 What differences do you see between between the test outputs? Which would you use for your lab?
 
@@ -126,5 +129,39 @@ If we are only using these two (2) contrasts, use alpha of 0.05/2 = 0.025 as the
 
 If you count the 3 pairwise comparisons already done in lab 2 a = 0.05/5 = 0.01. 
 
-## Generating effect sizes for contrasts
+## Generating effect sizes
+
+While `aov_car` generates effect sizes in the code, another way to run the ANOVA is with the code below. While we will be using ANOVA type 3 in this course, this code will allow you to change that if needed. It also lets you calculate different effect sizes, i.e. partial eta squared (pes) instead of general eta squared (ges) that automatically is calculated with `aov_car` above.
+
+See below for calculating the effect size on the contrasts.
+
+```{r}
+anova_type3_ges <- anova_test(m_contrasts, 
+                 type="III",
+                 effect.size = "pes",
+                 detailed = TRUE)
+
+anova_type3_ges
+```
+
+To calculate omega squared, we can use MOTE package’s `omega.F()` function.
+
+Omega squared or partial omega squared is calculated by subtracting one from the F-statistic and multiplying it by degrees of freedom of the model. This is divided by the same value after adding the number of valid responses. This value will be omega squared for one-way ANOVA designs, and will be partial omega squared for multi-way ANOVA designs (i.e. with more than one IV).
+
+$omega^2 = (dfm * (Fvalue-1)) / ((dfm * (Fvalue-1)) + n)$
+
+In this case, we need the following values (see ANOVA output for the corresponding values):
+
+* dfn = 2
+* dfd = 635
+* Fvalue = 4.499
+* n = 638
+* a = .05
+
+Now, just plug them in.
+```{r}
+needs(MOTE)
+omega.F(dfm = 2, dfe = 635,
+      Fvalue = 4.499, n = 638, a = .05)
+```
 

@@ -213,7 +213,8 @@ aov_car(school_funding ~ group + Error(administrator_support), data = df)</code>
 </div>
 <div id="conduct-follow-up-pairwise-comparisons" class="section level2">
 <h2>Conduct Follow-Up Pairwise Comparisons</h2>
-<p>Depending on your needs, you can conduct a number of pairwise comparisons in R. The most common are in the <code>rstatix</code> package: Tukey, Games-Howell, and Bonferroni. Each of them can be calculated by inputing the data and the formula; you should select which comparison works for you based on your data.</p>
+<p>Depending on your needs, you can conduct a number of pairwise comparisons in R. The most common are in the <code>rstatix</code> package: Tukey, Games-Howell, and Bonferroni. Each are different corrections for the multiple comparisons family-wise error rate and results in a p-adjusted value (<code>p.adj</code>) to examine.</p>
+<p>Each of these corrections can be calculated by inputing the data and the formula; you should select which comparison works for you based on your data.</p>
 <p>Below is the code to compare each of these, but you will normally only choose one after this lab.</p>
 <pre class="r"><code>#Tukey (usually more powerful when testing large numbers of means; generally preferred)
 tukey_hsd(df, formula = school_funding ~ group)</code></pre>
@@ -265,15 +266,15 @@ games_howell_test(df, formula = school_funding ~ group,
 <pre class="r"><code># change levels to a different order using the following code (but we don&#39;t actually need to here)
 # df$group &lt;- factor(df$group, levels = c(&quot;Lower-than-expected&quot;, &quot;As-expected&quot;, &quot;Better-than-expected&quot;))</code></pre>
 <p>Since the order in the dataset looks good, we will now hand-code the contrasts.</p>
-<p>Step 1. Set contrasts (Helmert)</p>
+<p><strong>Step 1.</strong> Set contrasts (Helmert)</p>
 <pre class="r"><code>contrast0 &lt;- c(1, -.5, -.5) #better-than-expected vs others</code></pre>
-<p>Step 2. Bind vectors to temporary matrix, where constants are equal to 1/(length of vectors)</p>
+<p><strong>Step 2.</strong> Bind vectors to temporary matrix, where constants are equal to 1/(length of vectors)</p>
 <pre class="r"><code>mat.temp &lt;- rbind(constant = 1/3, contrast0) #denominator 3 is for number of cells in the design (same as levels because only one IV)
 mat.temp</code></pre>
 <pre><code>##                [,1]       [,2]       [,3]
 ## constant  0.3333333  0.3333333  0.3333333
 ## contrast0 1.0000000 -0.5000000 -0.5000000</code></pre>
-<p>Step 3. Take the inverse of the matrix.</p>
+<p><strong>Step 3.</strong> Take the inverse of the matrix.</p>
 <pre class="r"><code>mat &lt;- MASS::ginv(mat.temp)
 mat</code></pre>
 <pre><code>##      [,1]       [,2]
@@ -284,7 +285,7 @@ mat</code></pre>
 mat &lt;- mat[, -1]
 mat</code></pre>
 <pre><code>## [1]  0.6666667 -0.3333333 -0.3333333</code></pre>
-<p>Step 4. Run model with lm() and set contrasts: link “group” variable with contrast matrix</p>
+<p><strong>Step 4.</strong> Run model with lm() and set contrasts: link “group” variable with contrast matrix</p>
 <pre class="r"><code>m_contrasts &lt;- lm(school_funding ~ group, data = df, contrasts = list(group = mat))
 #Rename (name of intercept, contrast, and everything else unnamed) to make output easier to interpret
 attr(m_contrasts$coefficients, &quot;names&quot;) &lt;- c(&quot;Intercept&quot;, &quot;Better-Expected vs. Others&quot;, &quot;&quot;)
@@ -308,12 +309,64 @@ summary(m_contrasts)</code></pre>
 ## Residual standard error: 2.339 on 635 degrees of freedom
 ## Multiple R-squared:  0.01397,    Adjusted R-squared:  0.01087 
 ## F-statistic: 4.499 on 2 and 635 DF,  p-value: 0.01148</code></pre>
-<p>Level 1 vs later is 9.75 (group 1): first half of the table from the slides = instruct1 output.</p>
-<p>If we are only using these two (2) contrasts, use alpha of 0.05/2 = 0.025 as the new alpha.</p>
+<p><em>Remember your alphas:</em> If we are only using these two (2) contrasts, use alpha of 0.05/2 = 0.025 as the new alpha.</p>
 <p>If you count the 3 pairwise comparisons already done in lab 2 a = 0.05/5 = 0.01.</p>
 </div>
-<div id="generating-effect-sizes-for-contrasts" class="section level2">
-<h2>Generating effect sizes for contrasts</h2>
+<div id="generating-effect-sizes" class="section level2">
+<h2>Generating effect sizes</h2>
+<p>While <code>aov_car</code> generates effect sizes in the code, another way to run the ANOVA is with the code below. While we will be using ANOVA type 3 in this course, this code will allow you to change that if needed. It also lets you calculate different effect sizes, i.e. partial eta squared (pes) instead of general eta squared (ges) that automatically is calculated with <code>aov_car</code> above.</p>
+<p>See below for calculating the effect size on the contrasts.</p>
+<pre class="r"><code>anova_type3_ges &lt;- anova_test(m_contrasts, 
+                 type=&quot;III&quot;,
+                 effect.size = &quot;pes&quot;,
+                 detailed = TRUE)</code></pre>
+<pre><code>## Coefficient covariances computed by hccm()</code></pre>
+<pre class="r"><code>anova_type3_ges</code></pre>
+<pre><code>## ANOVA Table (type tests)
+## 
+##   Effect    SSn      SSd DFn DFd     F     p p&lt;.05   pes
+## 1  group 49.228 3474.223   2 635 4.499 0.011     * 0.014</code></pre>
+<p>To calculate omega squared, we can use MOTE package’s <code>omega.F()</code> function.</p>
+<p>Omega squared or partial omega squared is calculated by subtracting one from the F-statistic and multiplying it by degrees of freedom of the model. This is divided by the same value after adding the number of valid responses. This value will be omega squared for one-way ANOVA designs, and will be partial omega squared for multi-way ANOVA designs (i.e. with more than one IV).</p>
+<p><span class="math inline">\(omega^2 = (dfm * (Fvalue-1)) / ((dfm * (Fvalue-1)) + n)\)</span></p>
+<p>In this case, we need the following values (see ANOVA output for the corresponding values):</p>
+<ul>
+<li>dfn = 2</li>
+<li>dfd = 635</li>
+<li>Fvalue = 4.499</li>
+<li>n = 638</li>
+<li>a = .05</li>
+</ul>
+<p>Now, just plug them in.</p>
+<pre class="r"><code>needs(MOTE)
+omega.F(dfm = 2, dfe = 635,
+      Fvalue = 4.499, n = 638, a = .05)</code></pre>
+<pre><code>## $omega
+## [1] 0.01084965
+## 
+## $omegalow
+## [1] 0
+## 
+## $omegahigh
+## [1] 0.03046511
+## 
+## $dfm
+## [1] 2
+## 
+## $dfe
+## [1] 635
+## 
+## $F
+## [1] 4.499
+## 
+## $p
+## [1] 0.01147686
+## 
+## $estimate
+## [1] &quot;$\\omega^2$ = 0.01, 95\\% CI [0.00, 0.03]&quot;
+## 
+## $statistic
+## [1] &quot;$F$(2, 635) = 4.50, $p$ = .011&quot;</code></pre>
 </div>
 </div>
 
