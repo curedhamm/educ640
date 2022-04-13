@@ -256,9 +256,11 @@ $(document).ready(function () {
       <a href="01_summarizing-data.html">Lab 1: Summarizing Data</a>
     </li>
     <li>
-      <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3</a>
+      <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3: One-Way ANOVA</a>
     </li>
-    <li class="dropdown-header">Lab 4</li>
+    <li>
+      <a href="./labs/04-two-way-bs-anova.html">Lab 4: Two-Way Between Subjects ANOVA</a>
+    </li>
     <li class="dropdown-header">Lab 5</li>
     <li class="dropdown-header">Lab 6</li>
     <li class="dropdown-header">Lab 7</li>
@@ -318,21 +320,24 @@ $(document).ready(function () {
 
 <div id="study-description" class="section level2">
 <h2>Study Description</h2>
-<p><em>Vocabulary</em> is the <em>Dependent Variable</em> (DV), scaled
-from 0-60, and <em>lecture type</em> is the <em>Independent
-Variable</em> (IV), with two levels of physical science and social
-science.</p>
+<p>Our study variables include <em>Vocabulary Score</em> as the
+<em>Dependent Variable</em> (DV), a continuous interval scale with
+scores ranging from 0 to 60, and <em>Lecture Type</em> as the
+<em>Independent Variable</em> (IV), with two levels of instruction,
+physical science (coded as 1) and social science (coded as 2).</p>
 </div>
 <div id="evaluating-anova-assumptions" class="section level2">
 <h2>Evaluating ANOVA Assumptions</h2>
-<p>This is a between subjects analysis, as students were randomly
-assigned to experienced only one type of instruction, supporting the
-<em>assumption of independence of observations</em>, with a balanced
-sample among groups. However, the <em>assumption of normality</em> may
-not be reasonable because the vocabulary scores do not appear to be
-normally distributed and somewhat skewed (&gt;2). It also seems that
-error variance around the mean is not equal across groups, as Levene’s
-test was significant, <em>F</em>(1, 22)= 6.6, <em>p</em> = .017.</p>
+<p>This is a between-subjects analysis, as students were randomly
+assigned to only one type of instruction which, along with the balanced
+sample among groups, supports the <em>assumption of independence of
+observations</em>. The <em>assumption of normality</em> seems tenable
+after visually inspecting the distribution and descriptive statistics
+for <em>Vocabulary Scores</em>. Finally, the <em>assumption of
+homogeneity of variance</em> was not met as Levene’s Test for
+Homogeneity of Variance was significant (<em>F</em>(1, 22)= 6.6,
+<em>p</em> = .017), indicating that the error (within-group) variance
+around the mean is not equal across groups.</p>
 <pre class="r"><code># Descriptive statistics
 describe(df) %&gt;% 
   select(n, mean, sd, skew, kurtosis, se)</code></pre>
@@ -340,6 +345,14 @@ describe(df) %&gt;%
 ## idnum     24 12.5  7.07  0.00    -1.35 1.44
 ## vocab     24 33.0 14.74 -0.43    -1.31 3.01
 ## instruct* 24  1.5  0.51  0.00    -2.08 0.10</code></pre>
+<pre class="r"><code># Descriptive statistics
+describeBy(x = df$vocab, group = df$instruct, mat = TRUE)</code></pre>
+<pre><code>##     item           group1 vars  n mean       sd median trimmed     mad min max
+## X11    1 physical science    1 12   40 10.79562   43.0    40.9 11.8608  18  53
+## X12    2   social science    1 12   26 15.20167   24.5    25.9 20.7564   6  47
+##     range        skew  kurtosis       se
+## X11    35 -0.56390947 -1.003818 3.116428
+## X12    41  0.03928301 -1.914109 4.388345</code></pre>
 <pre class="r"><code># Histogram distribution of DV
 ggplot(data = df, aes(x = vocab)) +
   geom_histogram(bins = 15)</code></pre>
@@ -362,11 +375,13 @@ car::leveneTest(vocab ~ instruct, data = df, center = &quot;mean&quot;)</code></
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <div id="f-test" class="section level3">
 <h3>F-Test</h3>
-<p>There is a significant difference between the average vocabulary
-scores among the different types of instruction, <em>F</em>(1, 22)
-<em>p</em> = .016. Therefore, we reject the null hypothesis that
-students had different vocabulary scores between types of
-instruction.</p>
+<p>According to the omnibus <em>F</em> statistic for the tested model,
+there was a significant effect of instruction type on students’
+vocabulary scores (<em>F</em>(1, 22)= 6.766, <em>p</em> = .016). Namely,
+the average number of memorized vocabulary words was significantly
+higher for students in the physical science group (<em>M</em> = 40,
+<em>SD</em> = 10.80) than for their peers in the social science
+instruction group (<em>M</em> = 26, <em>SD</em> = 15.20).</p>
 <pre class="r"><code># F-ratio
 ## calculate the total group variance (i.e., grand mean difference)
 SST &lt;- sum( (df$vocab - mean(df$vocab))^2 )
