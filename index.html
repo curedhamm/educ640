@@ -13,7 +13,7 @@
 
 <title>EDUC 640: Introduction to Data Analysis in Education and the Social Sciences</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.13.1/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
@@ -60,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -80,6 +81,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -232,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -242,7 +246,7 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Lab Assignments
      
     <span class="caret"></span>
@@ -255,7 +259,7 @@ $(document).ready(function () {
       <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3: One-Way ANOVA</a>
     </li>
     <li>
-      <a href="./labs/04-two-way-bs-anova.html">Lab 4: Two-Way Bet. Subjects ANOVA</a>
+      <a href="./labs/04-two-way-bs-anova.html">Lab 4: Two-Way Between Subjects ANOVA</a>
     </li>
     <li class="dropdown-header">Lab 5</li>
     <li class="dropdown-header">Lab 6</li>
@@ -265,13 +269,16 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Lab Keys
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">Lab 1</li>
+    <li>
+      <a href="lab1_key.html"></a>
+    </li>
     <li class="dropdown-header">Lab 2 &amp; 3</li>
     <li class="dropdown-header">Lab 4</li>
     <li class="dropdown-header">Lab 5</li>
@@ -282,7 +289,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Homework Keys
      
     <span class="caret"></span>
@@ -306,13 +313,18 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">EDUC 640: Introduction to Data Analysis in Education and the Social Sciences</h1>
+<h1 class="title toc-ignore">EDUC 640: Introduction to Data Analysis in
+Education and the Social Sciences</h1>
 <h3 class="subtitle">College of Education, University of Oregon</h3>
 
 </div>
 
 
-<p>This website houses supporting materials for the course EDUC 640 at the University of Oregon, instructed by Mark Hammond and Anwesha Guha. These materials are intended to support students with completing their assignments using the free and open-source statistical programming language R.</p>
+<p>This website houses supporting materials for the course EDUC 640 at
+the University of Oregon, instructed by Mark Hammond and Anwesha Guha.
+These materials are intended to support students with completing their
+assignments using the free and open-source statistical programming
+language R.</p>
 
 
 
