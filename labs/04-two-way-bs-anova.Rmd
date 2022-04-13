@@ -1,0 +1,226 @@
+---
+title: 'Lab 4: Two-way Between Subjects ANOVA'
+---
+## Introduction
+
+This tutorial will learn how to run two-way between-subjects ANOVA from Lab 1. We will calculate descriptive statistics, check ANOVA assumptions, calculate ANOVA, effects, and marginal means, and identify any interactions.
+
+We will use data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Perez, Schanding, and Dao, 2013). For your Lab 4 assignment, you will use the data provided on Canvas.
+
+First, load necessary packages:
+```{r packages, message = FALSE}
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
+```
+
+## Describe Data
+
+Next, we will read in the data, similar to the process in your previous labs.
+``` {r}
+df <- misty::read.sav(here("kamden-mwavita_data/factorial ANOVA - Perez, Schanding, and Dao.sav"), use.value.labels = TRUE) %>% 
+  clean_names()
+```
+
+Now, let's learn a little more about this dataset. View the structure of the dataset and then the top 5 rows using the code below.
+
+**Quick side note:** If you are ever confused about what a function does, how it works, or what arguments it can take, I recommend using R's `?` feature. For example, in the console, I could type `?head()` and learn more about the `head()` function and its usage. Here, you can see that you can specify how many rows you want to show up (we'll try this below). This `?` feature might be especially helpful as you're using more complicated functions, like `geom_boxplot()`, and you are trying to figure out how to put a title your plot.
+
+
+```{r}
+str(df)
+head(df, n=3)
+```
+
+Notice for this data, there are two variables, `scenario_type` and `bullying_type`, that are both factors. Scenario type has two levels: 1) LGBTQ or gender nonconforming, and 2) Non-LGBTQ/gender nonconforming. Bullying type has three levels: 1) Verbal, 2) Relational, and 3) Physical.
+The `table` function is useful, especially for categorical variables, to break down the distribution and see how many of each category are represented in the data. 
+```{r}
+table(df$scenario_type)
+table(df$bullying_type)
+```
+
+Now, let's view a summary table of the data with both variables. The code below helps you create a frequency table. You group by the two variables you want to see, summarize n (this is just a row count), and then you pick a variable to be at the top. You put this variable in the spread function. 
+```{r}
+df %>% 
+  group_by(scenario_type, bullying_type) %>% 
+  summarise(n = n()) %>% #new column "n" = row count of each factor grouping
+  spread(bullying_type, n) # rows "spread" across the top
+```
+Then check the overall descriptive statistics.
+```{r}
+describe(df)
+```
+We find that the average seriousness score is 1.48 (sd = 0.66) and is approximately normally distributed (skew and kurtosis < 2 & > -2). Remember, the other descriptive statistics cannot really be interpreted since they are categorical variables. 
+
+If we want to check descriptives for each level, we can use the `describeBy()` function. We can then look at how the seriousness scores vary for bullying type levels and for scenario type levels. You'll find the mean and standard deviations for each group below.
+```{r}
+#Output for each level - bullying type
+describeBy(x = df$seriousness, group = df$bullying_type, 
+             mat = TRUE, data = df)
+
+#Output for each level - scenario type
+describeBy(x = df$seriousness, group = df$scenario_type, 
+             mat = TRUE, data = df)
+```
+Using the code above, report the mean/sd and describe the distributions for the levels of each variable.
+
+### Boxplots
+
+The boxplot creation uses the same general code from before, using the `ggplot()` and `geom_boxplot()` functions. The main substantive change is, besides including the x value of `scenario_type` and y value of `seriousness`, that we also include `fill = bullying_type` to show visually how different bullying levels would vary across scenario types. The other code edits are just additional elements to make the plot a bit more visually appealing.
+```{r}
+scenario_plot <- df %>% 
+  ggplot(aes(x = scenario_type, y = seriousness, fill = bullying_type)) +
+  geom_boxplot() +
+  theme_minimal() +
+  theme(legend.position="bottom")
+
+scenario_plot
+```
+
+You code also run the boxplot the other way
+```{r}
+bullying_plot <- df %>% 
+  ggplot(aes(x = bullying_type, y = seriousness, fill = scenario_type)) +
+  geom_boxplot() +
+  theme_minimal() +
+  theme(legend.position="bottom")
+
+bullying_plot
+```
+
+If you want to, you can display them side-by-side using the code below. In this case, I would just keep them separate, since some of the words cut out if you use the code here.
+```{r}
+gridExtra::grid.arrange(scenario_plot, bullying_plot, nrow = 1)
+```
+
+Either way, include your interpretations of the boxplots here. Comment on what you see. What differences do you notice between the groups? Comment on how these differences might affect what you might expect from your analysis. 
+
+## Checking assumptions
+
+First, check homogeneity of variance:
+```{r}
+car::leveneTest(seriousness ~ bullying_type*scenario_type, data = df, center = "mean")
+```
+
+The p-value of 0.0001 is significant, suggesting that the error variance around the mean is likely not equal across groups. Additional corrections would be needed in this case for one-way ANOVA (i.e. Games-Howell), but we will use Tukey for two-way ANOVA since Games-Howell for two-way does not exist on R. 
+
+For the normality assumption, refer back to your descriptive statistics. In this case, for `seriousness`, the mean  is 1.48 (sd = 0.66), and `seriousness` is approximately normally distributed (skew and kurtosis < 2 & > -2).
+
+We will also assume observations to be independent here (see [Perez, Schanding, and Dao, 2013](https://www.ojp.gov/ncjrs/virtual-library/abstracts/educators-perceptions-addressing-bullying-lgbtqgender-nonconforming) for more details).
+
+### Two-way ANOVA
+Since you have a two-way ANOVA, both variables, as well as their interaction, should be accounted for in the model. Still keep your dependent variable to the left of the ~, but this time include each variable and the interaction between each variable (variable_a:variable_b) also into the model. See below.
+```{r}
+m1 <- anova_test(df, formula = seriousness ~ bullying_type + scenario_type + bullying_type:scenario_type, 
+                 detailed = TRUE, type = 3, effect.size = "pes")
+m1
+```
+
+From these results, we see that the effect of bullying type, scenario type, and the interaction of bullying type and scenario type are all significant at an alpha of 0.05. Since the interaction is significant, that is the main focus for the analysis here and beyond. We will not focus on the main effects. If the interaction were not significant, then we would have focused on interpreting the main effects. 
+
+#### Effect size with Omega
+
+Let's calculate effect size with Omega. Partial eta squared is already given in the ANOVA output.  We need the following values (see ANOVA output for the corresponding values from the interaction):
+
+* dfn = 2
+* dfd = 180
+* Fvalue = 12.377
+* n = 186
+* a = .05
+
+Now, just plug them in. Refer to previous labs/notes for interpretations.
+
+```{r}
+needs(MOTE)
+omega.F(dfm = 2, dfe = 180,
+      Fvalue = 12.377, n = 186, a = .05)
+```
+
+Next, we examine simple effects.
+
+#### Simple effects
+
+Note: For two-way post-hoc comparisons, go ahead and use Tukey, regardless of which way your assumptions fall. Games-Howell does not work for two-way ANOVAs. This way, you can pairwise compare main and simple effects.
+
+The estimate in the code below is calculated by subtracting Group 1 from Group 2 (Group 2 - Group 1 = estimate).
+
+**Quick note:** it is important that you look at the variables that change only one at a time. For example, comparing physical & LGBTQ with relational & non-LGBTQ will not really tell you much, since the comparison is not truly pairwise. In R, the code below just gives you all possible pairs. It is up to you to go through them and interpret what actually makes sense in your case. I'll walk through my process below.
+
+```{r}
+rstatix::tukey_hsd(df, seriousness ~ bullying_type*scenario_type) #main and simple effects 
+```
+The following differences are significant for **main effects** (rows 1-4):
+
+* bullying type: relational vs. physical (row 3)
+* scenario type: LGBTQ or gender nonconforming vs. Non-LGBTQ/gender nonconforming (row 4)
+
+The following differences are significant for **simple effects** (rows 5-19):
+
+* for verbal, LGBTQ or gender nonconforming vs. Non-LGBTQ/gender nonconforming (row 7)
+* for relational, LGBTQ or gender nonconforming vs. Non-LGBTQ/gender nonconforming (row 12)
+* for physical, LGBTQ or gender nonconforming vs. Non-LGBTQ/gender nonconforming (row 16)
+
+* for Non-LGBTQ/gender nonconforming, verbal vs. physical (row 18)
+* for Non-LGBTQ/gender nonconforming, relational vs. physical (row 19)
+
+Notice that other rows may have been significant, but they were not included in my selections since two variables changed at a time.
+
+In your interpretations, you can **ignore the differences in main effects, since the interaction is signficant.**
+
+
+### Marginal Means
+
+While the Tukey test above tells us about how the means are (or are not) different from each other, the test doesn't actually tell us *what the means are.* The code below helps you get the actual marginal means, along with their standard errors and confidence intervals. 
+To do this, you can group by one variable (I chose `bullying_type` here, but you could have chosen the other one), and then you regress on the other variable (I did used `scenario_type` as the x, with `seriousness` as the dependent variable as usual). The rest of the code helps you get the values in an easy-to-read format.
+
+```{r}
+means <- df %>%
+  group_by(bullying_type) %>% 
+  emmeans_test(seriousness ~ scenario_type, p.adjust.method = "holm", detailed = TRUE)
+
+rmarkdown::paged_table(means) #for mean differences and significance tests
+
+#To get actual marginal means
+rmarkdown::paged_table(
+  get_emmeans(means)
+)
+```
+
+#### Univariate Comparisons
+
+If needed, you can also run univariate comparisons, looking at one variable at a time. This may not be as useful if you have interactions that are significant.
+```{r}
+model <- lm(seriousness ~ bullying_type + scenario_type + bullying_type:scenario_type, data = df)
+
+df %>%
+  group_by(scenario_type) %>%
+  anova_test(seriousness ~ bullying_type, error = model)
+
+df %>%
+  group_by(bullying_type) %>%
+  anova_test(seriousness ~ scenario_type, error = model)
+```
+
+### Interaction Plots
+
+Finally, while all the tables and analyses are important to go through and understand, in a paper, what might be the most helpful is an actual visualization of the analysis. To illustrate interactions, the best way is through an interaction plot, where you put in each of the variables (one as the `x.factor` and the other as the `trace.factor`) in relation to your outcome variable (i.e. `seriousness`). See code below.
+
+One option:
+```{r}
+with(df, {
+interaction.plot(x.factor = scenario_type,
+                 trace.factor = bullying_type,
+                 response = seriousness,
+                 type = "l")
+})
+```
+
+Another option:
+```{r}
+with(df, {
+interaction.plot(x.factor = bullying_type,
+                 trace.factor = scenario_type,
+                 response = seriousness,
+                 type = "l")
+})
+```
+
+Pick whichever option makes the most sense for your data.

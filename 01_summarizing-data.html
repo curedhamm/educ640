@@ -254,9 +254,11 @@ $(document).ready(function () {
       <a href="01_summarizing-data.html">Lab 1: Summarizing Data</a>
     </li>
     <li>
-      <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3</a>
+      <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3: One-Way ANOVA</a>
     </li>
-    <li class="dropdown-header">Lab 4</li>
+    <li>
+      <a href="./labs/04-two-way-bs-anova.html">Lab 4: Two-Way Bet. Subjects ANOVA</a>
+    </li>
     <li class="dropdown-header">Lab 5</li>
     <li class="dropdown-header">Lab 6</li>
     <li class="dropdown-header">Lab 7</li>
@@ -412,7 +414,7 @@ head(df)</code></pre>
 <pre class="r"><code>ggplot(data = df, 
        aes(x = school_funding)) +
   geom_histogram()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-24-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-55-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 <div id="boxplot" class="section level3">
 <h3>Boxplot</h3>
@@ -420,7 +422,7 @@ head(df)</code></pre>
 <pre class="r"><code>ggplot(data = df, 
        aes(x = group, y = school_funding)) +
   geom_boxplot()</code></pre>
-<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-25-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="01_summarizing-data_files/figure-html/unnamed-chunk-56-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="homogeneity-of-variance" class="section level2">

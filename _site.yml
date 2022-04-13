@@ -8,9 +8,10 @@ navbar:
     menu:
       - text: "Lab 1: Summarizing Data"
         href: 01_summarizing-data.html
-      - text: "Lab 2 & 3"
+      - text: "Lab 2 & 3: One-Way ANOVA"
         href: ./labs/02_03_one-way-anova.html
-      - text: "Lab 4"
+      - text: "Lab 4: Two-Way Between Subjects ANOVA"
+        href: ./labs/04-two-way-bs-anova.html
       - text: "Lab 5"
       - text: "Lab 6"
       - text: "Lab 7"

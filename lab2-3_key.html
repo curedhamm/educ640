@@ -252,9 +252,11 @@ $(document).ready(function () {
       <a href="01_summarizing-data.html">Lab 1: Summarizing Data</a>
     </li>
     <li>
-      <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3</a>
+      <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3: One-Way ANOVA</a>
     </li>
-    <li class="dropdown-header">Lab 4</li>
+    <li>
+      <a href="./labs/04-two-way-bs-anova.html">Lab 4: Two-Way Bet. Subjects ANOVA</a>
+    </li>
     <li class="dropdown-header">Lab 5</li>
     <li class="dropdown-header">Lab 6</li>
     <li class="dropdown-header">Lab 7</li>
@@ -420,6 +422,48 @@ summary(m_contrasts)</code></pre>
 <p>If we are only using these two (2) contrasts, use alpha of 0.05/2 = 0.025 as the new alpha.</p>
 <p>But, if you count the 3 pairwise comparisons already done in lab 2 a = 0.05/5 = 0.01. Use this since F test was significant.</p>
 <p>So, we end up with a nonsignificant result: we fail to reject our null hypothesis. We cannot say the physical science condition is significantly different from the humanities conditions.</p>
+<pre class="r"><code>anova_type3_ges &lt;- anova_test(m_contrasts, 
+                 type=&quot;III&quot;,
+                 effect.size = &quot;pes&quot;,
+                 detailed = TRUE)</code></pre>
+<pre><code>## Coefficient covariances computed by hccm()</code></pre>
+<pre class="r"><code>anova_type3_ges</code></pre>
+<pre><code>## ANOVA Table (type tests)
+## 
+##        Effect   SSn  SSd DFn DFd       F        p p&lt;.05   pes
+## 1 (Intercept) 40401 4599   1  33 289.896 6.57e-18     * 0.898
+## 2    instruct  1194 4599   2  33   4.284 2.20e-02     * 0.206</code></pre>
+<p>Calculate Omega: * dfn = 2 * dfd = 33 * Fvalue = 4.284 * n = 36 * a = .05</p>
+<p>Now, just plug them in.</p>
+<pre class="r"><code>needs(MOTE)
+omega.F(dfm = 2, dfe = 33,
+      Fvalue = 4.284, n = 36, a = .05)</code></pre>
+<pre><code>## $omega
+## [1] 0.1542943
+## 
+## $omegalow
+## [1] 0
+## 
+## $omegahigh
+## [1] 0.3783572
+## 
+## $dfm
+## [1] 2
+## 
+## $dfe
+## [1] 33
+## 
+## $F
+## [1] 4.284
+## 
+## $p
+## [1] 0.02217963
+## 
+## $estimate
+## [1] &quot;$\\omega^2$ = 0.15, 95\\% CI [0.00, 0.38]&quot;
+## 
+## $statistic
+## [1] &quot;$F$(2, 33) = 4.28, $p$ = .022&quot;</code></pre>
 
 
 
