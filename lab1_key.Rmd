@@ -16,10 +16,10 @@ df <- misty::read.sav(here("/Users/markhammond/Dropbox (University of Oregon)/ed
 ```
 
 ## Study Description
-_Vocabulary_ is the _Dependent Variable_ (DV), scaled from 0-60, and _lecture type_ is the _Independent Variable_ (IV), with two levels of physical science and social science. 
+_Vocabulary Score_ is the _Dependent Variable_ (DV), scaled from 0-60, and _lecture type_ is the _Independent Variable_ (IV), with two levels of physical science and social science. 
 
 ## Evaluating ANOVA Assumptions 
-This is a between subjects analysis, as students were randomly assigned to experienced only one type of instruction, supporting the _assumption of independence of observations_, with a balanced sample among groups. However, the _assumption of normality_ may not be reasonable because the vocabulary scores do not appear to be normally distributed and somewhat skewed (>2). It also seems that error variance around the mean is not equal across groups, as Levene's test was significant, _F_(1, 22)= 6.6, _p_ = .017.
+This is a between subjects analysis, as students were randomly assigned to experienced only one type of instruction, supporting the _assumption of independence of observations_, with a balanced sample among groups. The _assumption of normality_ seems tenable after visually inspecting the distribution and examining the descriptive statistics. However, the error variance around the mean is not equal across groups, as Levene's test was significant, _F_(1, 22)= 6.6, _p_ = .017, indicating that the _assumption of invariance_ between groups was not met.
 
 ```{r, include=T, warning = F}
 # Descriptive statistics
