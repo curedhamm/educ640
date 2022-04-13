@@ -345,7 +345,7 @@ describe(df) %&gt;%
 ## idnum     24 12.5  7.07  0.00    -1.35 1.44
 ## vocab     24 33.0 14.74 -0.43    -1.31 3.01
 ## instruct* 24  1.5  0.51  0.00    -2.08 0.10</code></pre>
-<pre class="r"><code># Descriptive statistics by instruction type
+<pre class="r"><code># Descriptive statistics by IV
 describeBy(x = df$vocab, group = df$instruct, mat = TRUE)</code></pre>
 <pre><code>##     item           group1 vars  n mean       sd median trimmed     mad min max
 ## X11    1 physical science    1 12   40 10.79562   43.0    40.9 11.8608  18  53

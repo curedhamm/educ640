@@ -26,7 +26,7 @@ This is a between-subjects analysis, as students were randomly assigned to only 
 describe(df) %>% 
   select(n, mean, sd, skew, kurtosis, se)
 
-# Descriptive statistics by instruction type
+# Descriptive statistics by IV
 describeBy(x = df$vocab, group = df$instruct, mat = TRUE)
 
 # Histogram distribution of DV
