@@ -1,0 +1,79 @@
+---
+title: "Lab 1 key"
+output: html_document
+---
+
+```{r setup, include=F}
+## load needed packages
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+
+## Importing data
+df <- misty::read.sav(here("/Users/markhammond/Dropbox (University of Oregon)/educ640_S22/assignments_data/Lab1_Vocab.sav"), 
+                      use.value.labels = TRUE) %>% 
+              clean_names() # cleaning up variable names
+```
+
+## Study Description
+_Vocabulary_ is the _Dependent Variable_ (DV), scaled from 0-60, and _lecture type_ is the _Independent Variable_ (IV), with two levels of physical science and social science. 
+
+## Evaluating ANOVA Assumptions 
+This is a between subjects analysis, as students were randomly assigned to experienced only one type of instruction, supporting the _assumption of independence of observations_, with a balanced sample among groups. However, the _assumption of normality_ may not be reasonable because the vocabulary scores do not appear to be normally distributed and appear somewhat skewed (>2). It also seems that error variance around the mean is not equal across groups, indicated by Levene's test Levene's test indicated unequal variances, _F_(1, 22)= 6.6, _p_ = .017.
+
+```{r, include=T, warning = F}
+# Descriptive statistics
+describe(df) %>% 
+  select(n, mean, sd, skew, kurtosis, se)
+
+# Histogram distribution of DV
+ggplot(data = df, aes(x = vocab)) +
+  geom_histogram(bins = 15)
+
+# Histogram distribution of sample between groups of IV
+ggplot(data = df, aes(x = instruct)) +
+  geom_histogram(stat="count")
+
+# Boxplot of vocab scores by instruct
+ggplot(data = df, aes(x = instruct, y = vocab)) +
+  geom_boxplot()
+
+# Homogeneity of variance test
+car::leveneTest(vocab ~ instruct, data = df, center = "mean")
+```
+
+### F-Test
+There is a significant difference in vocabulary scores between groups of instruction, _F_(1, 22) _p_ = .016. Therefore, we reject null hypothesis that groups learned the same vocabulary.
+```{r, include=T}
+# F-ratio
+## calculate the total group variance (i.e., grand mean difference)
+SST <- sum( (df$vocab - mean(df$vocab))^2 )
+
+## transform from long to wide data to calculate within group variance
+df_wide <- spread(df, instruct, vocab) %>% 
+  clean_names()
+
+## calculate the within group variance, for each group
+SSW.1 <- (df_wide$physical_science - mean(df_wide$physical_science, na.rm = T))^2
+SSW.2 <- (df_wide$social_science - mean(df_wide$social_science, na.rm = T))^2
+
+## sum within group variance (sum of squares within)
+SSW <- sum(SSW.1, SSW.2, na.rm = T)
+
+## calculate difference for between group variance and group variance
+SSB <- SST-SSW
+
+## calculate mean square between
+MSB <- SSB/1   # (no. of groups - 1) or 1 degrees of freedom
+
+## calculate mean square within
+MSW <- SSW/22  # (sample size - no. of groups) or 22 degrees of freedom
+
+## produce F-ratio statistic 
+Fratio <- MSB/MSW
+Fratio
+
+## produce p-value for F-ratio
+p.val  <- pf(Fratio, 1, 22, lower.tail=FALSE)
+p.val
+```
