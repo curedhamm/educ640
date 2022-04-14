@@ -19,7 +19,7 @@ navbar:
       - text: "Lab 9"
   - text: Lab Keys
     menu:
-      - text: "Lab 1"
+      - text: "Lab 1""
       - href: lab1_key.html
       - text: "Lab 2 & 3"
       - text: "Lab 4"
