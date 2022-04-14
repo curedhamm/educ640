@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Lab 1 key</title>
+
+<script src="site_libs/header-attrs-2.13.1/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">EDUC 640</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Lab Assignments
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01_summarizing-data.html">Lab 1: Summarizing Data</a>
+    </li>
+    <li>
+      <a href="./labs/02_03_one-way-anova.html">Lab 2 &amp; 3: One-Way ANOVA</a>
+    </li>
+    <li>
+      <a href="./labs/04-two-way-bs-anova.html">Lab 4: Two-Way Between Subjects ANOVA</a>
+    </li>
+    <li class="dropdown-header">Lab 5</li>
+    <li class="dropdown-header">Lab 6</li>
+    <li class="dropdown-header">Lab 7</li>
+    <li class="dropdown-header">Lab 8</li>
+    <li class="dropdown-header">Lab 9</li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Lab Keys
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Lab 1</li>
+    <li>
+      <a href="lab1_key.html"></a>
+    </li>
+    <li class="dropdown-header">Lab 2 &amp; 3</li>
+    <li class="dropdown-header">Lab 4</li>
+    <li class="dropdown-header">Lab 5</li>
+    <li class="dropdown-header">Lab 6</li>
+    <li class="dropdown-header">Lab 7</li>
+    <li class="dropdown-header">Lab 8</li>
+    <li class="dropdown-header">Lab 9</li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Homework Keys
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">HW 1: One-way ANOVA</li>
+    <li class="dropdown-header">HW 2: Two-way ANOVA</li>
+    <li class="dropdown-header">HW 3: Two-way repeated measures ANOVA</li>
+    <li class="dropdown-header">HW 4: Three-way mixed ANOVA</li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Lab 1 key</h1>
+
+</div>
+
+
+<div id="study-description" class="section level2">
+<h2>Study Description</h2>
+<p>Our study variables include <em>Vocabulary Score</em> as the
+<em>Dependent Variable</em> (DV), a continuous interval scale with
+scores ranging from 0 to 60, and <em>Lecture Type</em> as the
+<em>Independent Variable</em> (IV), with two levels of instruction,
+physical science (coded as 1) and social science (coded as 2).</p>
+</div>
+<div id="evaluating-anova-assumptions" class="section level2">
+<h2>Evaluating ANOVA Assumptions</h2>
+<p>This is a between-subjects analysis, as students were randomly
+assigned to only one type of instruction which, along with the balanced
+sample among groups, supports the <em>assumption of independence of
+observations</em>. The <em>assumption of normality</em> seems tenable
+after visually inspecting the distribution and descriptive statistics
+for <em>Vocabulary Scores</em>. Finally, the <em>assumption of
+homogeneity of variance</em> was not met as Levene’s Test for
+Homogeneity of Variance was significant (<em>F</em>(1, 22)= 6.6,
+<em>p</em> = .017), indicating that the error (within-group) variance
+around the mean is not equal across groups.</p>
+<pre class="r"><code># Descriptive statistics
+describe(df) %&gt;% 
+  select(n, mean, sd, skew, kurtosis, se)</code></pre>
+<pre><code>##            n mean    sd  skew kurtosis   se
+## idnum     24 12.5  7.07  0.00    -1.35 1.44
+## vocab     24 33.0 14.74 -0.43    -1.31 3.01
+## instruct* 24  1.5  0.51  0.00    -2.08 0.10</code></pre>
+<pre class="r"><code># Descriptive statistics by IV groups
+describeBy(x = df$vocab, group = df$instruct, mat = TRUE)</code></pre>
+<pre><code>##     item           group1 vars  n mean       sd median trimmed     mad min max
+## X11    1 physical science    1 12   40 10.79562   43.0    40.9 11.8608  18  53
+## X12    2   social science    1 12   26 15.20167   24.5    25.9 20.7564   6  47
+##     range        skew  kurtosis       se
+## X11    35 -0.56390947 -1.003818 3.116428
+## X12    41  0.03928301 -1.914109 4.388345</code></pre>
+<pre class="r"><code># Histogram distribution of DV
+ggplot(data = df, aes(x = vocab)) +
+  geom_histogram(bins = 15)</code></pre>
+<p><img src="lab1_key_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code># Histogram distribution of sample between groups of IV
+ggplot(data = df, aes(x = instruct)) +
+  geom_histogram(stat=&quot;count&quot;)</code></pre>
+<p><img src="lab1_key_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
+<pre class="r"><code># Boxplot of vocab scores by instruct
+ggplot(data = df, aes(x = instruct, y = vocab)) +
+  geom_boxplot()</code></pre>
+<p><img src="lab1_key_files/figure-html/unnamed-chunk-1-3.png" width="672" /></p>
+<pre class="r"><code># Homogeneity of variance test
+car::leveneTest(vocab ~ instruct, data = df, center = &quot;mean&quot;)</code></pre>
+<pre><code>## Levene&#39;s Test for Homogeneity of Variance (center = &quot;mean&quot;)
+##       Df F value Pr(&gt;F)  
+## group  1     6.6 0.0175 *
+##       22                 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div id="f-test" class="section level3">
+<h3>F-Test</h3>
+<p>According to the omnibus <em>F</em> statistic for the tested model,
+there was a significant effect of instruction type on students’
+vocabulary scores (<em>F</em>(1, 22)= 6.766, <em>p</em> = .016). Namely,
+the average number of memorized vocabulary words was significantly
+higher for students in the physical science group (<em>M</em> = 40,
+<em>SD</em> = 10.80) than for their peers in the social science
+instruction group (<em>M</em> = 26, <em>SD</em> = 15.20).</p>
+<pre class="r"><code># F-ratio
+## calculate the total group variance (i.e., grand mean difference)
+SST &lt;- sum( (df$vocab - mean(df$vocab))^2 )
+
+## transform from long to wide data to calculate within group variance
+df_wide &lt;- spread(df, instruct, vocab) %&gt;% 
+  clean_names()
+
+## calculate the within group variance, for each group
+SSW.1 &lt;- (df_wide$physical_science - mean(df_wide$physical_science, na.rm = T))^2
+SSW.2 &lt;- (df_wide$social_science - mean(df_wide$social_science, na.rm = T))^2
+
+## sum within group variance (sum of squares within)
+SSW &lt;- sum(SSW.1, SSW.2, na.rm = T)
+
+## calculate difference for between group variance and group variance
+SSB &lt;- SST-SSW
+
+## calculate mean square between
+MSB &lt;- SSB/1   # (no. of groups - 1) or 1 degrees of freedom
+
+## calculate mean square within
+MSW &lt;- SSW/22  # (sample size - no. of groups) or 22 degrees of freedom
+
+## produce F-ratio statistic 
+Fratio &lt;- MSB/MSW
+Fratio</code></pre>
+<pre><code>## [1] 6.76569</code></pre>
+<pre class="r"><code>## produce p-value for F-ratio
+p.val  &lt;- pf(Fratio, 1, 22, lower.tail=FALSE)
+p.val</code></pre>
+<pre><code>## [1] 0.01630597</code></pre>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
