@@ -16,15 +16,18 @@ df <- misty::read.sav(here("/Users/markhammond/Dropbox (University of Oregon)/ed
 ```
 
 ## Study Description
-_Vocabulary_ is the _Dependent Variable_ (DV), scaled from 0-60, and _lecture type_ is the _Independent Variable_ (IV), with two levels of physical science and social science. 
+Our study variables include _Vocabulary Score_ as the _Dependent Variable_ (DV), a continuous interval scale with scores ranging from 0 to 60, and _Lecture Type_ as the _Independent Variable_ (IV), with two levels of instruction, physical science (coded as 1) and social science (coded as 2). 
 
 ## Evaluating ANOVA Assumptions 
-This is a between subjects analysis, as students were randomly assigned to experienced only one type of instruction, supporting the _assumption of independence of observations_, with a balanced sample among groups. However, the _assumption of normality_ may not be reasonable because the vocabulary scores do not appear to be normally distributed and appear somewhat skewed (>2). It also seems that error variance around the mean is not equal across groups, indicated by Levene's test Levene's test indicated unequal variances, _F_(1, 22)= 6.6, _p_ = .017.
+This is a between-subjects analysis, as students were randomly assigned to only one type of instruction which, along with the balanced sample among groups, supports the _assumption of independence of observations_. The _assumption of normality_ seems tenable after visually inspecting the distribution and descriptive statistics for _Vocabulary Scores_. Finally, the _assumption of homogeneity of variance_ was not met as Levene's Test for Homogeneity of Variance was significant (_F_(1, 22)= 6.6, _p_ = .017), indicating that the error (within-group) variance around the mean is not equal across groups.
 
 ```{r, include=T, warning = F}
 # Descriptive statistics
 describe(df) %>% 
   select(n, mean, sd, skew, kurtosis, se)
+
+# Descriptive statistics by IV groups
+describeBy(x = df$vocab, group = df$instruct, mat = TRUE)
 
 # Histogram distribution of DV
 ggplot(data = df, aes(x = vocab)) +
@@ -43,7 +46,8 @@ car::leveneTest(vocab ~ instruct, data = df, center = "mean")
 ```
 
 ### F-Test
-There is a significant difference in vocabulary scores between groups of instruction, _F_(1, 22) _p_ = .016. Therefore, we reject null hypothesis that groups learned the same vocabulary.
+According to the omnibus _F_ statistic for the tested model, there was a significant effect of instruction type on students' vocabulary scores (_F_(1, 22)= 6.766, _p_ = .016). Namely, the average number of memorized vocabulary words was significantly higher for students in the physical science group (_M_ = 40, _SD_ = 10.80) than for their peers in the social science instruction group (_M_ = 26, _SD_ = 15.20).
+
 ```{r, include=T}
 # F-ratio
 ## calculate the total group variance (i.e., grand mean difference)
