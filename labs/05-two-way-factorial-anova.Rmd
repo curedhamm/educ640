@@ -1,0 +1,189 @@
+---
+title: 'Lab 5: Two-way Factorial ANOVA'
+---
+## Introduction
+
+This tutorial will learn how to run two-way factorial ANOVA. This lab will be a little shorter than those before -- woo! We will calculate descriptive statistics, check ANOVA assumptions, calculate ANOVA and effect sizes, and code contrasts according to our research questions.
+
+We will use data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Bossaert et al., 2011). This data focuses on the social dimension of inclusion in education. The columns include the following information:
+
+* `country`: name of country
+* `soc_part`: social participation (score)
+* `sen`: students with special educational needs categorization
+
+This data is similar to the one you will use for your Lab 5 assignment, though your Lab 5 data will also include an id variable. Lab 5 data will be similar, if not the same, as your Lab 4 data.
+
+First, load necessary packages:
+```{r packages, message = FALSE}
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
+```
+
+## Describe Data
+
+Next, we will read in the data, similar to the process in your previous labs.
+``` {r}
+df <- misty::read.sav(here("kamden-mwavita_data/factorial_ANOVA_Bossaert_et_al.sav"), use.value.labels = TRUE) %>% 
+  clean_names()
+```
+
+If you want to explore the dataset, it is good practice to view the structure of the dataset (`str(df)`)and then the top 5 rows (`head(df)`). This way, you can catch if you read in the data correctly, if there are any anomalies, etc. 
+
+Now, we run through the basic descriptives. See Lab 4 for more information or explanations of this code, if needed. 
+
+```{r}
+table(df$sen)
+table(df$country)
+```
+
+Summary table of the data with both variables:
+```{r}
+df %>% 
+  group_by(sen, country) %>% 
+  summarise(n = n()) %>%
+  spread(country, n) 
+```
+
+Overall descriptive statistics.
+```{r}
+describe(df)
+```
+Make sure to interpret overall distribution stats here.
+
+By level:
+```{r}
+#Output for each level - sen
+describeBy(x = df$soc_part, group = df$sen, 
+             mat = TRUE, data = df)
+
+#Output for each level - country
+describeBy(x = df$soc_part, group = df$country, 
+             mat = TRUE, data = df)
+```
+Using the code above, report the mean/sd and describe the distributions for the levels of each variable.
+
+Additionally, we can pull in what we learned last week about marginal means as another way to summarize mean values. Here, let's compare the means with each other:
+
+```{r}
+means <- df %>% 
+  group_by(sen, country) %>% #the two variables
+  summarise(mean_soc_part = mean(soc_part)) #mean of dependent variable
+
+means
+
+# Graphical representation of means
+means %>% 
+  ggplot(aes(country, mean_soc_part, group = sen)) +
+  geom_point() +
+  geom_line(aes(color = sen))
+```
+
+You can play around with the aesthetics of the graph above. There's not only one way to represent the means, just do whatever makes sense for you.
+
+### Boxplots
+
+```{r}
+soc_boxplot <- df %>% 
+  ggplot(aes(x = country, y = soc_part, fill = sen)) +
+  geom_boxplot() +
+  theme_minimal() +
+  theme(legend.position="bottom")
+
+soc_boxplot
+```
+
+## Checking assumptions
+
+Homogeneity of variance:
+```{r}
+car::leveneTest(soc_part ~ country*sen, data = df, center = "mean")
+```
+
+Make sure to interpret if all assumptions are met. 
+
+
+### A priori contrasts
+We can do two-factor contrasts with the emmeans package.
+
+First, we can try using *by* grouping.
+```{r}
+needs(emmeans)
+model <- lm(soc_part ~ sen + country + sen:country, df) #remember interactions in the model
+means_1 <- emmeans(model, specs = "sen", by = "country")
+means_1
+
+pairs(means_1)
+```
+
+This output shows us all the estimates by country, but it doesn't quite give us all the comparisons we need altogether. Use the code below instead.
+
+Calculate all possible comparisons and not "nesting" one factor in another:
+```{r}
+means_2 <- emmeans(model, ~sen*country)
+means_2
+
+pairs(means_2)
+```
+
+Now we have more than we need, so just pull out the values we can actually interpret (similar to what you did in Lab 4).
+
+### Factorial ANOVA
+
+Let's establish some hypotheses to model the kind of analysis you'll do for Lab 5. 
+
+* Hypothesis 1 - 
+* Hypothesis 2 -
+
+This is a two-way factorial ANOVA.
+```{r}
+means_2
+
+contrasts <- list(
+  hyp1 = c(1, -.5, -.5, -1, .5, .5),
+  hyp2 = c(1, -1, 0, -1, 1, 0)
+)
+
+contrast(means_2, contrasts, adjust = "holm")
+
+## 5.5 is difference between the differences (see graph above to help interpret)
+```
+There is a 5.5 word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a 16 word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. The difference in learning between the physical science and humanities lectures is not significant at an alpha level of .05.
+
+### Effect Sizes
+
+Calculate effect sizes with partial eta squared.
+```{r}
+# -1.043 is the t.ratio from hyp1
+# -2.628 is the t.ratio from hyp2
+
+## actually prefer omega here, but use pes for the purposes of this lab
+
+effectsize::t_to_eta2(
+  t = c(-1.043, -2.628),
+  df_error = 30
+)
+```
+The partial eta squared of 0.03 indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
+
+The partial eta squared of 0.19 indicates that lecture method explains about 19% of the difference in vocabulary learning between physical science and social science conditions.
+
+
+#### For One-way ANOVA
+Going through the process above for one-way ANOVA.
+```{r}
+m1 <- lm(vocab ~ inst, vocab5_data)
+means1 <- emmeans(m1, ~inst)
+means1
+
+#Specify contrasts
+
+contrasts1 <- list(
+  hyp1_1 = c(1, -.5, -.5),
+  hyp2_1 = c(1, 0, -1)
+  )
+contrast(means1, contrasts1)
+
+effectsize::t_to_eta2(
+  t = c(2.336),
+  df_error = 33
+)
+```
