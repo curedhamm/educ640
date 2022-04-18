@@ -1,0 +1,83 @@
+---
+title: "Lab 1 key"
+output: html_document
+---
+
+```{r setup, include=F}
+## load needed packages
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+
+## Importing data
+df <- misty::read.sav(here("/Users/markhammond/Dropbox (University of Oregon)/educ640_S22/assignments_data/Lab1_Vocab.sav"), 
+                      use.value.labels = TRUE) %>% 
+              clean_names() # cleaning up variable names
+```
+
+## Study Description
+Our study variables include _Vocabulary Score_ as the _Dependent Variable_ (DV), a continuous interval scale with scores ranging from 0 to 60, and _Lecture Type_ as the _Independent Variable_ (IV), with two levels of instruction, physical science (coded as 1) and social science (coded as 2). 
+
+## Evaluating ANOVA Assumptions 
+This is a between-subjects analysis, as students were randomly assigned to only one type of instruction which, along with the balanced sample among groups, supports the _assumption of independence of observations_. The _assumption of normality_ seems tenable after visually inspecting the distribution and descriptive statistics for _Vocabulary Scores_. Finally, the _assumption of homogeneity of variance_ was not met as Levene's Test for Homogeneity of Variance was significant (_F_(1, 22)= 6.6, _p_ = .017), indicating that the error (within-group) variance around the mean is not equal across groups.
+
+```{r, include=T, warning = F}
+# Descriptive statistics
+describe(df) %>% 
+  select(n, mean, sd, skew, kurtosis, se)
+
+# Descriptive statistics by IV groups
+describeBy(x = df$vocab, group = df$instruct, mat = TRUE)
+
+# Histogram distribution of DV
+ggplot(data = df, aes(x = vocab)) +
+  geom_histogram(bins = 15)
+
+# Histogram distribution of sample between groups of IV
+ggplot(data = df, aes(x = instruct)) +
+  geom_histogram(stat="count")
+
+# Boxplot of vocab scores by instruct
+ggplot(data = df, aes(x = instruct, y = vocab)) +
+  geom_boxplot()
+
+# Homogeneity of variance test
+car::leveneTest(vocab ~ instruct, data = df, center = "mean")
+```
+
+### F-Test
+According to the omnibus _F_ statistic for the tested model, there was a significant effect of instruction type on students' vocabulary scores (_F_(1, 22)= 6.766, _p_ = .016). Namely, the average number of memorized vocabulary words was significantly higher for students in the physical science group (_M_ = 40, _SD_ = 10.80) than for their peers in the social science instruction group (_M_ = 26, _SD_ = 15.20).
+
+```{r, include=T}
+# F-ratio
+## calculate the total group variance (i.e., grand mean difference)
+SST <- sum( (df$vocab - mean(df$vocab))^2 )
+
+## transform from long to wide data to calculate within group variance
+df_wide <- spread(df, instruct, vocab) %>% 
+  clean_names()
+
+## calculate the within group variance, for each group
+SSW.1 <- (df_wide$physical_science - mean(df_wide$physical_science, na.rm = T))^2
+SSW.2 <- (df_wide$social_science - mean(df_wide$social_science, na.rm = T))^2
+
+## sum within group variance (sum of squares within)
+SSW <- sum(SSW.1, SSW.2, na.rm = T)
+
+## calculate difference for between group variance and group variance
+SSB <- SST-SSW
+
+## calculate mean square between
+MSB <- SSB/1   # (no. of groups - 1) or 1 degrees of freedom
+
+## calculate mean square within
+MSW <- SSW/22  # (sample size - no. of groups) or 22 degrees of freedom
+
+## produce F-ratio statistic 
+Fratio <- MSB/MSW
+Fratio
+
+## produce p-value for F-ratio
+p.val  <- pf(Fratio, 1, 22, lower.tail=FALSE)
+p.val
+```

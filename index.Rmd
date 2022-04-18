@@ -4,5 +4,3 @@ subtitle: "College of Education, University of Oregon"
 ---
 
 This website houses supporting materials for the course EDUC 640 at the University of Oregon, instructed by Mark Hammond and Anwesha Guha. These materials are intended to support students with completing their assignments using the free and open-source statistical programming language R.
-
-
