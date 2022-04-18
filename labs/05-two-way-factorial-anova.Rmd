@@ -147,8 +147,8 @@ This is a two-way factorial ANOVA. The code below is just a model.
 means_2
 
 contrasts <- list(
-  hyp1 = c(1, 0, -1, -1, 0, 1), #hypothetical contrasts: fill in appropriate values
-  hyp2 = c(1, -.5, -.5, -1, -.5, -.5) #hypothetical contrasts: fill in
+  hyp1 = c(1, 0, -1, -1, 0, 1), #hypothetical contrasts: fill in appropriate numbers
+  hyp2 = c(1, -.5, -.5, -1, -.5, -.5) #hypothetical contrasts: fill in numbers
 )
 
 contrast(means_2, contrasts, adjust = "holm")
@@ -167,8 +167,8 @@ Calculate effect sizes with partial eta squared.
 ## actually prefer omega here, but use pes for the purposes of this lab
 
 effectsize::t_to_eta2(
-  t = c(-1.33, -2.05),  #hypothetical, fill in your own
-  df_error = 28  #hypothetical, fill in your own
+  t = c(-1.33, -2.05),  #hypothetical numbers, fill in your own
+  df_error = 28  #hypothetical numbers, fill in your own
 )
 ```
 The partial eta squared of xx indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
@@ -180,20 +180,20 @@ The partial eta squared of xx indicates that lecture method explains about 19% o
 Going through the process above for one-way ANOVA, exploring interactions.
 
 ```{r}
-m1 <- lm(vocab ~ inst, vocab5_data)
+m1 <- lm(vocab ~ inst, vocab5_data) #this is the model you need to run
 means1 <- emmeans(m1, ~inst)
 means1
 
 #Specify contrasts
 
 contrasts1 <- list(
-  hyp1_1 = c(1, -1, 0), #hypothetical contrasts, fill in your own
-  hyp2_1 = c(1, 0, -1)  #hypothetical contrasts, fill in your own
+  hyp1_1 = c(1, -1, 0), #hypothetical contrast numbers, fill in your own
+  hyp2_1 = c(1, 0, -1)  #hypothetical contrast numbers, fill in your own
   )
 contrast(means1, contrasts1)
 
 effectsize::t_to_eta2(
-  t = c(3.75),  #hypothetical, fill in your own
-  df_error = 12  #hypothetical, fill in your own
+  t = c(3.75),  #hypothetical numbers, fill in your own
+  df_error = 12  #hypothetical numbers, fill in your own
 )
 ```
