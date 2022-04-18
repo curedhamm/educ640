@@ -102,73 +102,83 @@ Make sure to interpret if all assumptions are met.
 
 
 ### A priori contrasts
+
 We can do two-factor contrasts with the emmeans package.
 
 First, we can try using *by* grouping.
 ```{r}
 needs(emmeans)
-model <- lm(soc_part ~ sen + country + sen:country, df) #remember interactions in the model
-means_1 <- emmeans(model, specs = "sen", by = "country")
+model <- lm(soc_part ~ sen + country + sen:country, df) #remember sen, country, and sen:country interactions in the model
+means_1 <- emmeans(model, specs = "sen", by = "country") #use the model to calculate means
 means_1
 
-pairs(means_1)
+pairs(means_1) #now display those means in pairs
 ```
 
 This output shows us all the estimates by country, but it doesn't quite give us all the comparisons we need altogether. Use the code below instead.
 
 Calculate all possible comparisons and not "nesting" one factor in another:
 ```{r}
-means_2 <- emmeans(model, ~sen*country)
+means_2 <- emmeans(model, ~sen*country) #use same model but use different specifications
 means_2
 
-pairs(means_2)
+pairs(means_2) #display means in pairs, unnested
 ```
 
 Now we have more than we need, so just pull out the values we can actually interpret (similar to what you did in Lab 4).
+
+### Two-way ANOVA
+
+```{r}
+m1 <- anova_test(df, formula = soc_part ~ sen + country + sen:country, 
+                 detailed = TRUE, type = 3, effect.size = "pes")
+m1
+```
 
 ### Factorial ANOVA
 
 Let's establish some hypotheses to model the kind of analysis you'll do for Lab 5. 
 
-* Hypothesis 1 - 
+* Hypothesis 1 - To what extent does the difference between typically developing and other developing types (special education, behavioral needs, other special education needs) depend on country (Belgium, Netherlands, Norway)?
 * Hypothesis 2 -
 
-This is a two-way factorial ANOVA.
+This is a two-way factorial ANOVA. The code below is just a model.
 ```{r}
 means_2
 
 contrasts <- list(
-  hyp1 = c(1, -.5, -.5, -1, .5, .5),
-  hyp2 = c(1, -1, 0, -1, 1, 0)
+  hyp1 = c(1, 0, -1, -1, 0, 1), #hypothetical contrasts: fill in appropriate values
+  hyp2 = c(1, -.5, -.5, -1, -.5, -.5) #hypothetical contrasts: fill in
 )
 
 contrast(means_2, contrasts, adjust = "holm")
-
-## 5.5 is difference between the differences (see graph above to help interpret)
 ```
-There is a 5.5 word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a 16 word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. The difference in learning between the physical science and humanities lectures is not significant at an alpha level of .05.
+There is a xx word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a xx word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. 
 
 ### Effect Sizes
 
+**why omega vs. pes**
+
 Calculate effect sizes with partial eta squared.
 ```{r}
-# -1.043 is the t.ratio from hyp1
-# -2.628 is the t.ratio from hyp2
+# presume -1.33 is the t.ratio from hyp1
+# presume -2.05 is the t.ratio from hyp2
 
 ## actually prefer omega here, but use pes for the purposes of this lab
 
 effectsize::t_to_eta2(
-  t = c(-1.043, -2.628),
-  df_error = 30
+  t = c(-1.33, -2.05),  #hypothetical, fill in your own
+  df_error = 28  #hypothetical, fill in your own
 )
 ```
-The partial eta squared of 0.03 indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
+The partial eta squared of xx indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
 
-The partial eta squared of 0.19 indicates that lecture method explains about 19% of the difference in vocabulary learning between physical science and social science conditions.
+The partial eta squared of xx indicates that lecture method explains about 19% of the difference in vocabulary learning between physical science and social science conditions.
 
 
 #### For One-way ANOVA
-Going through the process above for one-way ANOVA.
+Going through the process above for one-way ANOVA, exploring interactions.
+
 ```{r}
 m1 <- lm(vocab ~ inst, vocab5_data)
 means1 <- emmeans(m1, ~inst)
@@ -177,13 +187,13 @@ means1
 #Specify contrasts
 
 contrasts1 <- list(
-  hyp1_1 = c(1, -.5, -.5),
-  hyp2_1 = c(1, 0, -1)
+  hyp1_1 = c(1, -1, 0), #hypothetical contrasts, fill in your own
+  hyp2_1 = c(1, 0, -1)  #hypothetical contrasts, fill in your own
   )
 contrast(means1, contrasts1)
 
 effectsize::t_to_eta2(
-  t = c(2.336),
-  df_error = 33
+  t = c(3.75),  #hypothetical, fill in your own
+  df_error = 12  #hypothetical, fill in your own
 )
 ```
