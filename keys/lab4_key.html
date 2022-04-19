@@ -1686,7 +1686,7 @@ describe(vocab4_data)</code></pre>
 ## vocab    2 36 33.5 12.87   35.5    34.2 12.60   6  53    47 -0.54    -0.87 2.14
 ## inst*    3 36  2.0  0.83    2.0     2.0  1.48   1   3     2  0.00    -1.58 0.14
 ## meth*    4 36  1.5  0.51    1.5     1.5  0.74   1   2     1  0.00    -2.05 0.08</code></pre>
-<p>Average vocabulary score is 33.5 (sd = 12.87) and is approximately
+<p>Average vocabulary score is 33.5 (SD = 12.87) and is approximately
 normally distributed (skew and kurtosis &lt; ±2).</p>
 <pre class="r"><code>#Output for each level
 describeBy(x = vocab4_data$vocab, group = vocab4_data$inst, 
@@ -1699,9 +1699,9 @@ describeBy(x = vocab4_data$vocab, group = vocab4_data$inst,
 ## X11    35 -0.56390947 -1.003818 3.116428
 ## X12    41  0.03928301 -1.914109 4.388345
 ## X13    26 -0.36694097 -1.132315 2.423058</code></pre>
-<p>Average vocabulary score for physical science lecture is 40 words (sd
-= 10.80), social science is 26 words (sd = 15.20), and history is 34.5
-words (sd = 8.39). Each are approximately normally distributed, with
+<p>Average vocabulary score for physical science lecture is 40 words (SD
+= 10.80), social science is 26 words (SD = 15.20), and history is 34.5
+words (SD = 8.39). Each are approximately normally distributed, with
 skewness and kurtosis &lt; ±2.</p>
 <p>Separate Boxplots</p>
 <pre class="r"><code>library(ggplot2)
@@ -1735,7 +1735,6 @@ the computer-augmented lecture scored higher on the vocabulary test than
 those who attended the traditional lecture. In each case, those with
 physical science appeared to score higher than the rest. Those attending
 the standard social science lecture scored the lowest.</p>
-<p>The significance of these differences will now be examined.</p>
 </div>
 <div id="checking-assumptions" class="section level3">
 <h3>Checking assumptions</h3>
@@ -1746,21 +1745,21 @@ the standard social science lecture scored the lowest.</p>
 ##       30                  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<p>The p-value of 0.0988 is not significant, suggesting that the error
-variance around the mean is roughly equal across groups. Additional
-corrections are not needed.</p>
-<p>For vocab, the mean = 33.5, sd = 12.87, and skew and kurtosis &lt;
-±2, assuming normality, as stated before.</p>
+<p>According to Levene’s Test for Homogeneity of Variance, that the
+error variance around the mean is equal across groups (<em>F</em> =
+2.06, <em>p</em> = .009) and that additional corrections are not
+needed.</p>
+<p>For vocab, the M = 33.5, SD = 12.87, and skew and kurtosis &lt; ±2,
+assuming normality, as stated before.</p>
 <p>Observations can be assumed to be independent since participants only
 attended one lecture, and there is no reason to believe they may have
 affected another group.</p>
 </div>
 <div id="two-way-anova" class="section level3">
 <h3>Two-way ANOVA</h3>
-<pre class="r"><code>m1 &lt;- anova_test(vocab4_data, formula = vocab ~ inst + meth + inst:meth, 
+<pre class="r"><code>anova_test(vocab4_data, formula = vocab ~ inst + meth + inst:meth, 
                  detailed = TRUE, type = 3, effect.size = &quot;pes&quot;)</code></pre>
 <pre><code>## Coefficient covariances computed by hccm()</code></pre>
-<pre class="r"><code>m1</code></pre>
 <pre><code>## ANOVA Table (type III tests)
 ## 
 ##        Effect   SSn  SSd DFn DFd       F        p p&lt;.05   pes
@@ -1774,17 +1773,7 @@ used and simple effects are examined below.</p>
 <div id="effect-sizes-with-omega" class="section level4">
 <h4>Effect sizes with omega</h4>
 <p>Let’s calculate effect size with Omega. Partial eta squared is
-already given in the ANOVA output. We need the following values (see
-ANOVA output for the corresponding values from the interaction):</p>
-<ul>
-<li>DFn (dfm) = 2</li>
-<li>DFd (dfe)= 30</li>
-<li>Fvalue = 6.493</li>
-<li>n = 36</li>
-<li>a = .05</li>
-</ul>
-<p>Now, just plug them in. Refer to previous labs/notes for
-interpretations.</p>
+already given in the ANOVA output.</p>
 <pre class="r"><code>needs(MOTE)
 omega.F(dfm = 2, dfe = 30,
       Fvalue = 6.493, n = 36, a = .05)</code></pre>
@@ -1930,22 +1919,22 @@ science or history depends on the lecture delivery method.</p>
 conducted to examine the extent to which instructional topic (physical
 science vs. social science vs. history) and lecture method (traditional
 vs. computer-assisted) affected the vocabulary learning of fifth
-graders.</p>
-<p>ANOVA results reported in the ANOVA table indicated a significant
-interaction between instructional topic and lecture method,
-<em>F</em>(2, 30) = 6.493, <em>p</em> = .005, <span class="math inline">\(\omega^2\)</span>=0.234.</p>
-<p>Due to the significant interaction, main effects are not
-interpreted.</p>
-<p>Follow-up (i.e., post-hoc) simple effects were examined with a Tukey
-correction to interpret the interaction further. When a lecture was
-delivered traditionally, students learned 22 more words on average in
-the physical science condition than the social science condition (34 vs
-12 words), <em>p</em>&lt;.001, and a mean of 19 more words in the
-history condition than the social science condition (12 vs 31 words),
-<em>p</em>&lt;.001.</p>
-<p>In addition, in social science, students learned 28 more words on
-average if the lecture was computer-assisted as opposed to traditional
-lecture (40 vs 12 words), <em>p</em>&lt;.001.</p>
+graders. Results indicated that there was a significant interaction
+effect between instructional topic and lecture method (<em>F</em>(2, 30)
+= 6.49, <em>p</em> = .005, <span class="math inline">\(\omega^{2}\)</span> = 0.234). In other words, the
+effect that lecture method has on students’ average vocabulary scores
+differs, or depends on, the type of lecture method.</p>
+<p>Follow-up (i.e., post-hoc) simple effects were examined with a
+Tukey’s HSD correction to interpret the interaction further, and found
+six statistically significant effects (<em>p</em> &lt; .05).
+Specifically, when a lecture was delivered traditionally, students
+learned 22 more words on average in the physical science condition
+(<em>M</em> = 34) than the social science condition (<em>M</em> = 12),
+and a mean of 19 more words in the history condition (<em>M</em> = 31)
+than the social science condition (<em>M</em> = 12). In addition, in
+social science, students learned 28 more words on average if the lecture
+was computer-assisted (<em>M</em> = 40) as opposed to traditional
+lecture (<em>M</em> = 12).</p>
 </div>
 </div>
 
