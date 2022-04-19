@@ -40,9 +40,9 @@ table(df$bullying_type)
 Now, let's view a summary table of the data with both variables. The code below helps you create a frequency table. You group by the two variables you want to see, summarize n (this is just a row count), and then you pick a variable to be at the top. You put this variable in the spread function. 
 ```{r}
 df %>% 
-  group_by(scenario_type, bullying_type) %>% 
+  group_by(df$scenario_type, df$bullying_type) %>% 
   summarise(n = n()) %>% #new column "n" = row count of each factor grouping
-  spread(bullying_type, n) # rows "spread" across the top
+  spread(df$bullying_type, n) # rows "spread" across the top
 ```
 Then check the overall descriptive statistics.
 ```{r}
