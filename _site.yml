@@ -22,11 +22,17 @@ navbar:
       - text: "Lab 1"
         href: ./keys/lab1_key.html
       - text: "Lab 2 & 3"
+        href: ./keys/lab2-3_key.html
       - text: "Lab 4"
+        href: 
       - text: "Lab 5"
+        href: 
       - text: "Lab 6"
+        href: 
       - text: "Lab 7"
+        href: 
       - text: "Lab 8"
+        href: 
       - text: "Lab 9"
   - text: Homework Keys
     menu:

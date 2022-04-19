@@ -399,9 +399,17 @@ around the mean is not equal across groups.</p>
 <h2>1.3. Oneway ANOVA</h2>
 <p>According to the omnibus <em>F</em> statistic for the tested model,
 there was a significant effect of instruction type on students’
-vocabulary scores (<em>F</em>(2, 33)= 4.28, <em>p</em> = .02),
+vocabulary scores (<em>F</em>(2, 33)= 4.28, <em>p</em> = .022),
 indicating that differences between instruction type accounted for about
 21% of the variance among vocabulary scores (<span class="math inline">\(\eta^{2}\)</span> = .206).</p>
+<div id="a-post-hoc-pariwise-comparison" class="section level3">
+<h3>1.3.a Post-Hoc pariwise comparison</h3>
+<p>As our data do not meet the assumption of <em>homogeneity of
+variances</em>, I used the Games‐Howell post-hoc test to adjust for
+multiple tests, comparing each pair of means across the three
+instruction groups. The results indicate that the mean scores for
+students in the physical science group are significant differently from
+their peers in the social science group (<em><span class="math inline">\(p_{adj}\)</span></em> = .043).</p>
 <pre class="r"><code>describe(df_2) %&gt;% 
   select(n, mean, sd, skew, kurtosis, se)</code></pre>
 <pre><code>##            n mean    sd  skew kurtosis   se
@@ -435,6 +443,16 @@ aov_car(vocab ~ instruct + Error(idnum), data = df_2)</code></pre>
 ## 1 instruct 2, 33 139.36 4.28 * .206    .022
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;+&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#Games-Howell (used if assumption of variance homogeneity is violated)
+games_howell_test(df_2, vocab ~ instruct, 
+                  conf.level = 0.95,
+                  detailed = FALSE)</code></pre>
+<pre><code>## # A tibble: 3 × 8
+##   .y.   group1           group2   estimate conf.low conf.high p.adj p.adj.signif
+## * &lt;chr&gt; &lt;chr&gt;            &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       
+## 1 vocab physical science social …    -14     -27.6     -0.374 0.043 *           
+## 2 vocab physical science history      -5.5   -15.5      4.46  0.363 ns          
+## 3 vocab social science   history       8.5    -4.35    21.4   0.235 ns</code></pre>
 <pre class="r"><code># Calculating Omega Square 
 needs(MOTE)
 omega.F(dfm = 2, dfe = 33,
@@ -467,6 +485,7 @@ omega.F(dfm = 2, dfe = 33,
 ## [1] &quot;$F$(2, 33) = 4.28, $p$ = .022&quot;</code></pre>
 </div>
 </div>
+</div>
 <div id="lab-3" class="section level1">
 <h1>2. Lab 3</h1>
 <div id="a-priori-contrasts" class="section level2">
@@ -480,8 +499,8 @@ vocabulary score for students in the social science group is
 significantly different from the other types of instruction.<br />
 <strong><span class="math inline">\(H_{2}\)</span>.</strong> The mean
 vocabulary score for students in the physical science group is
-significantly different from the history group.<br />
-My results support my first hypothesis, that the average vocabulary
+significantly different from the history group.</p>
+<p>Results support my first hypothesis, that the average vocabulary
 score for social science is significantly different from the other types
 of instruction (<em>t</em> = -2.69, <em>p</em> = .011). Results for my
 second hypothesis were not supported, where the difference between
@@ -537,21 +556,21 @@ vocabulary score for students in the physical science group is
 significantly different from the other types of instruction.<br />
 <strong><span class="math inline">\(H_{4}\)</span>.</strong> The mean
 vocabulary score for students in the physical science is significantly
-different from history.<br />
-Prior to examining my <em>post hoc</em> hypotheses, I calculated an
+different from history.</p>
+<p>Prior to examining my <em>post hoc</em> hypotheses, I calculated an
 adjusted <span class="math inline">\({\alpha}\)</span> threshold for
 significance to account for the Type I error rate arising from multiple
 comparisons I have conducted using these data (<span class="math inline">\({\alpha}\)</span> = .05/5 = .01) to correct for
 Type I error arising from multiple comparisons. Thus my new threshold
-for a significant <em>p</em>-value is <em>p</em> &lt; .01.<br />
-Neither <em>post hoc</em> pairwise comparison was significant at the
+for a significant <em>p</em>-value is <em>p</em> &lt; .01.</p>
+<p>Neither <em>post hoc</em> pairwise comparison was significant at the
 adjusted threshold (<em>p</em> &lt; .01), indicating that the difference
 in mean vocabulary score between physical science vs. other types of
-instruction (<em>t</em> = 2.336, <em>p</em>= .026) and physical science
-vs. history (<em>t</em> = -1.764, <em>p</em> = .087) were likely due to
-random within-group variation (i.e., error).<br />
-Regarding the variance accounted for by the tested models, it appears
-that there may have been some bias due to sample size as the <span class="math inline">\(\eta^{2}\)</span> seemed to be inflated (<span class="math inline">\(\eta^{2}\)</span> = .206)compared to the <span class="math inline">\(\omega^{2}\)</span> effect size statistic (<span class="math inline">\(\omega^{2}\)</span> = .154), reflecting a 25%
+instruction (<em>t</em> = 2.34, <em>p</em>= .026) and physical science
+vs. history (<em>t</em> = -1.76, <em>p</em> = .087) were likely due to
+random within-group variation (i.e., error).</p>
+<p>Regarding the variance accounted for by the tested models, it appears
+that there may have been some bias due to sample size as the <span class="math inline">\(\eta^{2}\)</span> seemed to be inflated (<span class="math inline">\(\eta^{2}\)</span> = .206) compared to the <span class="math inline">\(\omega^{2}\)</span> effect size statistic (<span class="math inline">\(\omega^{2}\)</span> = .154), reflecting a 25%
 difference in variance explained by the model between the two effect
 sizes.</p>
 <pre class="r"><code>#### 2.2. Creating post hoc contrasts ####
