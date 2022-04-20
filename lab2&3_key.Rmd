@@ -1,0 +1,119 @@
+---
+title: "Lab 2 & 3 Key"
+---
+
+Load necessary packages.
+```{r packages, message = FALSE}
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych) 
+```
+
+Import data.
+```{r}
+df_2 <- misty::read.sav(here("assignments_data/Lab3_Vocab.sav"), 
+                      use.value.labels = TRUE) %>% 
+              clean_names() # cleaning up variable names
+```
+
+Calculate descriptive statistics.
+```{r}
+describe(df_2) %>% 
+  select(n, mean, sd, skew, kurtosis, se)
+
+# Histogram
+ggplot(data = df_2, aes(x = vocab)) +
+  geom_histogram(bins = 20)
+
+# Boxplot
+ggplot(data = df_2, aes(x = instruct, y = vocab)) +
+  geom_boxplot()
+
+# Homogeneity of variance
+needs(car)
+car::leveneTest(vocab ~ instruct, data = df_2, center = "mean")
+```
+
+Calculate F-ratio.
+```{r}
+needs(afex)
+aov_car(vocab ~ instruct + Error(idnum), data = df_2)
+```
+
+Post-Hoc Comparison. Use GH.
+```{r}
+#post-hoc
+rstatix::games_howell_test(vocab ~ instruct, data = df_2,
+                           conf.level = 0.95,
+                           detailed = FALSE) #outputs actual estimates with GH correction
+# p.adj is GH adjusted p value
+```
+
+Post-hoc contrasts.
+
+Helmert is best for this case. Physical vs others (1, -.5, -.5); physical vs history (0, 1, -1) = 0 + -.5 + .5 = 0 --> Orthogonal! 
+
+```{r}
+#check the order of levels
+levels(df_2$instruct)
+
+# change levels to a different order using the following code (but we don't actually need to here)
+# df_2$instruct <- factor(df_2$instruct, levels = c("social science", "history", "physical science"))
+```
+
+Step 1. Set contrasts (Helmert)
+```{r}
+contrast1 <- c(1, -.5, -.5) #physical science vs others
+contrast2 <- c(0, 1, -1) #social science vs history
+```
+
+Step 2. Bind vectors to temporary matrix, where constants are equal to 1/(length of vectors)
+```{r}
+mat.temp <- rbind(constant = 1/3, contrast1, contrast2) #3 is for number of cells in the design (same as levels because only one IV)
+mat.temp
+```
+
+Step 3. Take the inverse of the matrix.
+```{r}
+mat <- solve(mat.temp)
+mat
+
+#drop first column of constants
+mat <- mat[, -1]
+mat
+```
+
+Step 4. Run model with lm() and set contrasts: link "instruct" variable with contrast matrix
+```{r}
+m_contrasts <- lm(vocab ~ instruct, data = df_2, contrasts = list(instruct = mat))
+
+summary(m_contrasts)
+```
+Level 1 vs later is 9.75 (instruct 1): first half of the table from the slides = instruct1 output.
+
+If we are only using these two (2) contrasts, use alpha of 0.05/2 = 0.025 as the new alpha. 
+
+But, if you count the 3 pairwise comparisons already done in lab 2 a = 0.05/5 = 0.01. Use this since F test was significant.
+
+So, we end up with a nonsignificant result: we fail to reject our null hypothesis. We cannot say the physical science condition is significantly different from the humanities conditions.
+
+```{r}
+anova_type3_ges <- anova_test(m_contrasts, 
+                 type="III",
+                 effect.size = "pes",
+                 detailed = TRUE)
+
+anova_type3_ges
+```
+
+Calculate Omega:
+* dfn = 2
+* dfd = 33
+* Fvalue = 4.284
+* n = 36
+* a = .05
+
+Now, just plug them in.
+```{r}
+needs(MOTE)
+omega.F(dfm = 2, dfe = 33,
+      Fvalue = 4.284, n = 36, a = .05)
+```
