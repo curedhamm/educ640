@@ -190,7 +190,7 @@ contrasts1 <- list(
   hyp1_1 = c(1, -1, 0), #hypothetical contrast numbers, fill in your own
   hyp2_1 = c(1, 0, -1)  #hypothetical contrast numbers, fill in your own
   )
-contrast(means1, contrasts1)
+contrast(means1, contrasts1)Week
 
 effectsize::t_to_eta2(
   t = c(3.75),  #hypothetical numbers, fill in your own
