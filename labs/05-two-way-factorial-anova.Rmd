@@ -1,27 +1,28 @@
 ---
-title: 'Lab 5: Two-way Factorial ANOVA'
+title: 'Lab 5: Interaction Contrasts with Two-way Factorial ANOVA'
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
 ---
-## Introduction
+# 1. Introduction
 
-This tutorial will learn how to run two-way factorial ANOVA. This lab will be a little shorter than those before -- woo! We will calculate descriptive statistics, check ANOVA assumptions, calculate ANOVA and effect sizes, and code contrasts according to our research questions.
+This tutorial will walk through how to review and run a interaction contrast using two-way factorial ANOVA. We will produce descriptive statistics, check ANOVA assumptions, run a two-way factorial ANOVA, produce effect sizes, and code interaction contrasts according to our research questions.
 
-We will use data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Bossaert et al., 2011). This data focuses on the social dimension of inclusion in education. The columns include the following information:
+This tutorial uses data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164); Bossaert et al., 2011), which focus on the social dimension of inclusion in education in different countries. The columns include the following information:
 
 * `country`: name of country
 * `soc_part`: social participation (score)
 * `sen`: students with special educational needs categorization
 
-This data is similar to the one you will use for your Lab 5 assignment, though your Lab 5 data will also include an id variable. Lab 5 data will be similar, if not the same, as your Lab 4 data.
+Theses data are similar to those you will use for Lab 5, though Lab 5 data will include an id variable. 
 
-First, load necessary packages:
+# 2. Describe Data and ANOVA Assumptions
+We will load the packages and read in the data as we have previous labs.
 ```{r packages, message = FALSE}
+# Load necessary packages:
 needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
-```
 
-## Describe Data
-
-Next, we will read in the data, similar to the process in your previous labs.
-``` {r}
 df <- misty::read.sav(here("kamden-mwavita_data/factorial_ANOVA_Bossaert_et_al.sav"), use.value.labels = TRUE) %>% 
   clean_names()
 ```
@@ -49,7 +50,7 @@ describe(df)
 ```
 Make sure to interpret overall distribution stats here.
 
-By level:
+By level: report the mean/sd and describe the distributions for the levels of each variable.
 ```{r}
 #Output for each level - sen
 describeBy(x = df$soc_part, group = df$sen, 
@@ -59,10 +60,8 @@ describeBy(x = df$soc_part, group = df$sen,
 describeBy(x = df$soc_part, group = df$country, 
              mat = TRUE, data = df)
 ```
-Using the code above, report the mean/sd and describe the distributions for the levels of each variable.
-
+### Marginal Means Plots
 Additionally, we can pull in what we learned last week about marginal means as another way to summarize mean values. Here, let's compare the means with each other:
-
 ```{r}
 means <- df %>% 
   group_by(sen, country) %>% #the two variables
@@ -80,85 +79,66 @@ means %>%
 You can play around with the aesthetics of the graph above. There's not only one way to represent the means, just do whatever makes sense for you.
 
 ### Boxplots
-
 ```{r}
-soc_boxplot <- df %>% 
+df %>% 
   ggplot(aes(x = country, y = soc_part, fill = sen)) +
   geom_boxplot() +
   theme_minimal() +
   theme(legend.position="bottom")
-
-soc_boxplot
 ```
 
-## Checking assumptions
-
-Homogeneity of variance:
+### Homogeneity of variance
+Make sure to interpret if all assumptions are met. 
 ```{r}
 car::leveneTest(soc_part ~ country*sen, data = df, center = "mean")
 ```
 
-Make sure to interpret if all assumptions are met. 
+# 3. Two-way Factorial ANOVA and Pairwise Comparisons
 
-
-### A priori contrasts
-
+### 3.1 Extract marginal means
 We can do two-factor contrasts with the emmeans package.
-
-First, we can try using *by* grouping.
+First, we can try using *by* grouping. This output shows us all the estimates by country,
 ```{r}
 needs(emmeans)
 model <- lm(soc_part ~ sen + country + sen:country, df) #remember sen, country, and sen:country interactions in the model
+
 means_1 <- emmeans(model, specs = "sen", by = "country") #use the model to calculate means
 means_1
 
 pairs(means_1) #now display those means in pairs
 ```
 
-This output shows us all the estimates by country, but it doesn't quite give us all the comparisons we need altogether. Use the code below instead.
-
-Calculate all possible comparisons and not "nesting" one factor in another:
+### 3.2 Produce pairwise comparisons
+Use the code below gives us all the comparisons we need altogether by calculating all possible comparisons without "nesting" one factor in another:
 ```{r}
 means_2 <- emmeans(model, ~sen*country) #use same model but use different specifications
 means_2
 
 pairs(means_2) #display means in pairs, unnested
 ```
-
 Now we have more than we need, so just pull out the values we can actually interpret (similar to what you did in Lab 4).
-
-### Two-way ANOVA
-
 ```{r}
 anova_test(df, formula = soc_part ~ sen + country + sen:country, 
                  detailed = TRUE, type = 3, effect.size = "pes")
 ```
 
-### Factorial ANOVA
-
+# 4. Factorial ANOVA Interaction Contrasts
 Let's establish some hypotheses to model the kind of analysis you'll do for Lab 5. 
+* Hypothesis 1 - To what extent does the effect of differences between 'typically developing and other developing types (special education, behavioral needs, other special education needs) on so depend on country (Belgium, Netherlands, Norway)?
+* Hypothesis 2 - 
 
-* Hypothesis 1 - To what extent does the difference between typically developing and other developing types (special education, behavioral needs, other special education needs) depend on country (Belgium, Netherlands, Norway)?
-* Hypothesis 2 -
-
-This is a two-way factorial ANOVA. The code below is just a model.
+### 4.1 Defining contrasts
 ```{r}
 contrasts <- list(
-  hyp1 = c(1, 0, -1, -1, 0, 1), #hypothetical contrasts: fill in appropriate numbers
-  hyp2 = c(1, -.5, -.5, -1, .5, .5) #hypothetical contrasts: fill in numbers
+  hyp1 = c(1, -.33, -.33, -.33, -1, .33, .33, .33,  -1, .33, .33, .33), #hypothetical contrasts: fill in appropriate numbers
+  hyp2 = c(.5, -.5, -.5, .5, -.5, .5, .5, -.5, -.5, .5, .5, -.5) #hypothetical contrasts: fill in numbers
 )
-```
 
-
-```{r}
 contrast(means_2, contrasts, adjust = "holm")
 ```
 There is a xx word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a xx word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. 
 
-### Effect Sizes
-
-**why omega vs. pes**
-
+### 4.2 Effect Sizes
 Calculate effect sizes with partial eta squared.
 ```{r}
 # presume -1.33 is the t.ratio from hyp1
@@ -175,21 +155,19 @@ The partial eta squared of xx indicates that lecture method explains about 3% of
 
 The partial eta squared of xx indicates that lecture method explains about 19% of the difference in vocabulary learning between physical science and social science conditions.
 
-
-#### For One-way ANOVA
+# 5. Demonstrating Using One-way ANOVA
 Going through the process above for one-way ANOVA, exploring interactions.
-
 ```{r}
-m1 <- lm(vocab ~ inst, vocab5_data) #this is the model you need to run
-means1 <- emmeans(m1, ~inst)
+m1 <- lm(soc_part ~ sen, df) #this is the model you need to run
+means1 <- emmeans(m1, ~sen)
 means1
 
 #Specify contrasts
 
 contrasts1 <- list(
-  hyp1_1 = c(1, -1, 0), #hypothetical contrast numbers, fill in your own
-  hyp2_1 = c(1, 0, -1)  #hypothetical contrast numbers, fill in your own
-  )
+  hyp1 = c(1, -.33, -.33, -.33), #hypothetical contrasts: fill in appropriate numbers
+  hyp2 = c(.5, -.5, -.5, .5) #hypothetical contrasts: fill in numbers
+)
 contrast(means1, contrasts1)
 
 effectsize::t_to_eta2(
@@ -197,3 +175,23 @@ effectsize::t_to_eta2(
   df_error = 12  #hypothetical numbers, fill in your own
 )
 ```
+
+```{r}
+m1 <- lm(soc_part ~ country, df) #this is the model you need to run
+means1 <- emmeans(m1, ~ country)
+means1
+
+#Specify contrasts
+
+contrasts1 <- list(
+  hyp1 = c(1, -.5, -.5), #hypothetical contrasts: fill in appropriate numbers
+  hyp2 = c(-1, .5, .5) #hypothetical contrasts: fill in numbers
+)
+contrast(means1, contrasts1)
+
+effectsize::t_to_eta2(
+  t = c(3.75),  #hypothetical numbers, fill in your own
+  df_error = 12  #hypothetical numbers, fill in your own
+)
+```
+
