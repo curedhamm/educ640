@@ -18,10 +18,9 @@ The authors asked several research questions; in this lab, we will focus on one:
 
 The authors measured both intellectual accessibility and emotional satisfaction using the Attitudes toward the Study of Chemistry Inventory (ASCI). The ASCI is an eight-item scale of seven-point Likert-type items.
 
-
 ## Restructuring data
 
-Remember, we have to restructure the data for within-subjects designs.
+Remember, we have to restructure the data for within-subjects designs. 
 
 ```{r setup, message = FALSE}
 needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
@@ -34,20 +33,21 @@ First, let's view what the data looks like.
 head(df)
 ```
 
-Add in an ID column
+Add in an ID column, if needed.
 ```{r}
 df <- df %>% 
   rowid_to_column("id")
 head(df)
 ```
 
-Next, we need to pivot the data. Rename the variables so it makes more sense.
+Next, we need to pivot the data. Now that we have two variables to work with, it would be a good idea to separate the names of each of them via an underscore. So, we rename the variables. I put the **attitude** (intellectual vs. emotional) before the underscore and **intervention** (pre vs. post) after the underscore. 
 
 ```{r}
 df <- df %>% 
-  rename(pre_test = pre_gsi,
-         post_test = post_gsi,
-         followup = followup_gsi)
+  rename(intellectual_pre = ia_pre,
+         intellectual_post = ia_post,
+         emotional_pre = es_pre,
+         emotional_post = es_post)
 ```
 
 Check that it worked:
@@ -55,18 +55,19 @@ Check that it worked:
 head(df)
 ```
 
-Now, let's actually pivot the data. We do this with a function called `pivot_longer`. This function takes a few arguments:
+So, here are the arguments the `pivot_longer` function will take in this case:
 
-* `cols = c()` : inside the `c()`, you specify what columns you want to turn into rows. In this case, that means `pre_test`, `post_test`, and `followup`. You put them inside the `c` and parentheses so it is grouped together, separate from the rest of the function. 
-* `names_to = `: this is where you specify what the column names are. Here, all the columns are the type of test, so you can put "test_type".
-* `values_to = `: this is where you specify where the numbers actually go. In this case, the numbers all represent scores, so you can put "test_score".
+* `cols = ` : Since we are pivoting everything except ID, you can choose to write out all the columns (`c(ia_pre, ia_post, es_pre, es_post)`) or you can just write `-id`, which basically takes all the columns except the ID column.
+* `names_to = ` : The names are a combination of the attitude and the intervention, so we can write `attitude_intervention`.
+* `values_to = ` : These are where the all the scores actually go, so we can call this new column `score`.
+
 
 This is what it looks like all together:
 ```{r}
 df <- df %>% 
-  pivot_longer(cols = c(pre_test, post_test, followup), 
-               names_to = "test_type",
-               values_to = "test_score")
+  pivot_longer(cols = -id, 
+               names_to = "attitude_intervention",
+               values_to = "score")
 ```
 
 Let's check if it worked:
@@ -74,20 +75,39 @@ Let's check if it worked:
 head(df)
 ```
 
-Now we have one column for student id, one for test type, and one for test score. You can see each student is listed three times, once for each score.
+Now we have one column for student id, one for test score, and one that has both the attitude and intervention. Since these are two separate variables, we need to separate them.
+
+R has a function called `separate()` in the `tidyr` package that can easily do this for you. It takes three arguments:
+
+* `col = ` : this is the column you want to separate. For us, this is `attitude_intervention`.
+* `into = c()` : this is what you want to separate the column into. For us, this is `attitude` and `intervention`.
+* `sep = ` : this is what you want to separate by (i.e. a space, a hyphen, an underscore). For us, this is an underscore.
+
+Now put it together.
+```{r}
+df <- df %>% 
+  separate(col = attitude_intervention, into = c("attitude", "intervention"), sep = "_")
+```
+
+```{r}
+head(df)
+```
 
 Now, we need to check that each variable is the right data type.
 ```{r}
 str(df)
 ```
 
-The code above shows us that there are two problems: `student_id` is being counted as "int" (or integer) and `test_type` is being counted as "chr" (or character, which is basically like a string of letters). Both of these need to be factors (`test_score` is fine as a continuous dependent variable). Use the code below to get the other two in the right format.
+The ID variable, attitude variable, and intervention variable should all be factors. 
 
-For `test_type`, R doesn't know what order to put the tests, so I am specifying the order using the code below (similar to what we went over in Lab 2/3).
+Since I only have two levels per variable and there is no order I need them in, I am not using the levels feature that I used in Lab 6. If your variables do have a specific order they need to go in, go back to Lab 6 to see how to re-level the variables in this step.
+
+**This is important ^^! Do this now if you need to!**
+
 ```{r}
-df$student_id <- as.factor(df$student_id) # convert to a factor
-
-df$test_type <- factor(df$test_type, levels =  c("pre_test", "post_test", "followup")) # convert to a factor and make sure levels are in the right order
+df$id <- as.factor(df$id)
+df$attitude <- as.factor(df$attitude)
+df$intervention <- as.factor(df$intervention)
 ```
 
 Check if it worked:
@@ -95,21 +115,13 @@ Check if it worked:
 str(df)
 ```
 
-Now we can go on with our analysis.
+Now we go on with our analysis.
 
 ## Describing data
 
-We can see the overall distribution of test scores.
-```{r}
-describe(df)
-```
+Use the `describe()` and `describeBy()` functions to explore the data.
 
-We can also look at more helpful statistics with `describeBy`, examining scores by test_type and/or by student.
-```{r}
-describeBy(df, group = "test_type")
-```
-
-**Note: for within-subjects, you don't need to run leveneTest!!**
+## **stopped here, come back** ##
 
 Let's use boxplots to look at the score distributions.
 ```{r}
