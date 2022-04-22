@@ -130,9 +130,8 @@ Now we have more than we need, so just pull out the values we can actually inter
 ### Two-way ANOVA
 
 ```{r}
-m1 <- anova_test(df, formula = soc_part ~ sen + country + sen:country, 
+anova_test(df, formula = soc_part ~ sen + country + sen:country, 
                  detailed = TRUE, type = 3, effect.size = "pes")
-m1
 ```
 
 ### Factorial ANOVA
@@ -144,13 +143,14 @@ Let's establish some hypotheses to model the kind of analysis you'll do for Lab 
 
 This is a two-way factorial ANOVA. The code below is just a model.
 ```{r}
-means_2
-
 contrasts <- list(
   hyp1 = c(1, 0, -1, -1, 0, 1), #hypothetical contrasts: fill in appropriate numbers
-  hyp2 = c(1, -.5, -.5, -1, -.5, -.5) #hypothetical contrasts: fill in numbers
+  hyp2 = c(1, -.5, -.5, -1, .5, .5) #hypothetical contrasts: fill in numbers
 )
+```
 
+
+```{r}
 contrast(means_2, contrasts, adjust = "holm")
 ```
 There is a xx word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a xx word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. 
@@ -190,7 +190,7 @@ contrasts1 <- list(
   hyp1_1 = c(1, -1, 0), #hypothetical contrast numbers, fill in your own
   hyp2_1 = c(1, 0, -1)  #hypothetical contrast numbers, fill in your own
   )
-contrast(means1, contrasts1)Week
+contrast(means1, contrasts1)
 
 effectsize::t_to_eta2(
   t = c(3.75),  #hypothetical numbers, fill in your own
