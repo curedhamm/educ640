@@ -13,7 +13,7 @@ This tutorial uses data from your textbook (see ['Support Materials' on the text
 
 * `country`: name of country
 * `soc_part`: social participation (score)
-* `sen`: students with special educational needs categorization
+* `sen2`: students with special educational needs categorization
 
 Theses data are similar to those you will use for Lab 5, though Lab 5 data will include an id variable. 
 
@@ -23,8 +23,17 @@ We will load the packages and read in the data as we have previous labs.
 # Load necessary packages:
 needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
 
-df <- misty::read.sav(here("kamden-mwavita_data/factorial_ANOVA_Bossaert_et_al.sav"), use.value.labels = TRUE) %>% 
+df <- misty::read.sav(here("kamden-mwavita_data/factorial_ANOVA_Bossaert_et_al.sav"), use.value.labels = TRUE) %>%
   clean_names()
+
+df <- df %>% 
+  mutate(sen2 = recode_factor(sen, 
+                                 "Typically developing" = "Typically developing",
+                                "Special Educational Needs" = "Special needs",
+                                "Behavioral needs" = "Special needs",
+                                "Other special needs" = "Special needs")) %>% 
+  select(1:2,4)
+df
 ```
 
 If you want to explore the dataset, it is good practice to view the structure of the dataset (`str(df)`)and then the top 5 rows (`head(df)`). This way, you can catch if you read in the data correctly, if there are any anomalies, etc. 
@@ -32,14 +41,14 @@ If you want to explore the dataset, it is good practice to view the structure of
 Now, we run through the basic descriptives. See Lab 4 for more information or explanations of this code, if needed. 
 
 ```{r}
-table(df$sen)
+table(df$sen2)
 table(df$country)
 ```
 
 Summary table of the data with both variables: Notice that we do not have an equal number of cases among our groups.
 ```{r}
 df %>% 
-  group_by(sen, country) %>% 
+  group_by(sen2, country) %>% 
   summarise(n = n()) %>%
   spread(country, n) 
 ```
@@ -52,8 +61,8 @@ Make sure to interpret overall distribution stats here.
 
 By level: report the mean/sd and describe the distributions for the levels of each variable.
 ```{r}
-#Output for each level - sen
-describeBy(x = df$soc_part, group = df$sen, 
+#Output for each level - sen2
+describeBy(x = df$soc_part, group = df$sen2, 
              mat = TRUE, data = df)
 
 #Output for each level - country
@@ -65,15 +74,15 @@ Pulling from what we learned last week about marginal means as another way to su
 ```{r}
 # Step 1. Extract means for 
 means <- df %>% #creating new object (tibble) with the means of 
-  group_by(sen, country) %>% #grouping our results by our two independent variables, 'country' within levels of 'sen'
+  group_by(sen2, country) %>% #grouping our results by our two independent variables, 'country' within levels of 'sen2'
   summarise(mean_soc_part = mean(soc_part)) #extract the mean of dependent variable
 means #view new data
 
 # Graphical representation of means
 means %>% 
-  ggplot(aes(country, mean_soc_part, group = sen)) +
+  ggplot(aes(sen2, mean_soc_part, group = country)) +
   geom_point() +
-  geom_line(aes(color = sen))
+  geom_line(aes(color = country))
 ```
 
 You can play around with the aesthetics of the graph above. There's not only one way to represent the means, just do is easiest to interpret given your hypotheses/research questions.
@@ -81,7 +90,7 @@ You can play around with the aesthetics of the graph above. There's not only one
 ### Boxplots
 ```{r}
 df %>% 
-  ggplot(aes(x = country, y = soc_part, fill = sen)) +
+  ggplot(aes(x = country, y = soc_part, fill = sen2)) +
   geom_boxplot() +
   theme_minimal() +
   theme(legend.position="bottom")
@@ -90,7 +99,7 @@ df %>%
 ### Homogeneity of variance
 Make sure to interpret if all assumptions are met. 
 ```{r}
-car::leveneTest(soc_part ~ country*sen, data = df, center = "mean")
+car::leveneTest(soc_part ~ sen2*country, data = df, center = "mean")
 ```
 
 # 3. Two-way Factorial ANOVA and Pairwise Comparisons
@@ -100,9 +109,9 @@ We can do two-factor contrasts with the emmeans package.
 First, we can try using *by* grouping. This output shows us all the estimates by country,
 ```{r}
 needs(emmeans)
-model <- lm(soc_part ~ sen + country + sen:country, df) #remember sen, country, and sen:country interactions in the model
+model <- lm(soc_part ~ sen2 + country + sen2:country, df) #remember sen2, country, and sen2:country interactions in the model
 
-means_1 <- emmeans(model, specs = "sen", by = "country") #use the model to calculate means
+means_1 <- emmeans(model, specs = "sen2", by = "country") #use the model to calculate means
 means_1
 
 pairs(means_1) #now display those means in pairs
@@ -111,32 +120,36 @@ pairs(means_1) #now display those means in pairs
 ### 3.2 Produce pairwise comparisons
 Use the code below gives us all the comparisons we need altogether by calculating all possible comparisons without "nesting" one factor in another:
 ```{r}
-means_2 <- emmeans(model, ~sen*country) #use same model but use different specifications
+means_2 <- emmeans(model, ~sen2*country) #use same model but use different specifications
 means_2
 
 pairs(means_2) #display means in pairs, unnested
 ```
 Now we have more than we need, so just pull out the values we can actually interpret (similar to what you did in Lab 4).
 ```{r}
-anova_test(df, formula = soc_part ~ sen + country + sen:country, 
+anova_test(df, formula = soc_part ~ sen2 + country + sen2:country, 
                  detailed = TRUE, type = 3, effect.size = "pes")
 ```
 
 # 4. Factorial ANOVA Interaction Contrasts
-Let's establish some hypotheses to model the kind of analysis you'll do for Lab 5.
-* Hypothesis 1 - To what extent does the effect of differences between 'typically developing and other developing types (special education, behavioral needs, other special education needs) on so depend on country (Belgium, Netherlands, Norway)?
+We'll run on hypothesis for a _post-hoc_ analysis to model what you'll do for Lab 5.
+* Hypothesis - To what extent does the effect of differences between 'typically developing' and 'special needs' depend on Norway vs. Belgium and the Netherlands?
 
 ### 4.1 Defining contrasts
+This is a 2x3 two-way factorial ANOVA, so we will need to give a contrast coefficient for each of our simple effects (totaling 6 contrast coefficients, one for each combination between IV levels).
 ```{r}
-contrasts <- list(
-  hyp1 = c(1, -.33, -.33, -.33, 
-           1, -.33, -.33, -.33,  
-           1, -.33, -.33, -.33) #hypothetical contrasts: fill in appropriate numbers
-)
+contrasts <- list( # the contrast coefficients are split to make it easier to track by groups
+  hyp1 = c(-1, -1, 
+            2, 2,    #these three contrast 'typically developing' between countries
+            -1, -1), #these three contrast 'special needs' between countries
+  hyp2 = c(-1, 1, 
+           1, -1, #these three contrast 'typically developing' between countries
+            0, 0) #these three contrast 'special needs' between countries
+  )
 
 contrast(means_2, contrasts, adjust = "holm")
 ```
-There is a xx word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a xx word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. 
+Our results indicate that the social participation We There is a xx word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a xx word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. 
 
 ### 4.2 Effect Sizes
 Calculate effect sizes with partial eta squared.
@@ -154,44 +167,3 @@ omega.F(dfm = 6, dfe = 1323,
 The partial eta squared of xx indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
 
 The partial eta squared of xx indicates that lecture method explains about 19% of the difference in vocabulary learning between physical science and social science conditions.
-
-# 5. Demonstrating Using One-way ANOVA
-Going through the process above for one-way ANOVA, exploring interactions.
-```{r}
-m1 <- lm(soc_part ~ sen, df) #this is the model you need to run
-means1 <- emmeans(m1, ~sen)
-means1
-
-#Specify contrasts
-
-contrasts1 <- list(
-  hyp1 = c(1, -.33, -.33, -.33), #hypothetical contrasts: fill in appropriate numbers
-  hyp2 = c(.5, -.5, -.5, .5) #hypothetical contrasts: fill in numbers
-)
-contrast(means1, contrasts1)
-
-effectsize::t_to_eta2(
-  t = c(3.75),  #hypothetical numbers, fill in your own
-  df_error = 12  #hypothetical numbers, fill in your own
-)
-```
-
-```{r}
-m1 <- lm(soc_part ~ country, df) #this is the model you need to run
-means1 <- emmeans(m1, ~ country)
-means1
-
-#Specify contrasts
-
-contrasts1 <- list(
-  hyp1 = c(1, -.5, -.5), #hypothetical contrasts: fill in appropriate numbers
-  hyp2 = c(-1, .5, .5) #hypothetical contrasts: fill in numbers
-)
-contrast(means1, contrasts1)
-
-effectsize::t_to_eta2(
-  t = c(3.75),  #hypothetical numbers, fill in your own
-  df_error = 12  #hypothetical numbers, fill in your own
-)
-```
-
