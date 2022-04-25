@@ -36,7 +36,7 @@ table(df$sen)
 table(df$country)
 ```
 
-Summary table of the data with both variables:
+Summary table of the data with both variables: Notice that we do not have an equal number of cases among our groups.
 ```{r}
 df %>% 
   group_by(sen, country) %>% 
@@ -61,13 +61,13 @@ describeBy(x = df$soc_part, group = df$country,
              mat = TRUE, data = df)
 ```
 ### Marginal Means Plots
-Additionally, we can pull in what we learned last week about marginal means as another way to summarize mean values. Here, let's compare the means with each other:
+Pulling from what we learned last week about marginal means as another way to summarize mean values, below we compare the means with each other:
 ```{r}
-means <- df %>% 
-  group_by(sen, country) %>% #the two variables
-  summarise(mean_soc_part = mean(soc_part)) #mean of dependent variable
-
-means
+# Step 1. Extract means for 
+means <- df %>% #creating new object (tibble) with the means of 
+  group_by(sen, country) %>% #grouping our results by our two independent variables, 'country' within levels of 'sen'
+  summarise(mean_soc_part = mean(soc_part)) #extract the mean of dependent variable
+means #view new data
 
 # Graphical representation of means
 means %>% 
@@ -76,7 +76,7 @@ means %>%
   geom_line(aes(color = sen))
 ```
 
-You can play around with the aesthetics of the graph above. There's not only one way to represent the means, just do whatever makes sense for you.
+You can play around with the aesthetics of the graph above. There's not only one way to represent the means, just do is easiest to interpret given your hypotheses/research questions.
 
 ### Boxplots
 ```{r}
@@ -123,15 +123,15 @@ anova_test(df, formula = soc_part ~ sen + country + sen:country,
 ```
 
 # 4. Factorial ANOVA Interaction Contrasts
-Let's establish some hypotheses to model the kind of analysis you'll do for Lab 5. 
+Let's establish some hypotheses to model the kind of analysis you'll do for Lab 5.
 * Hypothesis 1 - To what extent does the effect of differences between 'typically developing and other developing types (special education, behavioral needs, other special education needs) on so depend on country (Belgium, Netherlands, Norway)?
-* Hypothesis 2 - 
 
 ### 4.1 Defining contrasts
 ```{r}
 contrasts <- list(
-  hyp1 = c(1, -.33, -.33, -.33, -1, .33, .33, .33,  -1, .33, .33, .33), #hypothetical contrasts: fill in appropriate numbers
-  hyp2 = c(.5, -.5, -.5, .5, -.5, .5, .5, -.5, -.5, .5, .5, -.5) #hypothetical contrasts: fill in numbers
+  hyp1 = c(1, -.33, -.33, -.33, 
+           1, -.33, -.33, -.33,  
+           1, -.33, -.33, -.33) #hypothetical contrasts: fill in appropriate numbers
 )
 
 contrast(means_2, contrasts, adjust = "holm")
@@ -141,15 +141,15 @@ There is a xx word difference in vocabulary learning between physical science an
 ### 4.2 Effect Sizes
 Calculate effect sizes with partial eta squared.
 ```{r}
-# presume -1.33 is the t.ratio from hyp1
-# presume -2.05 is the t.ratio from hyp2
-
-## actually prefer omega here, but use pes for the purposes of this lab
-
 effectsize::t_to_eta2(
-  t = c(-1.33, -2.05),  #hypothetical numbers, fill in your own
-  df_error = 28  #hypothetical numbers, fill in your own
+  t = 6.928,  #hypothetical numbers, fill in your own
+  df_error = 1323  #hypothetical numbers, fill in your own
 )
+
+#Let's calculate effect size with Omega
+needs(MOTE)
+omega.F(dfm = 6, dfe = 1323,
+      Fvalue = 6.928, n = 1335, a = .05)
 ```
 The partial eta squared of xx indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
 
