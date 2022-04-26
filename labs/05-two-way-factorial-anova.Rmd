@@ -9,7 +9,7 @@ output:
 
 This tutorial will walk through how to review and run a interaction contrast using two-way factorial ANOVA. We will produce descriptive statistics for checking ANOVA assumptions, run a two-way factorial ANOVA, code interaction contrasts, and produce effect sizes to address specified research questions.  
 
-**Note:** Much of the content for Lab 5 overlaps with code from the past several labs. To highlight new code and avoid redundancy, the code needed for full evaluating assumptions and exploring data are not provided in this tutorial, but are still expected to be used in your write-up and analysis as appropriate. See lab keys from previous assignments if you need to review code for the basic tenants of ANOVA.
+**Note:** Much of the content for Lab 5 overlaps with code from the past several labs. To highlight new code and avoid redundancy, the code needed for complete evaluate assumptions and explore these data are not provided in this tutorial, but are still expected to be used in your write-up and analysis as appropriate. See lab keys from previous assignments to review code for the basic tenants of ANOVA.
 
 This tutorial uses data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164); Bossaert et al., 2011), which focus on the social dimension of inclusion in education in different countries. The columns include the following information:
 
@@ -132,7 +132,7 @@ pairs(means_2) #display means in pairs, unnested
 
 
 # 4. Factorial ANOVA Interaction Contrasts
-In section 3, we answered the question of whether the effect of `sen2` on `soc_part` significantly differed between levels of `country`, finding no evidence to support our hypothesis. However, we can further probe our interactions by running _post-hoc_ contrasts. Just as we practiced in Lab 3, we will apply _post-hoc_ contrasts to extend our understanding of between group variance. Applying interaction contrasts will be the core of completing your analyses for Lab 5.  
+In section 3, we answered the question of whether the effect of `sen2` on `soc_part` significantly differed between levels of `country`, finding no evidence to support our hypothesis. However, we can further probe our interactions by running _post-hoc_ contrasts. Similar to what we practiced in Lab 3, we will apply _post-hoc_ contrasts to extend our understanding of between group variance. Applying interaction contrasts will be the core of completing your analyses for Lab 5.  
 
 We will start by defining a _post-hoc_ hypothesis based on the mean differences observed in the descriptive statistics and data visualizations:  
 * Hypothesis: The mean level of 'social participation' for 'typically developing' and 'special needs' significantly differ between Norway vs. Belgium and the Netherlands.  
