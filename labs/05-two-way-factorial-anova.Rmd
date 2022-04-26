@@ -7,7 +7,9 @@ output:
 ---
 # 1. Introduction
 
-This tutorial will walk through how to review and run a interaction contrast using two-way factorial ANOVA. We will produce descriptive statistics, check ANOVA assumptions, run a two-way factorial ANOVA, produce effect sizes, and code interaction contrasts according to our research questions.
+This tutorial will walk through how to review and run a interaction contrast using two-way factorial ANOVA. We will produce descriptive statistics for checking ANOVA assumptions, run a two-way factorial ANOVA, code interaction contrasts, and produce effect sizes to address specified research questions.  
+
+**Note:** Much of the content for Lab 5 overlaps with code from the past several labs. To highlight new code and avoid redundancy, the code needed for full evaluating assumptions and exploring data are not provided in this tutorial, but are still expected to be used in your write-up and analysis as appropriate. See lab keys from previous assignments if you need to review code for the basic tenants of ANOVA.
 
 This tutorial uses data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164); Bossaert et al., 2011), which focus on the social dimension of inclusion in education in different countries. The columns include the following information:
 
@@ -15,30 +17,26 @@ This tutorial uses data from your textbook (see ['Support Materials' on the text
 * `soc_part`: social participation (score)
 * `sen2`: students with special educational needs categorization
 
-Theses data are similar to those you will use for Lab 5, though Lab 5 data will include an id variable. 
+Theses data are similar to those you will use for Lab 5, though Lab 5 data will include an id variable. The code in the tutorial 
 
-# 2. Describe Data and ANOVA Assumptions
+# 2. Reviewing the Data
 We will load the packages and read in the data as we have previous labs.
 ```{r packages, message = FALSE}
 # Load necessary packages:
 needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
 
 df <- misty::read.sav(here("kamden-mwavita_data/factorial_ANOVA_Bossaert_et_al.sav"), use.value.labels = TRUE) %>%
-  clean_names()
-
-df <- df %>% 
+  clean_names() %>% 
+  # Re-categorizing the groups within 'sen' for the purposes of simplifying instructions
   mutate(sen2 = recode_factor(sen, 
                                  "Typically developing" = "Typically developing",
                                 "Special Educational Needs" = "Special needs",
                                 "Behavioral needs" = "Special needs",
                                 "Other special needs" = "Special needs")) %>% 
-  select(1:2,4)
-df
+  select(1:2,4) # Selecting only the columns of data we'll use
 ```
 
-If you want to explore the dataset, it is good practice to view the structure of the dataset (`str(df)`)and then the top 5 rows (`head(df)`). This way, you can catch if you read in the data correctly, if there are any anomalies, etc. 
-
-Now, we run through the basic descriptives. See Lab 4 for more information or explanations of this code, if needed. 
+Now, we run through the basic descriptive statistics. See Lab 4 for more information or explanations of this code and how to assess whether assumptions of ANOVA have been met, if needed.
 
 ```{r}
 table(df$sen2)
@@ -52,14 +50,12 @@ df %>%
   summarise(n = n()) %>%
   spread(country, n) 
 ```
-
-Overall descriptive statistics.
+Overall descriptive statistics -- Make sure to interpret overall distribution statistics.
 ```{r}
 describe(df)
 ```
-Make sure to interpret overall distribution stats here.
 
-By level: report the mean/sd and describe the distributions for the levels of each variable.
+Examining descriptive statistics for each IV by level.
 ```{r}
 #Output for each level - sen2
 describeBy(x = df$soc_part, group = df$sen2, 
@@ -69,15 +65,21 @@ describeBy(x = df$soc_part, group = df$sen2,
 describeBy(x = df$soc_part, group = df$country, 
              mat = TRUE, data = df)
 ```
-### Marginal Means Plots
-Pulling from what we learned last week about marginal means as another way to summarize mean values, below we compare the means with each other:
+### 2.1 Visually Inspecting the Data
+
+#### 2.1.a Marginal Means Plots
+Pulling from what we learned last week about marginal means as another way to summarize mean values, complete the following steps to compare the means with each other:  
+__Step 1.__ Extract means to examine group differences.
 ```{r}
-# Step 1. Extract means for 
-means <- df %>% #creating new object (tibble) with the means of 
+means <- df %>% #creating new object (tibble) with the means
   group_by(sen2, country) %>% #grouping our results by our two independent variables, 'country' within levels of 'sen2'
   summarise(mean_soc_part = mean(soc_part)) #extract the mean of dependent variable
 means #view new data
+```
 
+__Step 2.__ Examine the means using a profile plot.  
+As a reminder, you can change the aesthetics (`aes()`) of the graph above to represent the means to best represent the data and make them easy to interpret given your hypotheses/research questions.
+```{r}
 # Graphical representation of means
 means %>% 
   ggplot(aes(sen2, mean_soc_part, group = country)) +
@@ -85,9 +87,8 @@ means %>%
   geom_line(aes(color = country))
 ```
 
-You can play around with the aesthetics of the graph above. There's not only one way to represent the means, just do is easiest to interpret given your hypotheses/research questions.
-
-### Boxplots
+#### 2.1.b Boxplots
+Another way to easily display the group differences of one IV by another.
 ```{r}
 df %>% 
   ggplot(aes(x = country, y = soc_part, fill = sen2)) +
@@ -96,74 +97,69 @@ df %>%
   theme(legend.position="bottom")
 ```
 
-### Homogeneity of variance
-Make sure to interpret if all assumptions are met. 
-```{r}
-car::leveneTest(soc_part ~ sen2*country, data = df, center = "mean")
-```
-
 # 3. Two-way Factorial ANOVA and Pairwise Comparisons
+### 3.1 Run the two-way factorial ANOVA
+We will now run our factorial ANOVA using the same code as in Lab 4. As a reminder, from our results, we see that there are significant main effects on _social participation_ for _special educational needs_ (*F*(1, 1329) = 54.04, *p* < .001) and _country_ (*F*(2, 1329) = 7.00, *p* < .001), and the interaction effect between _special educational needs_ and _country_ was not significant (*F*(2, 1329) = 1.43, *p* = .239). Therefore, we do not find evidence that the effects of _special educational needs_ on _social participation_ differs between countries.  
 
-### 3.1 Extract marginal means
-We can do two-factor contrasts with the emmeans package.
-First, we can try using *by* grouping. This output shows us all the estimates by country,
-```{r}
-needs(emmeans)
-model <- lm(soc_part ~ sen2 + country + sen2:country, df) #remember sen2, country, and sen2:country interactions in the model
-
-means_1 <- emmeans(model, specs = "sen2", by = "country") #use the model to calculate means
-means_1
-
-pairs(means_1) #now display those means in pairs
-```
-
-### 3.2 Produce pairwise comparisons
-Use the code below gives us all the comparisons we need altogether by calculating all possible comparisons without "nesting" one factor in another:
-```{r}
-means_2 <- emmeans(model, ~sen2*country) #use same model but use different specifications
-means_2
-
-pairs(means_2) #display means in pairs, unnested
-```
-Now we have more than we need, so just pull out the values we can actually interpret (similar to what you did in Lab 4).
+We will elaborate on the main effect and simple effects using the marginal means for the groups in the subsequent sections.
 ```{r}
 anova_test(df, formula = soc_part ~ sen2 + country + sen2:country, 
                  detailed = TRUE, type = 3, effect.size = "pes")
 ```
+### 3.2 Estimate Marginal Means
+The code in this section allows us to dig deeper into our hypothesized model, where we can produce the means for groups and look at their pairwise comparisons. Following the steps below, similar to Lab 4, you will be able have a closer look at the main and simple effects for IVs on our DV. We will use the findings to develop _post-hoc_ hypotheses to test in section "4. Factorial ANOVA Interaction Contrasts."
+
+__Step 1.__ Produce the estimates for the main and interaction effects for our model, where `sen2`, `country`, and the interaction effect between them, predict `soc_part`.
+```{r}
+model <- lm(soc_part ~ sen2 + country, df) #remember 'sen2:country' represents the interaction effect in the model
+```
+
+__Step 2.__ Extract the values/estimated for marginal means from the model (object we previously called `model` in Step 1), using the `emmeans` package and put into a new object (below called `means_1`). The output for this code, using `pairs()`, describes the means for `sen2` and conducts pairwise contrasts by `country`, our designated moderator variable.
+```{r}
+needs(emmeans)
+means_1 <- emmeans(model, specs = "sen2", by = "country") #use the model to calculate means for sen2 grouped by country
+
+pairs(means_1) # display the means produced by emmeans() in pairs
+```
+
+__Step 3.__ Using `emmeans()` again, below we produce all pairwise comparisons only estimating means using the interaction effect (`~sen2*country`). This allows us to see means of groups and their pairwise comparisons without "nesting" one factor in another. The output gives us more than we need, so you will find and note the values that are of interest (g.g., statistically significant), and report on those results, similar to what you did in Lab 4.
+
+```{r}
+means_2 <- emmeans(model, ~sen2*country) #use same model but use different specifications
+
+pairs(means_2) #display means in pairs, unnested
+```
+
 
 # 4. Factorial ANOVA Interaction Contrasts
-We'll run on hypothesis for a _post-hoc_ analysis to model what you'll do for Lab 5.
-* Hypothesis - To what extent does the effect of differences between 'typically developing' and 'special needs' depend on Norway vs. Belgium and the Netherlands?
+In section 3, we answered the question of whether the effect of `sen2` on `soc_part` significantly differed between levels of `country`, finding no evidence to support our hypothesis. However, we can further probe our interactions by running _post-hoc_ contrasts. Just as we practiced in Lab 3, we will apply _post-hoc_ contrasts to extend our understanding of between group variance. Applying interaction contrasts will be the core of completing your analyses for Lab 5.  
+
+We will start by defining a _post-hoc_ hypothesis based on the mean differences observed in the descriptive statistics and data visualizations:  
+* Hypothesis: The mean level of 'social participation' for 'typically developing' and 'special needs' significantly differ between Norway vs. Belgium and the Netherlands.  
 
 ### 4.1 Defining contrasts
-This is a 2x3 two-way factorial ANOVA, so we will need to give a contrast coefficient for each of our simple effects (totaling 6 contrast coefficients, one for each combination between IV levels).
+Because this is a 2x3 two-way factorial ANOVA, we need to provide 6 contrast coefficients for each hypothesized contrast comparison, one for each combination between our two IVs. The code below has notes to clarify the contrast coefficient values.
 ```{r}
 contrasts <- list( # the contrast coefficients are split to make it easier to track by groups
-  hyp1 = c(-1, -1, 
-            2, 2,    #these three contrast 'typically developing' between countries
-            -1, -1), #these three contrast 'special needs' between countries
-  hyp2 = c(-1, 1, 
-           1, -1, #these three contrast 'typically developing' between countries
-            0, 0) #these three contrast 'special needs' between countries
-  )
+  hyp1 = c(-1, -1, 2, 1, 1, -2)) # Hypothesis 1: contrasting social interaction scores of typically developing and spec. needs between Norway vs. Belgium and the Netherlands.
 
 contrast(means_2, contrasts, adjust = "holm")
 ```
-Our results indicate that the social participation We There is a xx word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a xx word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. 
+Before we interpret the results of the interaction contrast, we need to calculate the new $\alpha$ threshold to correct for multiple comparisons inflating our Type 1 Familywise Error Rate. Counting the initial two-way factorial ANOVA and the _post-hoc_ contrast, the new significance threshold for _p_ is .025 (i.e., $\alpha$ = .05/2 tests = .025).
 
 ### 4.2 Effect Sizes
 Calculate effect sizes with partial eta squared.
 ```{r}
-effectsize::t_to_eta2(
-  t = 6.928,  #hypothetical numbers, fill in your own
-  df_error = 1323  #hypothetical numbers, fill in your own
-)
-
 #Let's calculate effect size with Omega
-needs(MOTE)
-omega.F(dfm = 6, dfe = 1323,
-      Fvalue = 6.928, n = 1335, a = .05)
-```
-The partial eta squared of xx indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
+# First turn t-ratio into F-ratio by squaring it: t^2 = F
+(5.005)^2
+# Fvalue = 25.05
 
-The partial eta squared of xx indicates that lecture method explains about 19% of the difference in vocabulary learning between physical science and social science conditions.
+needs(MOTE)
+# Second, put in values accordingly:
+omega.F(dfm = 1, dfe = 1331,
+      Fvalue = 25.05, n = 1335, a = .025)
+```
+
+### 4.3 Interpreting Interaction Contrast Results
+Back to our interaction contrast results: Our findings indicate that the effect of special needs categorization (typically developing vs. special needs) on social participation significantly differed between Norway versus Belgium and the Netherlands (_t_ = 5.005, _p_ < .001, $\omega^{2}$ = 0.018). In other words, Norway has a wider disparity in social inclusion between students with special needs and their typically developing peers than Belgium and the Netherlands. However, the differences between these countries and the levels of special needs only account for an estimated 1.8% of variance in social participation.  
