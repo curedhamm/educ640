@@ -12,7 +12,8 @@ navbar:
         href: ./labs/02_03_one-way-anova.html
       - text: "Lab 4: Two-Way Between Subjects ANOVA"
         href: ./labs/04-two-way-bs-anova.html
-      - text: "Lab 5: Interaction Contrasts With Two-Way ANOVA"
+      - text: "Lab 5: Two-Way ANOVA & Interaction Contrasts"
+        href: ./labs/05-two-way-factorial-anova.html
       - text: "Lab 6"
       - text: "Lab 7"
       - text: "Lab 8"
