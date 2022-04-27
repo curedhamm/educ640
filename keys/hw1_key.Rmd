@@ -1,0 +1,195 @@
+---
+title: "HW 1 Key"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, car, psych, misty)
+
+hw1_data <- misty::read.sav(here("assignments_data", "HW1_ereader.sav"), use.value.labels = TRUE)
+
+hw1_data <- hw1_data %>% 
+  clean_names()
+```
+
+### Background
+
+You will be working with the results of an experiment testing whether ambient lighting levels (measured in lux; see below for more info) affect reading time when college students read the same text on an ereader (Kindle). Twenty students were randomly assigned to one of four lighting levels: 200 lx, 500 lx, 1000 lx, and 1500 lx. Reading time was used as an indicator of reading ease, where longer times indicate more fatiguing conditions, and was measured in seconds. The researchers hypothesized that reading time would be shorter under brighter reading conditions. Although they were interested in the overall effect of lighting levels, they also hypothesized that reading time would be longer on average in the 200 lx condition, which is darker than the average office or classroom, than the other three conditions. In addition, they wanted to test a competing hypothesis proposed by other researchers that the brighter the lighting, the easier the reading task.  In other words, the hypothesis was that level of lighting would have longer reading times (i.e., slower) than the next (i.e., higher) level of lighting.
+
+The research questions you are answering is:
+
+* To what extent does lighting level explain college students’ reading time on a Kindle?
+* Is reading time in the low lighting condition longer on average than in the higher lighting conditions combined?
+* Is average reading time for each lighting level significantly different from the next higher lighting level?
+
+#### 1. What is the DV? What is the IV? Describe each in terms of scale (including what the levels are where applicable) and manipulation (vs. observation). – 6 points
+
+The dependent variable is college students reading time on kindle, measured in seconds. Reading time indicates reading ease, with longer times indicating greater fatigue. This is an observed continuous variable.
+The independent variable is lighting level (manipulated to the four ordinal levels or groups with 200 lx, 500 lx, 1000 lx, or 1500 lx). 200 lx is the darkest level, darker than the average office/classroom space, so the independent variable can also be grouped as darker (200 lx) vs brighter (500 lx, 1000 lx, or 1500 lx).
+
+#### 2. What is the design of this study (i.e., experiment, quasi-experiment, observational)? How do you know? – 4 points
+
+This study is designed as an experiment, since students were randomly assigned to different lighting levels. The study uses a one-way ANOVA.
+
+#### 3. Does the DV meet the assumptions for ANOVA? How do you know? (Hint: examine the DV overall, not by IV level, for normality) – 10 points
+
+ANOVA assumptions include 1) independence of observations , 2) normality, and 3) homogeneity of variance.
+
+For *assumption 1*, students are only assigned to one group and do not cross groups. It is reasonable to assume students in one lighting level group do not affect those in a different lighting level group, as they are kept independent.
+
+For *assumption 2*, the skew (0.00) and kurtosis (-1.52) of the dependent variable is less than the absolute value of 2, so it is reasonable to assume variable normality.
+
+```{r}
+describe(hw1_data)
+describeBy(hw1_data, group = hw1_data$condition, mat = TRUE)
+```
+At a more specific level, reading time 3 at 1000 lx and time 4 1500 lx have slightly higher kurtosis values at -2.04 and -2.13 values, respectively.
+
+For *assumption 3*, the assumption of the homogeneity of variance holds. The insignificant result from the Levene's test (0.939) suggests the error variance around the mean is roughly equal across groups.
+
+```{r}
+car::leveneTest(reading_time ~ condition, data = hw1_data, center = "mean")
+```
+
+Here are additional graphical explorations of the variables.
+```{r}
+hw1_data %>% 
+  ggplot(aes(reading_time)) +
+  geom_histogram(binwidth = 100) #hard to tell distribution here
+
+hw1_data %>% 
+  ggplot(aes(condition, reading_time)) +
+  geom_boxplot()
+```
+
+It appears that 200 lx yields a higher median reading time than 500 lx, and 500 lx has a higher median than the rest (1000 lx and 1500 lx, which are roughly similar). The means, respectively, are 1250.188	for 200 lx, 1096.594 for 500 lx, 914.006 for 1000 lx, and 868.010	for 1500 lx.
+
+ANOVA is conducted below to explore significance of these differences.
+
+#### 4. Answer each research question with your analyses (including effect sizes). Label the output you use to derive the answer to the research question. Also, explain what the answers are in straightforward language (using complete sentences). – 60 points
+
+Research questions and corresponding code/analyses are included below.
+
+##### Research Question 1: To what extent does lighting level explain college students’ reading time on a Kindle?
+```{r message=FALSE}
+m1 <- anova_test(data = hw1_data, formula = reading_time ~ condition, 
+                 detailed = TRUE, effect.size = "pes", type = 3)
+
+m1 # gives us the ANOVA results
+
+
+## Extra stuff ##
+fit <- lm(reading_time ~ condition, hw1_data)
+anova(fit)
+
+
+etasq <- 462967.7/(21308716.2+1332877+462967.7) 
+f = etasq / (1-etasq)
+f #f effect size 
+# eta_squared(m1)
+
+pairwise_t_test(data = hw1_data, reading_time ~ condition,
+                p.adjust.method = "bonferroni") #not really needed since initial F test was not significant
+# good to run it and just note you are not looking at this
+```
+Our IV is not significant at an alpha level of 0.05. The model does not suggest the lighting groups significantly differ from each other in college students' reading time on a Kindle, *F*(3, 16) = 1.853, *p* = .178. The partial eta squared (pes) of 0.258 tells us the effect size, that the lighting level is associated with 25.8% of variance in the college student reading time.
+
+##### Research Question 2: Is reading time in the low lighting condition longer on average than in the higher lighting conditions combined?
+A priori - 
+
+Is each group mean significantly different from all later group means? i.e. 200 lx vs (500 lx, 1000 lx, 1500 lx)
+Contrast set up: (1, -0.3333, -0.3333, -0.3333)
+
+Would have thought to use Helmert contrast, but not ideal because it would use up three degrees of freedom. Manually code contrast instead. 
+
+```{r}
+levels(hw1_data$condition) #checking the order of levels
+
+contrast <- c(1, -0.3333, -0.3333, -0.3334)
+mat.temp <- rbind(constant = 1/4, contrast)
+mat.temp
+
+mat <- MASS::ginv(mat.temp)
+mat <- mat[ , -1]
+mat
+
+#Run model with lm() and set contrasts: link "condition" variable with contrast matrix
+m_contrast <- lm(reading_time ~ condition, data = hw1_data, contrasts = list(condition = mat))
+attr(m_contrast$coefficients, "names") <- c("Intercept", "200 lx vs (500 lx, 1000 lx, 1500 lx)", "")
+summary(m_contrast)
+```
+We find insufficient evidence to suggest that reading time in the low lighting condition takes longer on average than in the higher lighting conditions combined (estimated difference = 290.66 lumens; t = 1.95). The multiple R-squared of 0.258 indicates that the lighting level is associated with 25.8% of variance in the college student reading time.
+
+##### Research Question 3: Is average reading time for each lighting level significantly different from the next higher lighting level?
+
+Post-hoc contrast - Use repeated contrast.
+
+Is each group mean significantly different from the next group mean? i.e. 200 lx vs. 500 lx, 500 lx vs. 1000 lx, 1000 lx vs. 1500 lx
+Contrast set up: (1, -1, 0, 0); (0, 1, -1, 0); (0, 0, 1, -1)
+0 + 0 + 0 + 0 = Contrasts are orthogonal.
+
+```{r}
+#Set repeated contrasts
+contrast1 <- c(1, -1, 0, 0)
+contrast2 <- c(0, 1, -1, 0)
+contrast3 <- c(0, 0, 1, -1)
+
+#Bind vectors to temporary matrix
+mat.temp <- rbind(constant = 1/4, contrast1, contrast2, contrast3) 
+mat.temp
+
+#Take inverse of matrix
+mat <- solve(mat.temp)
+mat
+
+#drop first column of constants
+mat <- mat[, -1]
+mat
+
+#Run model with lm() and set contrasts: link "condition" variable with contrast matrix
+m_contrasts <- lm(reading_time ~ condition, data = hw1_data, contrasts = list(condition = mat))
+
+summary(m_contrasts)
+```
+
+If we use these 3 contrasts, new alpha is 0.05/3 = 0.017.
+
+Results, again, are non-significant. Each lighting group mean (153.59 for 200 lx vs. 500 lx; 182.59 for 500 lx vs. 1000 lx; 46 for 1000 lx vs. 1500 lx) is not significantly different from the next lighting group mean, including any corrections, t = 0.413, t = 0.332, t = 0.804 respectively. The multiple R-squared of 0.258 indicates that the lighting level is associated with 25.8% of variance in the college student reading time.
+
+#### 5. Looking at your box plots and the profile plot from the ANOVA, develop a post hoc hypothesis and test it. (Hint: Don’t forget to correct for multiple comparisons!) State what your hypothesis is and what your results are (including effect sizes). – 30 points
+
+*Question: Is reading time in the highest lighting condition shorter on average than in the lower lighting conditions combined?*
+
+Is each group mean significantly different from all previous group means? i.e. (200 lx, 500 lx, 1000 lx) vs 1500 lx
+Contrast set up: (-0.3334, -0.3333, -0.3333, 1)
+
+```{r}
+levels(hw1_data$condition) #checking the order of levels
+
+contrast <- c(-0.3334, -0.3333, -0.3333, 1)
+mat.temp <- rbind(constant = 1/4, contrast)
+mat.temp
+
+mat <- MASS::ginv(mat.temp)
+mat <- mat[ , -1]
+mat
+
+#Run model with lm() and set contrasts: link "condition" variable with contrast matrix
+m_contrast <- lm(reading_time ~ condition, data = hw1_data, contrasts = list(condition = mat))
+attr(m_contrast$coefficients, "names") <- c("Intercept", "(200 lx, 500 lx, 1000 lx) vs 1500 lx", "")
+summary(m_contrast)
+```
+This contrast in addition to the three ran before this brings our alpha to .05/4 = .125.
+
+We find insufficient evidence to suggest that reading time in the highest lighting condition of 1500 lux takes less time on average than in the lower lighting conditions combined (estimated difference = 218.94 lumens; t = 0.161). The multiple R-squared of 0.258 indicates that the lighting level is associated with 25.8% of variance in the college student reading time.
+
+#### Appendix
+Lux is a standardized unit of measurement of the light intensity (which can also be called “illuminance” or “illumination”) - as an example for reference purposes - 1 lux is equal to the illumination of a surface one meter away from a single candle. Some further examples of settings with the average recommended illuminance is measured in lux is shown below:
+
+* Outdoor average sunlight ranges from 32,000 to 100,000 lux
+* Warehouse aisles are lit to approximately 100-200 lux
+* A bright office requires about 400 lux of illumination 
+* At sunset and sunrise (with a clear sky), ambient outdoor light is also about 400 lux
+* Building corridors can be lit adequately at around 100 lux
+* Moonlight represents about 1 lux

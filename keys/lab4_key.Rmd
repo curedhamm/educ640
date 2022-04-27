@@ -1,0 +1,185 @@
+---
+title: "Lab 4 Key"
+---
+
+```{r packages, message = FALSE}
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
+```
+
+## Lab 4
+
+In an experiment, fifth grade students are individually and randomly assigned to be introduced to a set of vocabulary words by watching a lecture in one of three subject areas: physical science, social science, and history.  The lecture was delivered to each child in one of two methods: traditional lecture or computer-augmented lecture.  Six children experienced each combination of conditions.  A vocabulary test with 60 words follows each lecture as a measure of learning.
+
+Our research questions are:  
+“To what extent do lecture topic and method influence the vocabulary learning of fifth grade students?”
+“To what extent does the effect of lecture topic on the vocabulary learning of fifth grade students depend on lecture method?”
+
+### Notes and Background
+
+This is a 2-factor between subjects ANOVA, with lecture topic (physical science, social science, or history) and lecture delivery method (traditional lecture or computer-augmented lecture) as the two independent variables and vocabulary learning, determined by the score on the vocabulary test, as the dependent variable. The study is intended to represent the population of fifth graders subject to these conditions.
+
+### Data Exploration
+
+```{r}
+vocab4_data <- misty::read.sav(here("assignments_data", "Lab4_Vocab.sav"), use.value.labels = TRUE)
+
+vocab4_data %>% 
+  group_by(inst, meth) %>% 
+  summarise(n = n()) %>% #new column "n" = row count of each factor grouping
+  spread(meth, n)
+
+## Check Descriptives
+describe(vocab4_data)
+```
+Average vocabulary score is 33.5 (sd = 12.87) and is approximately normally distributed (skew and kurtosis < ±2).
+
+```{r}
+#Output for each level
+describeBy(x = vocab4_data$vocab, group = vocab4_data$inst, 
+             mat = TRUE, data = vocab4_data)
+```
+Average vocabulary score for physical science lecture is 40 words (sd = 10.80), social science is 26 words (sd = 15.20), and history is 34.5 words (sd = 8.39). Each are approximately normally distributed, with skewness and kurtosis < ±2.
+
+
+Separate Boxplots
+```{r}
+library(ggplot2)
+?ggplot
+
+inst_plot <- vocab4_data %>% 
+  ggplot(aes(inst, vocab, fill = meth)) +
+  geom_boxplot() +
+  theme(legend.position="bottom") 
+
+meth_plot <- vocab4_data %>% 
+  ggplot(aes(meth, vocab, fill = inst)) +
+  geom_boxplot() +
+  theme(legend.position="bottom")
+
+gridExtra::grid.arrange(inst_plot, meth_plot, nrow = 1)
+
+# checking values, for my own curiosity
+vocab4_data %>% 
+  filter(meth == "computer") %>% 
+  group_by(inst) %>% 
+  summarise(mean = mean(vocab))
+
+```
+
+
+Initial interpretations from boxplots: Overall, students who attended the computer-augmented lecture scored higher on the vocabulary test than those who attended the traditional lecture. In each case, those with physical science appeared to score higher than the rest. Those attending the standard social science lecture scored the lowest.
+
+The significance of these differences will now be examined.
+
+### Checking assumptions
+```{r}
+car::leveneTest(vocab ~ inst*meth, data = vocab4_data, center = "mean")
+```
+
+The p-value of 0.0988 is not significant, suggesting that the error variance around the mean is roughly equal across groups. Additional corrections are not needed.
+
+For vocab, the mean = 33.5, sd = 12.87, and skew and kurtosis < ±2, assuming normality, as stated before.
+
+Observations can be assumed to be independent since participants only attended one lecture, and there is no reason to believe they may have affected another group.
+
+### Two-way ANOVA
+
+```{r}
+m1 <- anova_test(vocab4_data, formula = vocab ~ inst + meth + inst:meth, 
+                 detailed = TRUE, type = 3, effect.size = "pes")
+m1
+```
+
+The effect of instructional topic, method, and the interaction of topic and method are all significant at an alpha of 0.05. Type 3 test is used and simple effects are examined below.
+
+#### Effect sizes with omega
+
+Let's calculate effect size with Omega. Partial eta squared is already given in the ANOVA output.  We need the following values (see ANOVA output for the corresponding values from the interaction):
+
+* dfn = 2
+* dfd = 30
+* Fvalue = 6.493
+* n = 36
+* a = .05
+
+Now, just plug them in. Refer to previous labs/notes for interpretations.
+
+```{r}
+needs(MOTE)
+omega.F(dfm = 2, dfe = 30,
+      Fvalue = 6.493, n = 36, a = .05)
+```
+
+#### Simple effects
+
+```{r}
+rstatix::tukey_hsd(vocab4_data, vocab ~ inst*meth) #main and simple effects (when one method/instr is held constant)
+#don't look at effects like row 14, where both factors are changed
+
+# Group 2 - Group 1 = estimate
+```
+
+The following differences are significant:
+
+* physical science vs social science 
+* social science vs history
+* computer vs standard
+* social science computer vs standard
+* standard physical science vs social science
+* standard social science vs history
+
+#### Marginal Means
+It is good to know how to get the means here, but you can can use those values here as supplementary to the Tukey test above. 
+```{r}
+means <- vocab4_data %>%
+  group_by(meth) %>% 
+ emmeans_test(vocab ~ inst, p.adjust.method = "holm", detailed = TRUE)
+rmarkdown::paged_table(means) #for mean differences and significance tests
+
+#To get actual marginal means
+rmarkdown::paged_table(
+  get_emmeans(means)
+)
+```
+
+For example, from the table above we know the actual differences from Tukey test above.
+* social science computer vs standard = 40 vs 12 words
+* standard physical science vs social science = 34 vs 12 words
+* standard social science vs history = 12 vs 31 words
+
+#### Univariate Comparisons
+```{r}
+model <- lm(vocab ~ inst + meth + inst:meth, data = vocab4_data)
+
+vocab4_data %>%
+  group_by(inst) %>%
+  anova_test(vocab ~ meth, error = model)
+
+vocab4_data %>%
+  group_by(meth) %>%
+  anova_test(vocab ~ inst, error = model)
+```
+
+#### Interaction Plots
+```{r}
+with(vocab4_data, {
+interaction.plot(x.factor = inst,
+                 trace.factor = meth,
+                 response = vocab,
+                 type = "l")
+})
+```
+
+Computer-augmented lectures produce consistently higher vocabulary test means than standard lectures, regardless of subject area. Meanwhile, physical science produces higher vocabulary test scores than the other two subjects, but the vocabulary test scores for social science or history depends on the lecture delivery method.
+
+### Lab 4 APA Results example
+
+A two-way, between-subjects analysis of variance (ANOVA) was conducted to examine the extent to which instructional topic (physical science vs. social science vs. history) and lecture method (traditional vs. computer-assisted) affected the vocabulary learning of fifth graders.
+
+ANOVA results reported in the ANOVA table indicated a significant interaction between instructional topic and lecture method, *F*(2, 30) = 6.493, *p* = 0.005, $\omega^2$=0.234.
+
+Due to the significant interaction, main effects are not interpreted.
+
+Follow-up (or post-hoc) simple effects were examined with a Tukey correction to interpret the interaction further. When a lecture was delivered traditionally, students learned 22 more words on average in the physical science condition than the social science condition (34 vs 12 words), *p*<.001, and a mean of 19 more words in the history condition than the social science condition (12 vs 31 words), *p*<.001.
+
+In addition, in social science, students learned 28 more words on average if the lecture was computer-assisted as opposed to traditional lecture (40 vs 12 words), *p*<.001.

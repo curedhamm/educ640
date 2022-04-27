@@ -1,0 +1,87 @@
+---
+title: 'EDUC 640: Quick Reference Guide'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    code_folding: hide
+---
+
+I will use the data from the `palmerpenguins` package to illustrate examples on here.
+```{r}
+library(palmerpenguins)
+```
+
+
+## General useful R functions
+
+* use `?` or `??` before a function name to learn more about a function (also applies for a package)
+
+* use `head()` to examine the first five rows of data
+<input type=button class=hideshow></input>
+```{r}
+head(penguins)
+```
+
+* use `str()` to look at the structure of the dataframe (and see if variables are in the right format)
+<input type=button class=hideshow></input>
+```{r}
+str(penguins)
+```
+
+* use `factor()` or `as.factor()` to convert (usually) a categorical variable into countable categories (ex. group 1, group 2, group 3 instead of a "string" type). Can also be used numbers that should be categories instead of a continuous integer (ex. if you are comparing years 2016 vs. 2017 or student 3 with student 7)
+<input type=button class=hideshow></input>
+```{r}
+#species is already a factor, so this code is redundant
+```
+
+* can reorder levels using `relevel()`
+
+```{r}
+
+```
+
+
+* use `clean_names()` to turn variable names all lowercase and into one word
+
+
+
+## Functions useful for checking assumptions
+
+* In the `psych` package...
+  - use `describe()` for general descriptive statistics
+  - use `describeBy()` when you have multiple independent variables and you want to "describe by" group
+
+* In the `car` package...
+  - use `leveneTest()` to test homogeneity of variance. Within brackets...
+    - input the same formula as for the ANOVA you want to run
+    - specify `center = "mean"` (function's default is median)
+
+## All about `ggplot()`
+
+* histogram examples:
+
+* boxplot examples:
+
+## Functions for data wrangling
+
+https://stackoverflow.com/questions/42630248/collapsing-hiding-figures-in-r-markdown
+
+
+<script>
+$( "input.hideshow" ).each( function ( index, button ) {
+  button.value = 'Hide Output';
+  $( button ).click( function () {
+    var target = this.nextSibling ? this : this.parentNode;
+    target = target.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling;
+    if ( target.style.display == 'block' || target.style.display == '' ) {
+      target.style.display = 'none';
+      this.value = 'Show Output';
+    } else {
+      target.style.display = 'block';
+      this.value = 'Hide Output';
+    }
+  } );
+} );
+</script>

@@ -38,9 +38,13 @@ navbar:
   - text: Homework Keys
     menu:
       - text: "HW 1: One-way ANOVA"
+        href: ./keys/hw1_key.html
       - text: "HW 2: Two-way ANOVA"
+        href:
       - text: "HW 3: Two-way repeated measures ANOVA"
+        href:
       - text: "HW 4: Three-way mixed ANOVA"
+        href:
 
 output:
   html_document:
