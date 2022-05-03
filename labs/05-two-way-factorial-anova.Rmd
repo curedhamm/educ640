@@ -140,15 +140,16 @@ We will start by defining a _post-hoc_ hypothesis based on the mean differences 
 ### 4.1 Defining contrasts
 Because this is a 2x3 two-way factorial ANOVA, we need to provide 6 contrast coefficients for each hypothesized contrast comparison, one for each combination between our two IVs. The code below has notes to clarify the contrast coefficient values.
 ```{r}
-contrasts <- list( # the contrast coefficients are split to make it easier to track by groups
+contrasts <- list(
   hyp1 = c(-1, -1, 2, 1, 1, -2)) # Hypothesis 1: contrasting social interaction scores of typically developing and spec. needs between Norway vs. Belgium and the Netherlands.
 
-contrast(means_2, contrasts, adjust = "holm")
+m <- contrast(means_2, contrasts, adjust = "holm")
+test(m, joint = TRUE)
 ```
 Before we interpret the results of the interaction contrast, we need to calculate the new $\alpha$ threshold to correct for multiple comparisons inflating our Type 1 Familywise Error Rate. Counting the initial two-way factorial ANOVA and the _post-hoc_ contrast, the new significance threshold for _p_ is .025 (i.e., $\alpha$ = .05/2 tests = .025).
 
 ### 4.2 Effect Sizes
-Calculate effect sizes with partial eta squared.
+Calculate effect size with omega squared ($\omega^{2}$).
 ```{r}
 #Let's calculate effect size with Omega
 # First turn t-ratio into F-ratio by squaring it: t^2 = F

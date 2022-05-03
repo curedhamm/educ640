@@ -1,0 +1,130 @@
+---
+title: "Lab 2 & 3 Key"
+---
+
+```{r packages, message = FALSE}
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych) 
+
+df_2 <- misty::read.sav(here("assignments_data/Lab3_Vocab.sav"), 
+                      use.value.labels = TRUE) %>% 
+              clean_names() # cleaning up variable names
+```
+
+# 1. Lab 2
+## 1.1. Study Description
+Our study variables include _Vocabulary Score_ as the _Dependent Variable_ (DV), a continuous interval scale with scores ranging from 0 to 60 (_M_ = 33.5, _SD_ = 12.87), and _Lecture Type_ as the _Independent Variable_ (IV), with three levels of instruction, physical science (coded as 1), social science (coded as 2), and history (coded as 3). 
+
+## 1.2. Evaluating ANOVA Assumptions 
+This is a between-subjects analysis, as students were randomly assigned to only one type of instruction which, along with the balanced sample among groups, supports the _assumption of independence of observations_. The _assumption of normality_ seems tenable after visually inspecting the distribution and descriptive statistics for _Vocabulary Scores_. Finally, the _assumption of homogeneity of variance_ was not met as Levene's Test for Homogeneity of Variance was significant (_F_(2, 33)= 7.5, _p_ = .002), indicating that the error (within-group) variance around the mean is not equal across groups.
+
+## 1.3. Oneway ANOVA
+According to the omnibus _F_ statistic for the tested model, there was a significant effect of instruction type on students' vocabulary scores (_F_(2, 33)= 4.28, _p_ = .022), indicating that differences between instruction type accounted for about 21% of the variance among vocabulary scores ($\eta^{2}$ = .206).
+
+### 1.3.a Post-Hoc pariwise comparison
+As our data do not meet the assumption of _homogeneity of variances_, I used the Games‐Howell post-hoc
+test to adjust for multiple tests, comparing each pair of means across the three instruction groups. The results indicate that the mean scores for students in the physical science group are significant differently from their peers in the social science group (_$p_{adj}$_ = .043).
+
+```{r}
+describe(df_2) %>% 
+  select(n, mean, sd, skew, kurtosis, se)
+
+# Histogram
+ggplot(data = df_2, aes(x = vocab)) +
+  geom_histogram(bins = 20)
+
+# Boxplot
+ggplot(data = df_2, aes(x = instruct, y = vocab)) +
+  geom_boxplot()
+
+# Homogeneity of variance
+needs(car)
+car::leveneTest(vocab ~ instruct, data = df_2, center = "mean")
+```
+
+```{r}
+needs(afex)
+aov_car(vocab ~ instruct + Error(idnum), data = df_2)
+
+#Games-Howell (used if assumption of variance homogeneity is violated)
+games_howell_test(df_2, vocab ~ instruct, 
+                  conf.level = 0.95,
+                  detailed = FALSE)
+
+# Calculating Omega Square 
+needs(MOTE)
+omega.F(dfm = 2, dfe = 33,
+      Fvalue = 4.284, n = 36, a = .05)
+```
+
+# 2. Lab 3
+## 2.1. _"a priori"_ contrasts
+For _a priori_ tests (a bad practice because I have already examined these data, but I need the practice with creating orthogonal contrasts, so we'll let it slide for this exercise), I created two contrasts to test a couple of hypotheses:  
+    **$H_{1}$.** The mean vocabulary score for students in the social science group is significantly different from the other types of instruction.  
+    **$H_{2}$.** The mean vocabulary score for students in the physical science group is significantly different from the history group.  
+    
+  Results support my first hypothesis, that the average vocabulary score for social science is significantly different from the other types of instruction (_t_ = -2.69, _p_ = .011). Results for my second hypothesis were not supported, where the difference between average vocabulary score in the physical science group was not significantly different from the history group (_t_ = 1.14, _p_ = .26).
+
+```{r}
+# Check the order of levels
+levels(df_2$instruct)
+
+#### 2.2. Creating a priori contrasts ####
+
+# Step 1. Set Helmert contrasts
+contrast1 <- c(-.5, 1, -.5) #social science vs others
+contrast2 <- c(1, 0, -1) #physical science vs history
+
+# Step 2. Bind vectors to temporary matrix, where constants are equal to 1/(length of vectors)
+mat.temp <- rbind(constant = 1/3, contrast1, contrast2) #3 is for number of cells in the design (same as levels because only one IV)
+
+# Step 3. Take the inverse of the matrix.
+mat <- solve(mat.temp)
+# drop first column in the matrix, the one with the constants (i.e., = 1)
+mat <- mat[, -1]
+
+# Step 4. Run model with lm() and include 'contrast = list(instruct = mat)' to indicate that the function should use the 'mat' matrix as the contrast coefficients for the 'instruct' variable
+m_contrasts <- lm(vocab ~ instruct, data = df_2, contrasts = list(instruct = mat))
+summary(m_contrasts)
+```
+
+## 2.2. _post hoc_ contrasts
+For _post hoc_ tests, I conducted two contrasts to test the following _post hoc_ hypotheses:  
+**$H_{3}$.** The mean vocabulary score for students in the physical science group is significantly different from the other types of instruction.  
+**$H_{4}$.** The mean vocabulary score for students in the physical science is significantly different from history.  
+
+  Prior to examining my _post hoc_ hypotheses, I calculated an adjusted ${\alpha}$ threshold for significance to account for the Type I error rate arising from multiple comparisons I have conducted using these data (${\alpha}$ = .05/5 = .01). Thus my new threshold for a significant _p_-value is _p_ < .01.  
+  
+  Neither _post hoc_ pairwise comparison was significant at the adjusted threshold (_p_ < .01), indicating that the difference in mean vocabulary score between physical science vs. other types of instruction (_t_ = 2.34, _p_= .026) and physical science vs. history (_t_ = -1.76, _p_ = .087) were likely due to random within-group variation (i.e., error).  
+  
+  Regarding the variance accounted for by the tested models, it appears that there may be some bias reflected in $\eta^{2}$ (.206) compared to the $\omega^{2}$ effect size statistic ($\omega^{2}$ = .154), reflecting a 6% difference in variance explained by the model between the two effect sizes. Therefore, $\omega^{2}$ is likely a more accurate estimate of the magnitude of the effect.
+
+```{r}
+#### 2.2. Creating post hoc contrasts ####
+# Step 1. Set Helmert contrasts
+contrast1 <- c(1, -.5, -.5) #physical science vs others
+contrast2 <- c(0, 1, -1) #social science vs history
+
+# Step 2. Bind vectors to temporary matrix, where constants are equal to 1/(length of vectors)
+mat.temp <- rbind(constant = 1/3, contrast1, contrast2) #3 is for number of cells in the design (same as levels because only one IV)
+
+# Step 3. Take the inverse of the matrix.
+mat <- solve(mat.temp)
+# drop first column in the matrix, the one with the constants (i.e., = 1)
+mat <- mat[, -1]
+
+# Step 4. Run model with lm() and include 'contrast = list(instruct = mat)' to indicate that the function should use the 'mat' matrix as the contrast coefficients for the 'instruct' variable
+m_contrasts <- lm(vocab ~ instruct, data = df_2, contrasts = list(instruct = mat))
+summary(m_contrasts)
+
+# Obtaining generalized eta squared
+anova_test(m_contrasts, 
+                 type="III",
+                 effect.size = "ges",
+                 detailed = TRUE)
+
+# Calculating Omega Square 
+needs(MOTE)
+omega.F(dfm = 2, dfe = 33,
+      Fvalue = 4.284, n = 36, a = .01)
+```
+
