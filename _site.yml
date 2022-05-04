@@ -44,8 +44,6 @@ navbar:
         href:
       - text: "HW 3: Two-way repeated measures ANOVA"
         href:
-      - text: "HW 4: Three-way mixed ANOVA"
-        href:
 
 output:
   html_document:
