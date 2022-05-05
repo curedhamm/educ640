@@ -1,5 +1,9 @@
 ---
 title: 'Lab 7: Two-Way Within-Subjects ANOVA'
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
 ---
 
 ## Introduction
