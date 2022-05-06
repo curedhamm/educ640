@@ -367,11 +367,10 @@ pre code {
 
 <div id="TOC">
 <ul>
-<li><a href="#lab-5-two-way-factorial-anova">Lab 5: Two-way factorial
-ANOVA</a>
+<li><a href="#lab-5-background">1. Lab 5 Background</a></li>
+<li><a href="#examining-data-and-anova-assumptions">2. Examining Data
+and ANOVA Assumptions</a>
 <ul>
-<li><a href="#describe-data-and-check-assumptions">Describe Data and
-Check Assumptions</a></li>
 <li><a href="#a-priori-contrasts">A priori contrasts</a></li>
 <li><a href="#factorial-anova-interaction-contrasts">Factorial ANOVA
 Interaction Contrasts</a></li>
@@ -380,8 +379,8 @@ Interaction Contrasts</a></li>
 </ul>
 </div>
 
-<div id="lab-5-two-way-factorial-anova" class="section level2">
-<h2>Lab 5: Two-way factorial ANOVA</h2>
+<div id="lab-5-background" class="section level1">
+<h1>1. Lab 5 Background</h1>
 <p>In an experiment, fifth grade students are individually and randomly
 assigned to be introduced to a set of vocabulary words by watching a
 lecture in one of three subject areas: physical science, social science,
@@ -400,17 +399,19 @@ compared to social science?”</p>
 <pre class="r"><code>needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
 
 vocab5_data &lt;- misty::read.sav(here(&quot;assignments_data&quot;, &quot;Lab5_Vocab.sav&quot;), use.value.labels = TRUE)</code></pre>
-<div id="describe-data-and-check-assumptions" class="section level3">
-<h3>Describe Data and Check Assumptions</h3>
+</div>
+<div id="examining-data-and-anova-assumptions" class="section level1">
+<h1>2. Examining Data and ANOVA Assumptions</h1>
 <p>Average vocabulary score is 33.5 (sd = 12.87) and is approximately
 normally distributed (skew and kurtosis &lt; ±2). Average vocabulary
 score for physical science lecture is 40 words (sd = 10.80), social
 science is 26 words (sd = 15.20), and history is 34.5 words (sd = 8.39).
 Each are approximately normally distributed, with skewness and kurtosis
 &lt; ±2.</p>
-<p>The p-value of 0.0988 is not significant, suggesting that the error
-variance around the mean is roughly equal across groups. Additional
-corrections are not needed.</p>
+<p>Regarding the assumption of homogeneity of variance, The p-value of
+0.0988 is not significant, suggesting that the error variance around the
+mean is roughly equal across groups. Additional corrections are not
+needed.</p>
 <p>For vocab, the mean = 33.5, sd = 12.87, and skew and kurtosis &lt;
 ±2, assuming normality, as stated before.</p>
 <p>Observations can be assumed to be independent since participants only
@@ -465,7 +466,6 @@ lecture scored the lowest.</p>
 ##       30                  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-</div>
 <div id="a-priori-contrasts" class="section level3">
 <h3>A priori contrasts</h3>
 <p>Two-factor contrasts with emmeans package</p>

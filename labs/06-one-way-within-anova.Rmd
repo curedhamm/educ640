@@ -28,7 +28,7 @@ The authors measured the global severity index as an indicator of psychological 
 Doing within-subjects ANOVA requires restructuring the data in a format that's better to work with.
 
 ```{r setup, message = FALSE}
-needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, MOTE)
 df <- misty::read.sav(here("kamden-mwavita_data/within-subjects ANOVA - Felver, Morton, and Clawson.sav"), use.value.labels = TRUE) %>% 
   clean_names()
 ```
@@ -108,7 +108,7 @@ describeBy(df, group = "test_type")
 
 Using the boxplots and descriptions, you have idea now of if the normality assumptions are met. **Note. You don't need to run leveneTest() for within-subjects**
 
-#### 3.1 Boxplot
+### 3.1 Boxplot
 Let's use boxplots to look at the score distributions.
 ```{r}
 boxplots <- df %>% 
@@ -119,9 +119,9 @@ boxplots <- df %>%
 boxplots
 ```
 
-At this point, you should have enough information to check all assumptions except sphericity. For that, we need to run Mauchly's test from the `afex` package which will be included in the output below, in 
+At this point, you should have enough information to check all assumptions except for the _assumption of sphericity_. For that, we need to run Mauchly's test which is automatically produced using the `afex` package which will be included in section *4. Conducting One-Way Within-Subjects ANOVA*.
 
-#### 3.2 Line Graph
+### 3.2 Line Graph
 *You don't need to run for your analysis in this lab (6)*, but it might be useful for visualizing the variability that is tested within-subjects analysis. In this case, we've testing the variation of test scores within students over time.
 
 First, set up the base of the graph using `ggplot` and `geom_point()`, which will plot the score of each test, then add `geom_line()`, which will connect the points so it will be easy to track visually.
@@ -151,16 +151,16 @@ m1 <- aov_car(test_score ~ test_type + Error(student_id/test_type),
 summary(m1)
 ```
 
-First, we see that Mauchly Tests for Sphericity produce a test statistic of 0.25066 and p-value of 0.0002. Since the value is significant, the sphericity assumption is violated. Because of this violation, we cannot assume sphericity, and we have to interpret the results under the heading "Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity".
+First, we see that Mauchly's Test for Sphericity produced a test statistic was significant ($W_2$ = .251, _p_ < .001), indicating that the assumption sphericity was not met. We will then interpret the results under the heading "Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity", and report the Greenhouse-Geisser correction, where we find a significant difference in the global severity score among the three timepoints (*F* = 8.29, *p* = .010)
 
-We can also find the effect size using the code below.
+We can also find the effect size $\eta_p^{2}$ using the code below.
 ```{r}
 effectsize::eta_squared(m1)
 ```
 
-The partial eta squared of 0.39 indicates that test type explain 39% of the difference between test scores.
+Approximately 39% of the variance in global severity scores was explained by change between the pre-test, post-test, and follow up test ($\eta_p^{2}$ = 0.39).
 
-#### 5. Running Post-Hoc Custom Contrasts
+## 5. Running Post-Hoc Custom Contrasts
 
 For the contrasts, we'll use the research question at the beginning of the lab to inform our research question: "Was psychological distress, as measured by the global severity index, significantly different at post-test and the follow-up than it was before the mindfulness program?"
 
@@ -193,7 +193,11 @@ contrasts <- list(
 contrast(em, contrasts)
 ```
 
-Using the t-ratio of 2.587 and df of 13 from above, we can find the effect size.
+Using the t-ratio of 2.587 and df of 13 from above, we can find the effect sizes calculated below. With corrections for two tests, our new alpha is .05/2 = .025
+
+### 5.1 Effect Sizes
+
+Calculate effect size with partial eta squared ($\eta_p^{2}$).
 ```{r}
 effectsize::t_to_eta2(
                       t = 2.587,
@@ -201,6 +205,16 @@ effectsize::t_to_eta2(
                       )
 ```
 
-With corrections, our new alpha is .05/2 = .025
+Calculate effect size with omega squared ($\omega^{2}$).
+```{r}
+#Let's calculate effect size with Omega
+# First turn t-ratio into F-ratio by squaring it: t^2 = F
+(2.587)^2
+# Fvalue = 6.692569
 
-While the pre-test differs from the other tests by 5.15 points, the difference is not significant (p = .022). The partial eta squared of 0.34 indicates that test type explain 34% of the difference between the pre-test score and scores from the other two tests.
+# Second, put in values accordingly:
+omega.F(dfm = 1, dfe = 13,
+      Fvalue = 6.692569, n = 36, a = .025)
+```
+
+While the pre-test differs from the other tests by 5.15 points, the difference is not significant (p = .022). $\eta_p^{2}$ = 0.34 indicated that 34% of the variance between the pre-test score and scores from the other two tests combined, while $\omega^{2}$ = 0.13, indicating that only 13% of the variance between the pre-test score and scores from the other two tests.
