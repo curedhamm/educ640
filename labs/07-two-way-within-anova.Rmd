@@ -1,12 +1,18 @@
 ---
 title: 'Lab 7: Two-Way Within-Subjects ANOVA'
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
 ---
 
-## Introduction
+## 1. Introduction
 
 This tutorial will learn how to run two-way within-subjects ANOVA. 
 
 We will use data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Vishnumolakala et al. 2018). For your Lab 7 assignment, you will use the data provided on Canvas.
+
+### 1.2 Background
 
 In this study, researchers followed first-year undergraduate chemistry students, measuring their attitudes, self-efficacy, and self-reported experiences both before and after a process-oriented guided inquiry learning intervention (POGIL). The purpose of the intervention was to increase students’ attitudes and emotions about chemistry coursework through the POGIL intervention. The authors identified two dependent variables: emotional satisfaction and intellectual accessibility.
 
@@ -18,7 +24,7 @@ The authors asked several research questions; in this lab, we will focus on one:
 
 The authors measured both intellectual accessibility and emotional satisfaction using the Attitudes toward the Study of Chemistry Inventory (ASCI). The ASCI is an eight-item scale of seven-point Likert-type items.
 
-## Restructuring data
+## 2. Data Preparation
 
 Remember, we have to restructure the data for within-subjects designs. 
 
@@ -32,6 +38,8 @@ First, let's view what the data looks like.
 ```{r}
 head(df)
 ```
+
+### 2.1 Preparing Variables and Labels
 
 Add in an ID column, if needed.
 ```{r}
@@ -54,6 +62,8 @@ Check that it worked:
 ```{r}
 head(df)
 ```
+
+### 2.2 Pivoting the Data from 'Wide' to 'Long'
 
 So, here are the arguments the `pivot_longer` function will take in this case:
 
@@ -93,6 +103,8 @@ df <- df %>%
 head(df)
 ```
 
+### 2.3 Checking Variable Types
+
 Now, we need to check that each variable is the right data type.
 ```{r}
 str(df)
@@ -100,123 +112,149 @@ str(df)
 
 The ID variable, attitude variable, and intervention variable should all be factors. 
 
-Since I only have two levels per variable and there is no order I need them in, I am not using the levels feature that I used in Lab 6. If your variables do have a specific order they need to go in, go back to Lab 6 to see how to re-level the variables in this step.
-
-**This is important ^^! Do this now if you need to!**
-
+There may be a time where you have multiple variables that you are trying to convert into factors. Rather than do each one individually (which can be time consuming if you have many!), you can do it in two lines of code. See below:
 ```{r}
-df$id <- as.factor(df$id)
-df$attitude <- as.factor(df$attitude)
-df$intervention <- as.factor(df$intervention)
+factor_cols <- c("id", "attitude", "intervention") #list all the columns that should be factors here
+df[factor_cols] <- lapply(df[factor_cols], as.factor) #apply the "as.factor" function to all of them
 ```
 
-Check if it worked:
 ```{r}
-str(df)
+str(df) #it worked!
 ```
+The function you used above is called `lapply()` that takes a list, applies a function to it, and returns a list. Since a data frame is a type of list, `lapply()` works really well if you are trying to apply a function to multiple columns at once. 
 
-Now we go on with our analysis.
+Notice the code is really similar to the previous code you used to convert variables to factors: `df$id <- as.factor(df$id)` On the left of the arrow (assignment operator), you still have the new variable/the variable you are changing. On the right, you have the function and and where you are applying it. 
 
-## Describing data
+This function is also a part of the base R functions, which means you don't have to install any special package to access it.
+
+After that, since I only have two levels per variable and there is no order I need them in, I am not using the levels feature that I used in Lab 6. If your variables do have a specific order they need to go in, go back to Lab 6 to see how to re-level the variables in this step.
+
+## 3. Data Exploration and Assumptions
 
 Use the `describe()` and `describeBy()` functions to explore the data.
 
-## **stopped here, come back** ##
-
 Let's use boxplots to look at the score distributions.
 ```{r}
-boxplots <- df %>% 
-  ggplot(aes(x = test_type, y = test_score)) +
+boxplot_attitude <- df %>% 
+  ggplot(aes(x = attitude, y = score)) +
   geom_boxplot() +
-  theme_minimal() #I like using this theme because it gets rid of the gray background
+  coord_flip() + #this rotates the axes, which might make it easier to compare in this case
+  theme_minimal() #I like using this theme because it gets rid of the gray background, but you can do any theme or none at all
+
+boxplot_attitude
+```
+
+```{r}
+boxplots <- df %>% 
+  ggplot(aes(x = attitude, y = score)) +
+  geom_boxplot(aes(fill = intervention)) + #this groups the boxplots so you can see comparisons across both groups. can also use "group = intervention" if you don't want colors
+  coord_flip() +
+  theme_minimal() 
 
 boxplots
 ```
 
-Using the boxplots and descriptions, you have idea now of if the normality assumptions are met.
-
-I will include another type of plot below. The plot below you don't need to run for your analysis in this lab, but it might be useful for your final project or beyond when looking at within-subjects data and you want to graphically see the data (i.e. how each person scored over time).
-
-First, let's set up the base of the graph. We will use ggplot but combine with `geom_point()`, which will plot the score of each test, and `geom_line()`, which will connect the points so it will be easy to track visually.
+A better way to visually check the normality of data is through a QQ plot. We can use ggplot to help us do this; just plug your dependent variable in next to sample: "`sample = DV`".
 ```{r}
 df %>% 
-  ggplot(aes(test_type, test_score, group = student_id)) +
-  geom_line(aes(color = student_id)) +
-  theme_minimal()
+  ggplot(aes(sample = score)) +
+  stat_qq()+
+  stat_qq_line(color = "red") +
+  theme_classic()
 ```
 
-With so many students, it is hard to match `student_id` with their test trajectories. There is a neat tool from the `ggrepel` package that allows you to label each line. That has a lot of new code unrelated to this lab, so just reach out if you are interested and I can get you resources to help you display data in cool ways.
+Using the visuals and descriptions above, discuss whether ANOVA assumptions are met.
 
-At this point, you should have enough information to check all assumptions except sphericity. For that, we need to run Mauchly's test from the afex package. Luckily, that's already included in the ANOVA output. 
+**Important note about Mauchly's Test/Sphericity Assumption:**
 
-## Running ANOVA
+Notice that the data set I am using for this tutorial has only two levels per variable. Attitude is either emotional or intellectual and intervention is either pre or post. Therefore, the sphericity assumption does not apply for this dataset.
 
-We use `aov_car` to allow us to run `emmeans`. This function is a part of the `afex` package. This function takes more information than what you might have seen so far with between-subjects tests. For this, we need to specify our ID variable and the independent variables within the `Error()` term.
+In the dataset for your lab, one of your variables has three levels. This means that you do need to test the sphericity assumption. In addition, since this is a two-way rather than a one-way, you will need to test the assumption for both the main effect and the interaction. 
 
-The general structure for one-way within subjects is as follows:
+What this will look like for you: 
+In your ANOVA output below, you will see three sections: Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, Mauchly Tests for Sphericity, and Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
 
-DV ~ IV + Error(ID/IV),
+If p-value > .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
 
-where you plug in your IV, DV, and ID variable. Here is the example:
+*Let us know if you have any questions about this!*
+
+## 4. Conducting Two-Way Within-Subjects ANOVA
+
+We will still use `aov_car`, part of the `afex` package. We need to specify our ID variable and the independent variables within the `Error()` term.
+
+#### 4.1 Creating ANOVA Model
+
+The general structure for two-way within-subjects is as follows:
+
+DV ~ IV1 + IV2 + IV1_IV2_interaction + Error(ID/IV1*IV2)
+
+Plug in the respective values into the model:
+
 ```{r}
 needs(afex)
-m1 <- aov_car(test_score ~ test_type + Error(student_id/test_type),
-              data = df, include_aov = F)
-```
-
-View results of ANOVA:
-```{r}
+m1 <- afex::aov_car(score ~ attitude + intervention + attitude:intervention + Error(id/attitude*intervention),
+                           data=df, include_aov = F)
 summary(m1)
+
 ```
 
-First, we see that Mauchly Tests for Sphericity produce a test statistic of 0.25066 and p-value of 0.0002. Since the value is significant, the sphericity assumption is violated. Because of this violation, we cannot assume sphericity, and we have to interpret the results under the heading "Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity".
-
-We can also find the effect size using the code below.
+Calculate the effect size (partial eta squared).
 ```{r}
 effectsize::eta_squared(m1)
 ```
 
-The partial eta squared of 0.39 indicates that test type explain 39% of the difference between test scores.
+ANOVA results indicated no significant interaction between attitude and intervention. This means that each main effect should be interpreted for its effect on test score. The partial eta squared (pes) of .09 indicates that attitude explains about 9% of the differences in scores, while the pes of .16 indicates that intervention explains 16% of the differences in scores.
 
-## Running Contrasts
+#### 4.2 Displaying Means
 
-For the contrasts, I am going to go back to the research question at the beginning of the lab to inform my contrast: Was psychological distress, as measured by the global severity index, significantly different at post-test and the follow-up than it was before the mindfulness program?
-
-Remember the levels of your test variable:
+Since we don't see the actual means in the ANOVA output, we can visualize those below, by attitude and by intervention. 
 ```{r}
-levels(df$test_type)
+means <- df %>% 
+  group_by(attitude, intervention) %>% 
+  summarise(score = mean(score))
 ```
 
-To set up my contrast, I will compare `pre-test` scores against the other two: (1, -.5, -.5)
+```{r}
+ggplot(means, aes(x = attitude, y = score, group = intervention)) +
+  geom_point() +
+  geom_line(aes(color = intervention)) +
+  theme_minimal()
+```
 
-First, gather pairwise comparisons for each test.
+For all cases, pre-test scores were lower than post-test scores. Intellectual attitudes also had lower scores on average than emotional attitudes. 
+
+## 5. Running Post-Hoc Custom Contrasts
+
+#### 5.1 Pairwise Comparisons
+
+First, run `emmeans()` to see the order of the levels, estimates of the differences between the levels, and corresponding p-values and t-statistics.
+
 ```{r}
 needs(emmeans)
-em <- emmeans(m1, ~test_type)
+em <- emmeans(m1, ~attitude*intervention)
 pairs(em)
 ```
 
-This allows us to see the order of factors to specify coding.
-```{r}
-em
-```
+From here, we can see that emotional and intellectual conditions are significantly different from each other for the pre-test. Also, we can see for both emotional and intellectual, the pre- and post-test scores are different.
+
+### 5.2 Creating Custom Contrasts
+
+Let's say we ask the following research question: To what extent does timing of the test (pre vs. post) on test score depend on the type of test given?
+
+Set up our contrasts below:
 
 ```{r}
+em #first just look at order of factors to specify coding
 contrasts <- list(
-  hyp1 = c(1, -.5, -.5)
-  # if you have more hypotheses, you would place them here, too
+  hyp1 = c(1, -1, -1, 1)
 )
 contrast(em, contrasts)
-```
 
-Using the t-ratio of 2.587 and df of 13 from above, we can find the effect size.
-```{r}
 effectsize::t_to_eta2(
-  t = 2.587,
-  df_error = 13
+  t = -1.022,
+  df_error = 212
 )
 ```
 
-With corrections, our new alpha is .05/? = ?
+We don't get a significant result here, which makes sense given that the interaction between the two terms was not significant when we ran the ANOVA.
 
-The pre-test differs significantly from the other tests by 5.15 points (p = .022). The partial eta squared of 0.34 indicates that test type explain 34% of the difference between the pre-test score and scores from the other two tests.
