@@ -367,20 +367,27 @@ pre code {
 
 <div id="TOC">
 <ul>
-<li><a href="#lab-5-background">1. Lab 5 Background</a></li>
+<li><a href="#study-background">1. Study Background</a></li>
 <li><a href="#examining-data-and-anova-assumptions">2. Examining Data
-and ANOVA Assumptions</a>
+and ANOVA Assumptions</a></li>
+<li><a href="#two-way-anova-with-interactions-contrasts">3. Two-way
+ANOVA with Interactions Contrasts</a>
 <ul>
-<li><a href="#a-priori-contrasts">A priori contrasts</a></li>
-<li><a href="#factorial-anova-interaction-contrasts">Factorial ANOVA
-Interaction Contrasts</a></li>
-<li><a href="#effect-sizes">Effect Sizes</a></li>
+<li><a href="#marginal-means-and-pairwise-comparisons">3.1 Marginal
+Means and Pairwise Comparisons</a></li>
+<li><a href="#custom-interaction-contrasts">3.2 Custom Interaction
+Contrasts</a>
+<ul>
+<li><a href="#a-effect-sizes">3.2.a Effect Sizes</a></li>
+</ul></li>
+<li><a href="#interpreting-interaction-contrast-results">3.3
+Interpreting Interaction Contrast Results</a></li>
 </ul></li>
 </ul>
 </div>
 
-<div id="lab-5-background" class="section level1">
-<h1>1. Lab 5 Background</h1>
+<div id="study-background" class="section level1">
+<h1>1. Study Background</h1>
 <p>In an experiment, fifth grade students are individually and randomly
 assigned to be introduced to a set of vocabulary words by watching a
 lecture in one of three subject areas: physical science, social science,
@@ -390,7 +397,8 @@ experienced each combination of conditions. A vocabulary test with 60
 words follows each lecture. Our research question was: “To what extent
 do lecture topic and method influence the vocabulary learning of fifth
 grade students?”</p>
-<p>But we now have two post-hoc interaction hypotheses to test:</p>
+<p>But we now have two post-hoc interaction research questions to
+test:</p>
 <p>“To what extent does the difference between physical science and
 humanities lectures on vocabulary learning depend on lecture method?”
 “To what extent does the difference between traditional and
@@ -402,26 +410,17 @@ vocab5_data &lt;- misty::read.sav(here(&quot;assignments_data&quot;, &quot;Lab5_
 </div>
 <div id="examining-data-and-anova-assumptions" class="section level1">
 <h1>2. Examining Data and ANOVA Assumptions</h1>
-<p>Average vocabulary score is 33.5 (sd = 12.87) and is approximately
-normally distributed (skew and kurtosis &lt; ±2). Average vocabulary
-score for physical science lecture is 40 words (sd = 10.80), social
-science is 26 words (sd = 15.20), and history is 34.5 words (sd = 8.39).
-Each are approximately normally distributed, with skewness and kurtosis
-&lt; ±2.</p>
-<p>Regarding the assumption of homogeneity of variance, The p-value of
-0.0988 is not significant, suggesting that the error variance around the
-mean is roughly equal across groups. Additional corrections are not
-needed.</p>
-<p>For vocab, the mean = 33.5, sd = 12.87, and skew and kurtosis &lt;
-±2, assuming normality, as stated before.</p>
-<p>Observations can be assumed to be independent since participants only
-attended one lecture, and there is no reason to believe they may have
-affected another group.</p>
-<p>Overall, students who attended the computer-augmented lecture scored
-higher on the vocabulary test than those who attended the traditional
-lecture. In each case, those with physical science appeared to score
-higher than the rest. Those attending the standard social science
-lecture scored the lowest.</p>
+<p>This is a between-subjects analysis, as students were randomly
+assigned to only one type of instruction which, along with the balanced
+sample among groups, supports the <em>assumption of independence of
+observations</em>. The <em>assumption of normality</em> seems tenable
+after visually inspecting the distribution and descriptive statistics
+for <em>Vocabulary Scores</em>. Finally, the <em>assumption of
+homogeneity of variance</em> was not met as Levene’s Test for
+Homogeneity of Variance was not significant (<em>F</em>(5, 30)= 2.06,
+<em>p</em> = .099), indicating that the error (within-group) variance
+around the mean is equal across groups.</p>
+<p>See the following code for assessing the assumptions.</p>
 <pre class="r"><code>describe(vocab5_data)</code></pre>
 <pre><code>##       vars  n mean    sd median trimmed   mad min max range  skew kurtosis   se
 ## idnum    1 36 18.5 10.54   18.5    18.5 13.34   1  36    35  0.00    -1.30 1.76
@@ -466,13 +465,19 @@ lecture scored the lowest.</p>
 ##       30                  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<div id="a-priori-contrasts" class="section level3">
-<h3>A priori contrasts</h3>
-<p>Two-factor contrasts with emmeans package</p>
-<p>Try using <em>by</em> grouping:</p>
+</div>
+<div id="two-way-anova-with-interactions-contrasts" class="section level1">
+<h1>3. Two-way ANOVA with Interactions Contrasts</h1>
+<div id="marginal-means-and-pairwise-comparisons" class="section level2">
+<h2>3.1 Marginal Means and Pairwise Comparisons</h2>
+<p>As this lab is a follow-up (post-hoc) analysis for Lab 4, we will
+focus on the post-hoc pairwise comparisons and probing the interaction
+contrasts in this section of the lab. See the following code for how to
+examine the marginal means and pairwise comparisons.</p>
 <pre class="r"><code>needs(emmeans)
 
 model &lt;- lm(vocab ~ meth + inst + meth:inst, vocab5_data)
+
 means_1 &lt;- emmeans(model, specs = &quot;inst&quot;, by = &quot;meth&quot;)
 means_1</code></pre>
 <pre><code>## meth = computer:
@@ -552,32 +557,11 @@ means_2</code></pre>
 ##   0.0015
 ## 
 ## P value adjustment: tukey method for comparing a family of 6 estimates</code></pre>
-<p>Now we have more than we need, so just pull out the values we can
-actually interpret.</p>
 </div>
-<div id="factorial-anova-interaction-contrasts" class="section level3">
-<h3>Factorial ANOVA Interaction Contrasts</h3>
-<ul>
-<li>Hypothesis 1 - To what extent does the difference between physical
-science and humanities (social science and history) lectures on
-vocabulary learning depend on lecture method?</li>
-<li>Hypothesis 2 - To what extent does the difference between
-traditional and computer-assisted lecture methods differ for physical
-science as compared to social science?</li>
-</ul>
-<p>There is a 5.5 word difference in vocabulary learning between
-physical science and humanities lectures, depending on lecture method.
-Additionally, there is a 16 word difference when comparing traditional
-and computer-assisted lecture methods for physical science as compared
-to social science. The difference in learning between the physical
-science and humanities lectures is not significant at an alpha level of
-.05.</p>
-<p>The partial eta squared of 0.03 indicates that lecture method
-explains about 3% of the difference in vocabulary learning between
-physical science and humanities lectures.</p>
-<p>The partial eta squared of 0.19 indicates that lecture method
-explains about 19% of the difference in vocabulary learning between
-physical science and social science conditions.</p>
+<div id="custom-interaction-contrasts" class="section level2">
+<h2>3.2 Custom Interaction Contrasts</h2>
+<p>The following code is for defining the custom interaction contrasts
+needed for answering the research questions for Lab 5.</p>
 <pre class="r"><code>means_2</code></pre>
 <pre><code>##  inst             meth     emmean   SE df lower.CL upper.CL
 ##  physical science computer     46 3.04 30    39.78     52.2
@@ -589,8 +573,8 @@ physical science and social science conditions.</p>
 ## 
 ## Confidence level used: 0.95</code></pre>
 <pre class="r"><code>contrasts &lt;- list(
-  hyp1 = c(1, -.5, -.5, -1, .5, .5),
-  hyp2 = c(1, -1, 0, -1, 1, 0)
+  hyp1 = c(1, -.5, -.5, -1, .5, .5), #Hypothesis 1: Physical science vs/ humanities (social science and history) depending on lecture method
+  hyp2 = c(1, -1, 0, -1, 1, 0) #Hypothesis 2: Traditional vs. computer-assisted lecture methods for physical science vs. social science
 )
 
 contrast(means_2, contrasts, adjust = &quot;holm&quot;)</code></pre>
@@ -600,12 +584,13 @@ contrast(means_2, contrasts, adjust = &quot;holm&quot;)</code></pre>
 ## 
 ## P value adjustment: holm method for 2 tests</code></pre>
 <pre class="r"><code>## 5.5 is difference between the differences (see graph above to help interpret)</code></pre>
-</div>
-<div id="effect-sizes" class="section level3">
-<h3>Effect Sizes</h3>
-<pre class="r"><code>## actually prefer omega here, but use pes for the purposes of this lab
+<div id="a-effect-sizes" class="section level3">
+<h3>3.2.a Effect Sizes</h3>
+<p>While the code below includes functions for <span class="math inline">\(\eta_p^{2}\)</span> and <span class="math inline">\(\omega^{2}\)</span>, we will only report on <span class="math inline">\(\omega^{2}\)</span> (see textbook for
+justification).</p>
+<pre class="r"><code># Calculating partial eta squared for our two contrasts. The output includes estimates for both without needing to run two functions.
 effectsize::t_to_eta2(
-  t = c(-1.043, -2.628),
+  t = c(-1.043, -2.628), # including t-values for both contrasts 
   df_error = 30
 )</code></pre>
 <pre><code>## Registered S3 method overwritten by &#39;parameters&#39;:
@@ -617,6 +602,106 @@ effectsize::t_to_eta2(
 ## 0.19           | [0.02, 1.00]
 ## 
 ## - One-sided CIs: upper bound fixed at (1).</code></pre>
+<pre class="r"><code>needs(MOTE)
+# Calculating omega squared for our two contrasts.
+## First contrast
+### Transform t-ratio into F-ratio by squaring it: t^2 = F
+(-1.043)^2</code></pre>
+<pre><code>## [1] 1.087849</code></pre>
+<pre class="r"><code># Fvalue = 1.087849
+# Put in values accordingly:
+omega.F(dfm = 1, dfe = 30,
+      Fvalue = 1.087849, n = 36, a = .05)</code></pre>
+<pre><code>## $omega
+## [1] 0.00243431
+## 
+## $omegalow
+## [1] 0
+## 
+## $omegahigh
+## [1] 0.1304939
+## 
+## $dfm
+## [1] 1
+## 
+## $dfe
+## [1] 30
+## 
+## $F
+## [1] 1.087849
+## 
+## $p
+## [1] 0.3052807
+## 
+## $estimate
+## [1] &quot;$\\omega^2$ = 0.00, 95\\% CI [0.00, 0.13]&quot;
+## 
+## $statistic
+## [1] &quot;$F$(1, 30) = 1.09, $p$ = .305&quot;</code></pre>
+<pre class="r"><code>## Second contrast
+### Transform t-ratio into F-ratio by squaring it: t^2 = F
+(-2.628)^2</code></pre>
+<pre><code>## [1] 6.906384</code></pre>
+<pre class="r"><code># Fvalue = 6.906384
+# Put in values accordingly:
+omega.F(dfm = 1, dfe = 30,
+      Fvalue = 6.906384, n = 36, a = .05)</code></pre>
+<pre><code>## $omega
+## [1] 0.1409423
+## 
+## $omegalow
+## [1] 0
+## 
+## $omegahigh
+## [1] 0.4008791
+## 
+## $dfm
+## [1] 1
+## 
+## $dfe
+## [1] 30
+## 
+## $F
+## [1] 6.906384
+## 
+## $p
+## [1] 0.01340633
+## 
+## $estimate
+## [1] &quot;$\\omega^2$ = 0.14, 95\\% CI [0.00, 0.40]&quot;
+## 
+## $statistic
+## [1] &quot;$F$(1, 30) = 6.91, $p$ = .013&quot;</code></pre>
+</div>
+</div>
+<div id="interpreting-interaction-contrast-results" class="section level2">
+<h2>3.3 Interpreting Interaction Contrast Results</h2>
+<p><em><strong>Research Question 1.</strong> To what extent does the
+difference between physical science and humanities (social science and
+history) lectures on vocabulary learning depend on lecture
+method?</em></p>
+<p>Our findings indicate that students in the physical science and
+history lecture groups, did not have significantly different vocabulary
+test scores depending on whether the lecture was delivered using
+traditional or computer-augmented methods (<em>t</em> = -1.04,
+<em>p</em> = .305, <span class="math inline">\(\omega^{2}\)</span> =
+0.002).</p>
+<p><em><strong>Research Question 2.</strong> To what extent does the
+difference between traditional and computer-assisted lecture methods
+differ for physical science as compared to social science?</em></p>
+<p>We found significant differences between mean vocabulary scores among
+students in the two lecture groups (<em>t</em> = -2.628, <em>p</em> =
+.013, <span class="math inline">\(\omega^{2}\)</span> = 0.141),
+accounting for approximately 14.1% of variance in the model. This
+difference remained statistically significant after correcting for
+multiple comparisons using a post-hoc Bonferroni adjustment (i.e., <span class="math inline">\(\alpha\)</span> = .05/3 tests = .0167). In other
+words, students had similar mean vocabulary test scores within the
+computer-augmented lecture group among the physical science lecture
+(<em>M</em> = 46 words) and social science lecture (<em>M</em> = 38
+words), but when receiving the traditional lecture, students in the
+physical science lecture score markedly higher (<em>M</em> = 34 words)
+in comparison to their peers in the social science lecture group
+(<em>M</em> = 12 words).</p>
 </div>
 </div>
 

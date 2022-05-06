@@ -10,11 +10,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# 1. Lab 5 Background
+# 1. Study Background
 
 In an experiment, fifth grade students are individually and randomly assigned to be introduced to a set of vocabulary words by watching a lecture in one of three subject areas: physical science, social science, and history.  The lecture was delivered in one of two methods: traditional lecture or computer-augmented lecture.  Six children experienced each combination of conditions.  A vocabulary test with 60 words follows each lecture. Our research question was: “To what extent do lecture topic and method influence the vocabulary learning of fifth grade students?”
 
-But we now have two post-hoc interaction hypotheses to test: 
+But we now have two post-hoc interaction research questions to test: 
 
 “To what extent does the difference between physical science and humanities lectures on vocabulary learning depend on lecture method?”
 “To what extent does the difference between traditional and computer-assisted lecture methods differ for physical science as compared to social science?”
@@ -27,15 +27,9 @@ vocab5_data <- misty::read.sav(here("assignments_data", "Lab5_Vocab.sav"), use.v
 
 # 2. Examining Data and ANOVA Assumptions
 
-Average vocabulary score is 33.5 (sd = 12.87) and is approximately normally distributed (skew and kurtosis < ±2). Average vocabulary score for physical science lecture is 40 words (sd = 10.80), social science is 26 words (sd = 15.20), and history is 34.5 words (sd = 8.39). Each are approximately normally distributed, with skewness and kurtosis < ±2. 
+This is a between-subjects analysis, as students were randomly assigned to only one type of instruction which, along with the balanced sample among groups, supports the _assumption of independence of observations_. The _assumption of normality_ seems tenable after visually inspecting the distribution and descriptive statistics for _Vocabulary Scores_. Finally, the _assumption of homogeneity of variance_ was not met as Levene's Test for Homogeneity of Variance was not significant (_F_(5, 30)= 2.06, _p_ = .099), indicating that the error (within-group) variance around the mean is equal across groups.
 
-Regarding the assumption of homogeneity of variance, The p-value of 0.0988 is not significant, suggesting that the error variance around the mean is roughly equal across groups. Additional corrections are not needed.
-
-For vocab, the mean = 33.5, sd = 12.87, and skew and kurtosis < ±2, assuming normality, as stated before.
-
-Observations can be assumed to be independent since participants only attended one lecture, and there is no reason to believe they may have affected another group.
-
-Overall, students who attended the computer-augmented lecture scored higher on the vocabulary test than those who attended the traditional lecture. In each case, those with physical science appeared to score higher than the rest. Those attending the standard social science lecture scored the lowest.
+See the following code for assessing the assumptions.
 
 ```{r}
 describe(vocab5_data)
@@ -60,14 +54,16 @@ means %>%
 car::leveneTest(vocab ~ inst*meth, data = vocab5_data, center = "mean")
 ```
 
-### A priori contrasts
-Two-factor contrasts with emmeans package
 
-Try using *by* grouping:
+# 3. Two-way ANOVA with Interactions Contrasts
+
+## 3.1 Marginal Means and Pairwise Comparisons
+As this lab is a follow-up (post-hoc) analysis for Lab 4, we will focus on the post-hoc pairwise comparisons and probing the interaction contrasts in this section of the lab. See the following code for how to examine the marginal means and pairwise comparisons.
 ```{r}
 needs(emmeans)
 
 model <- lm(vocab ~ meth + inst + meth:inst, vocab5_data)
+
 means_1 <- emmeans(model, specs = "inst", by = "meth")
 means_1
 
@@ -83,54 +79,53 @@ means_2
 pairs(means_2)
 ```
 
-Now we have more than we need, so just pull out the values we can actually interpret.
-
-### 4.3 Interpreting Interaction Contrast Results
-_**Research Question 1.** To what extent does the difference between physical science and humanities (social science and history) lectures on vocabulary learning depend on lecture method?_
-
-Our findings indicate that students who were  randomized  to  the  physical  science  and  history  lecture  groups,  an  analysis  of  the interaction  between  instruction  type  and  method  indicated  that  the  vocabulary  test  scores  of students  in  the  two  lecture  groups  did  not  depend  on  whether the  lecture  was  delivered  via traditional lecture or computer-augmented lecture (_t_ = 0.82, _p_ = .418).
-
-_**Research Question 2.** To what extent does the difference between traditional and computer-assisted lecture methods differ for physical science as compared to social science?_
-
-An  analysis  of  the  interaction  between  instruction  type  and  method  indicated  vocabulary  test scores for students in the two lecture groups differed as a function of lecture type (_t_ = -2.628, _p_ = .013, $\omega^{2}$ = 0.141). Thus, 14.1% of the variance in vocabulary test scores was explained by lecture type. This difference remained statistically significant after applying a Bonferroni adjustment (_p_ < .0167) to account for multiple comparisons (_n_= 3). Specifically, students in the physical science lecture  group  and  social  science  group  had  comparable  mean  vocabulary  test  scores  when receiving the computer-augmented lecture (46 vs. 38, respectively) but not when receiving the 
-traditional lecture (34 vs. 12, respectively).
-
-
-There is a 5.5 word difference in vocabulary learning between physical science and humanities lectures, depending on lecture method. Additionally, there is a 16 word difference when comparing traditional and computer-assisted lecture methods for physical science as compared to social science. The difference in learning between the physical science and humanities lectures is not significant at an alpha level of .05.
-
-The partial eta squared of 0.03 indicates that lecture method explains about 3% of the difference in vocabulary learning between physical science and humanities lectures. 
-
-The partial eta squared of 0.19 indicates that lecture method explains about 19% of the difference in vocabulary learning between physical science and social science conditions.
-
+## 3.2 Custom Interaction Contrasts
+The following code is for defining the custom interaction contrasts needed for answering the research questions for Lab 5.
 ```{r}
 means_2
 
 contrasts <- list(
-  hyp1 = c(1, -.5, -.5, -1, .5, .5),
-  hyp2 = c(1, -1, 0, -1, 1, 0)
+  hyp1 = c(1, -.5, -.5, -1, .5, .5), #Hypothesis 1: Physical science vs/ humanities (social science and history) depending on lecture method
+  hyp2 = c(1, -1, 0, -1, 1, 0) #Hypothesis 2: Traditional vs. computer-assisted lecture methods for physical science vs. social science
 )
 
 contrast(means_2, contrasts, adjust = "holm")
 ## 5.5 is difference between the differences (see graph above to help interpret)
 ```
 
-### Effect Sizes
+### 3.2.a Effect Sizes
+While the code below includes functions for $\eta_p^{2}$ and $\omega^{2}$, we will only report on $\omega^{2}$ (see textbook for justification).
 ```{r}
-## actually prefer omega here, but use pes for the purposes of this lab
+# Calculating partial eta squared for our two contrasts. The output includes estimates for both without needing to run two functions.
 effectsize::t_to_eta2(
-  t = c(-1.043, -2.628),
+  t = c(-1.043, -2.628), # including t-values for both contrasts 
   df_error = 30
 )
 
-#Let's calculate effect size with Omega
-# First turn t-ratio into F-ratio by squaring it: t^2 = F
+needs(MOTE)
+# Calculating omega squared for our two contrasts.
+## First contrast
+### Transform t-ratio into F-ratio by squaring it: t^2 = F
+(-1.043)^2
+# Fvalue = 1.087849
+# Put in values accordingly:
+omega.F(dfm = 1, dfe = 30,
+      Fvalue = 1.087849, n = 36, a = .05)
+
+## Second contrast
+### Transform t-ratio into F-ratio by squaring it: t^2 = F
 (-2.628)^2
 # Fvalue = 6.906384
-
-needs(MOTE)
-# Second, put in values accordingly:
+# Put in values accordingly:
 omega.F(dfm = 1, dfe = 30,
-      Fvalue = 6.906384, n = 36, a = .025)
+      Fvalue = 6.906384, n = 36, a = .05)
 ```
 
+## 3.3 Interpreting Interaction Contrast Results
+_**Research Question 1.** To what extent does the difference between physical science and humanities (social science and history) lectures on vocabulary learning depend on lecture method?_
 
+Our findings indicate that students in the physical science and history lecture groups, did not have significantly different vocabulary test scores depending on whether the lecture was delivered using traditional or computer-augmented methods (_t_ = -1.04, _p_ = .305, $\omega^{2}$ = 0.002).
+
+_**Research Question 2.** To what extent does the difference between traditional and computer-assisted lecture methods differ for physical science as compared to social science?_
+
+We found significant differences between mean vocabulary scores among students in the two lecture groups (_t_ = -2.628, _p_ = .013, $\omega^{2}$ = 0.141), accounting for approximately 14.1% of variance in the model. This difference remained statistically significant after correcting for multiple comparisons using a post-hoc Bonferroni adjustment (i.e., $\alpha$ = .05/3 tests = .0167). In other words, students had similar mean vocabulary test scores within the computer-augmented lecture group among the physical science lecture (_M_ = 46 words) and social science lecture (_M_ = 38 words), but when receiving the traditional lecture, students in the physical science lecture score markedly higher (_M_ = 34 words) in comparison to their peers in the social science lecture group (_M_ = 12 words).
