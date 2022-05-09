@@ -182,7 +182,7 @@ If p-value > .05 for Mauchly's (meaning your sphericity assumption was violated)
 
 We will still use `aov_car`, part of the `afex` package. We need to specify our ID variable and the independent variables within the `Error()` term.
 
-#### 4.1 Creating ANOVA Model
+### 4.1 Creating ANOVA Model
 
 The general structure for two-way within-subjects is as follows:
 
@@ -201,11 +201,13 @@ summary(m1)
 Calculate the effect size (partial eta squared).
 ```{r}
 effectsize::eta_squared(m1)
+
+effectsize::omega_squared(m1)
 ```
 
 ANOVA results indicated no significant interaction between attitude and intervention. This means that each main effect should be interpreted for its effect on test score. The partial eta squared (pes) of .09 indicates that attitude explains about 9% of the differences in scores, while the pes of .16 indicates that intervention explains 16% of the differences in scores.
 
-#### 4.2 Displaying Means
+### 4.2 Displaying Means
 
 Since we don't see the actual means in the ANOVA output, we can visualize those below, by attitude and by intervention. 
 ```{r}
@@ -225,7 +227,7 @@ For all cases, pre-test scores were lower than post-test scores. Intellectual at
 
 ## 5. Running Post-Hoc Custom Contrasts
 
-#### 5.1 Pairwise Comparisons
+### 5.1 Pairwise Comparisons
 
 First, run `emmeans()` to see the order of the levels, estimates of the differences between the levels, and corresponding p-values and t-statistics.
 
@@ -249,6 +251,11 @@ contrasts <- list(
   hyp1 = c(1, -1, -1, 1)
 )
 contrast(em, contrasts)
+
+effectsize::t_to_eta2(
+  t = -1.022,
+  df_error = 212
+)
 
 effectsize::t_to_eta2(
   t = -1.022,
