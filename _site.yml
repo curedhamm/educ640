@@ -16,9 +16,9 @@ navbar:
         href: ./labs/05-two-way-factorial-anova.html
       - text: "Lab 6: One-Way Within-Subjects ANOVA"
         href: ./labs/06-one-way-within-anova.html
-      - text: "Lab 7"
+      - text: "Lab 7: Two-Way Within-Subjects ANOVA"
+        href: ./labs/07-two-way-within-anova.html
       - text: "Lab 8"
-      - text: "Lab 9"
   - text: Lab Keys
     menu:
       - text: "Lab 1"
@@ -35,7 +35,6 @@ navbar:
         href: 
       - text: "Lab 8"
         href: 
-      - text: "Lab 9"
   - text: Homework Keys
     menu:
       - text: "HW 1: One-way ANOVA"

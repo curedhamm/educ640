@@ -62,7 +62,7 @@ As this lab is a follow-up (post-hoc) analysis for Lab 4, we will focus on the p
 ```{r}
 needs(emmeans)
 
-model <- lm(vocab ~ meth + inst + meth:inst, vocab5_data)
+model <- lm(vocab ~ meth + inst + inst:meth, vocab5_data)
 
 means_1 <- emmeans(model, specs = "inst", by = "meth")
 means_1
@@ -73,7 +73,7 @@ This is okay, but it doesn't quite give us all the comparisons we need. Use the 
 
 Calculate all possible comparisons and not "nesting" one factor in another:
 ```{r}
-means_2 <- emmeans(model, ~inst*meth)
+means_2 <- emmeans(model, ~meth*inst)
 means_2
 
 pairs(means_2)
@@ -85,7 +85,7 @@ The following code is for defining the custom interaction contrasts needed for a
 means_2
 
 contrasts <- list(
-  hyp1 = c(1, -.5, -.5, -1, .5, .5), #Hypothesis 1: Physical science vs/ humanities (social science and history) depending on lecture method
+  hyp1 = c(1, -1, -.5, .5, -.5, .5), #Hypothesis 1: Physical science vs/ humanities (social science and history) depending on lecture method
   hyp2 = c(1, -1, 0, -1, 1, 0) #Hypothesis 2: Traditional vs. computer-assisted lecture methods for physical science vs. social science
 )
 

@@ -476,7 +476,7 @@ contrasts in this section of the lab. See the following code for how to
 examine the marginal means and pairwise comparisons.</p>
 <pre class="r"><code>needs(emmeans)
 
-model &lt;- lm(vocab ~ meth + inst + meth:inst, vocab5_data)
+model &lt;- lm(vocab ~ meth + inst + inst:meth, vocab5_data)
 
 means_1 &lt;- emmeans(model, specs = &quot;inst&quot;, by = &quot;meth&quot;)
 means_1</code></pre>
@@ -511,50 +511,50 @@ means_1</code></pre>
 need. Use the code below instead.</p>
 <p>Calculate all possible comparisons and not “nesting” one factor in
 another:</p>
-<pre class="r"><code>means_2 &lt;- emmeans(model, ~inst*meth)
+<pre class="r"><code>means_2 &lt;- emmeans(model, ~meth*inst)
 means_2</code></pre>
-<pre><code>##  inst             meth     emmean   SE df lower.CL upper.CL
-##  physical science computer     46 3.04 30    39.78     52.2
-##  social science   computer     40 3.04 30    33.78     46.2
-##  history          computer     38 3.04 30    31.78     44.2
-##  physical science standard     34 3.04 30    27.78     40.2
-##  social science   standard     12 3.04 30     5.78     18.2
-##  history          standard     31 3.04 30    24.78     37.2
+<pre><code>##  meth     inst             emmean   SE df lower.CL upper.CL
+##  computer physical science     46 3.04 30    39.78     52.2
+##  standard physical science     34 3.04 30    27.78     40.2
+##  computer social science       40 3.04 30    33.78     46.2
+##  standard social science       12 3.04 30     5.78     18.2
+##  computer history              38 3.04 30    31.78     44.2
+##  standard history              31 3.04 30    24.78     37.2
 ## 
 ## Confidence level used: 0.95</code></pre>
 <pre class="r"><code>pairs(means_2)</code></pre>
 <pre><code>##  contrast                                              estimate   SE df t.ratio
-##  physical science computer - social science computer          6 4.31 30   1.394
-##  physical science computer - history computer                 8 4.31 30   1.858
-##  physical science computer - physical science standard       12 4.31 30   2.787
-##  physical science computer - social science standard         34 4.31 30   7.898
-##  physical science computer - history standard                15 4.31 30   3.484
-##  social science computer - history computer                   2 4.31 30   0.465
-##  social science computer - physical science standard          6 4.31 30   1.394
-##  social science computer - social science standard           28 4.31 30   6.504
-##  social science computer - history standard                   9 4.31 30   2.091
-##  history computer - physical science standard                 4 4.31 30   0.929
-##  history computer - social science standard                  26 4.31 30   6.039
-##  history computer - history standard                          7 4.31 30   1.626
-##  physical science standard - social science standard         22 4.31 30   5.110
-##  physical science standard - history standard                 3 4.31 30   0.697
-##  social science standard - history standard                 -19 4.31 30  -4.413
+##  computer physical science - standard physical science       12 4.31 30   2.787
+##  computer physical science - computer social science          6 4.31 30   1.394
+##  computer physical science - standard social science         34 4.31 30   7.898
+##  computer physical science - computer history                 8 4.31 30   1.858
+##  computer physical science - standard history                15 4.31 30   3.484
+##  standard physical science - computer social science         -6 4.31 30  -1.394
+##  standard physical science - standard social science         22 4.31 30   5.110
+##  standard physical science - computer history                -4 4.31 30  -0.929
+##  standard physical science - standard history                 3 4.31 30   0.697
+##  computer social science - standard social science           28 4.31 30   6.504
+##  computer social science - computer history                   2 4.31 30   0.465
+##  computer social science - standard history                   9 4.31 30   2.091
+##  standard social science - computer history                 -26 4.31 30  -6.039
+##  standard social science - standard history                 -19 4.31 30  -4.413
+##  computer history - standard history                          7 4.31 30   1.626
 ##  p.value
-##   0.7303
-##   0.4460
 ##   0.0874
-##   &lt;.0001
-##   0.0175
-##   0.9970
 ##   0.7303
 ##   &lt;.0001
-##   0.3190
-##   0.9358
-##   &lt;.0001
-##   0.5886
+##   0.4460
+##   0.0175
+##   0.7303
 ##   0.0002
+##   0.9358
 ##   0.9809
+##   &lt;.0001
+##   0.9970
+##   0.3190
+##   &lt;.0001
 ##   0.0015
+##   0.5886
 ## 
 ## P value adjustment: tukey method for comparing a family of 6 estimates</code></pre>
 </div>
@@ -563,24 +563,24 @@ means_2</code></pre>
 <p>The following code is for defining the custom interaction contrasts
 needed for answering the research questions for Lab 5.</p>
 <pre class="r"><code>means_2</code></pre>
-<pre><code>##  inst             meth     emmean   SE df lower.CL upper.CL
-##  physical science computer     46 3.04 30    39.78     52.2
-##  social science   computer     40 3.04 30    33.78     46.2
-##  history          computer     38 3.04 30    31.78     44.2
-##  physical science standard     34 3.04 30    27.78     40.2
-##  social science   standard     12 3.04 30     5.78     18.2
-##  history          standard     31 3.04 30    24.78     37.2
+<pre><code>##  meth     inst             emmean   SE df lower.CL upper.CL
+##  computer physical science     46 3.04 30    39.78     52.2
+##  standard physical science     34 3.04 30    27.78     40.2
+##  computer social science       40 3.04 30    33.78     46.2
+##  standard social science       12 3.04 30     5.78     18.2
+##  computer history              38 3.04 30    31.78     44.2
+##  standard history              31 3.04 30    24.78     37.2
 ## 
 ## Confidence level used: 0.95</code></pre>
 <pre class="r"><code>contrasts &lt;- list(
-  hyp1 = c(1, -.5, -.5, -1, .5, .5), #Hypothesis 1: Physical science vs/ humanities (social science and history) depending on lecture method
+  hyp1 = c(1, -1, -.5, .5, -.5, .5), #Hypothesis 1: Physical science vs/ humanities (social science and history) depending on lecture method
   hyp2 = c(1, -1, 0, -1, 1, 0) #Hypothesis 2: Traditional vs. computer-assisted lecture methods for physical science vs. social science
 )
 
 contrast(means_2, contrasts, adjust = &quot;holm&quot;)</code></pre>
 <pre><code>##  contrast estimate   SE df t.ratio p.value
 ##  hyp1         -5.5 5.27 30  -1.043  0.3052
-##  hyp2        -16.0 6.09 30  -2.628  0.0268
+##  hyp2         38.0 6.09 30   6.242  &lt;.0001
 ## 
 ## P value adjustment: holm method for 2 tests</code></pre>
 <pre class="r"><code>## 5.5 is difference between the differences (see graph above to help interpret)</code></pre>

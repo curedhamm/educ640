@@ -8,33 +8,36 @@ output:
 
 ## 1. Introduction
 
-This tutorial will learn how to run two-way within-subjects ANOVA. 
+This tutorial covers how to run two-way within-subjects ANOVA. 
 
 We will use data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Vishnumolakala et al. 2018). For your Lab 7 assignment, you will use the data provided on Canvas.
 
 ### 1.2 Background
 
-In this study, researchers followed first-year undergraduate chemistry students, measuring their attitudes, self-efficacy, and self-reported experiences both before and after a process-oriented guided inquiry learning intervention (POGIL). The purpose of the intervention was to increase students’ attitudes and emotions about chemistry coursework through the POGIL intervention. The authors identified two dependent variables: emotional satisfaction and intellectual accessibility.
+In this study, researchers followed first-year undergraduate chemistry students, measuring their attitudes, self-efficacy, and self-reported experiences both before and after a process-oriented guided inquiry learning intervention (POGIL). The purpose of the intervention was to increase students’ attitudes and emotions about chemistry coursework through the POGIL intervention. 
 
-**Research Questions**
+The authors measured both intellectual accessibility and emotional satisfaction using the Attitudes toward the Study of Chemistry Inventory (ASCI). In this tutorial we will use the two subscales for emotional satisfaction and intellectual accessibility as the dependent variables. 
 
-The authors asked several research questions; in this lab, we will focus on one: 
+**Research Question**
 
-*To what extent do students attitudes (emotional or intellectual) depend on the POGIL intervention?*
+In this lab tutorial, we will focus on the research question: 
 
-The authors measured both intellectual accessibility and emotional satisfaction using the Attitudes toward the Study of Chemistry Inventory (ASCI). The ASCI is an eight-item scale of seven-point Likert-type items.
+*To what extent does the effect of the POGIL intervention differ for students' attitudes (emotional or intellectual)?*
+
+Another way to rephrase this question: Among first-year undergraduate chemistry students who participate in the POGIL intervention, is the mean change in ASCI scores (between pre- and post-test) significantly different between the subscales of intellectual accessibility and emotional satisfaction?
 
 ## 2. Data Preparation
 
-Remember, we have to restructure the data for within-subjects designs. 
+As this is a repeated measures (within-subjects) design, we have to start by making sure our data are properly organized.
 
 ```{r setup, message = FALSE}
+# Importing the data
 needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
 df <- misty::read.sav(here("kamden-mwavita_data/paired samples t-test - Vishnumolakala et al.sav"), use.value.labels = TRUE) %>% 
   clean_names()
 ```
 
-First, let's view what the data looks like. 
+First, let's take a look at our data:
 ```{r}
 head(df)
 ```
@@ -48,7 +51,7 @@ df <- df %>%
 head(df)
 ```
 
-Next, we need to pivot the data. Now that we have two variables to work with, it would be a good idea to separate the names of each of them via an underscore. So, we rename the variables. I put the **attitude** (intellectual vs. emotional) before the underscore and **intervention** (pre vs. post) after the underscore. 
+Next, we need to pivot the data. Now that we have two variables to work with, it would be a good idea to separate the names of each of them via an underscore. So, we rename the variables. I put the **attitude** (intellectual vs. emotional) before the underscore and **timepoint** (pre vs. post) after the underscore. 
 
 ```{r}
 df <- df %>% 
@@ -68,7 +71,7 @@ head(df)
 So, here are the arguments the `pivot_longer` function will take in this case:
 
 * `cols = ` : Since we are pivoting everything except ID, you can choose to write out all the columns (`c(ia_pre, ia_post, es_pre, es_post)`) or you can just write `-id`, which basically takes all the columns except the ID column.
-* `names_to = ` : The names are a combination of the attitude and the intervention, so we can write `attitude_intervention`.
+* `names_to = ` : The names are a combination of the attitude and the timepoint, so we can write `attitude_timepoint`.
 * `values_to = ` : These are where the all the scores actually go, so we can call this new column `score`.
 
 
@@ -76,30 +79,26 @@ This is what it looks like all together:
 ```{r}
 df <- df %>% 
   pivot_longer(cols = -id, 
-               names_to = "attitude_intervention",
+               names_to = "attitude_timepoint",
                values_to = "score")
-```
 
-Let's check if it worked:
-```{r}
+# Let's check if it worked:
 head(df)
 ```
 
-Now we have one column for student id, one for test score, and one that has both the attitude and intervention. Since these are two separate variables, we need to separate them.
+Now we have one column for student id, one for test score, and one that has both the attitude and timepoint. Since these are two separate variables, we need to separate them.
 
 R has a function called `separate()` in the `tidyr` package that can easily do this for you. It takes three arguments:
 
-* `col = ` : this is the column you want to separate. For us, this is `attitude_intervention`.
-* `into = c()` : this is what you want to separate the column into. For us, this is `attitude` and `intervention`.
+* `col = ` : this is the column you want to separate. For us, this is `attitude_timepoint`.
+* `into = c()` : this is what you want to separate the column into. For us, this is `attitude` and `timepoint`.
 * `sep = ` : this is what you want to separate by (i.e. a space, a hyphen, an underscore). For us, this is an underscore.
 
 Now put it together.
 ```{r}
 df <- df %>% 
-  separate(col = attitude_intervention, into = c("attitude", "intervention"), sep = "_")
-```
+  separate(col = attitude_timepoint, into = c("attitude", "timepoint"), sep = "_")
 
-```{r}
 head(df)
 ```
 
@@ -110,15 +109,13 @@ Now, we need to check that each variable is the right data type.
 str(df)
 ```
 
-The ID variable, attitude variable, and intervention variable should all be factors. 
+The ID variable, attitude variable, and timepoint variable should all be factors. 
 
 There may be a time where you have multiple variables that you are trying to convert into factors. Rather than do each one individually (which can be time consuming if you have many!), you can do it in two lines of code. See below:
 ```{r}
-factor_cols <- c("id", "attitude", "intervention") #list all the columns that should be factors here
+factor_cols <- c("id", "attitude", "timepoint") #list all the columns that should be factors here
 df[factor_cols] <- lapply(df[factor_cols], as.factor) #apply the "as.factor" function to all of them
-```
 
-```{r}
 str(df) #it worked!
 ```
 The function you used above is called `lapply()` that takes a list, applies a function to it, and returns a list. Since a data frame is a type of list, `lapply()` works really well if you are trying to apply a function to multiple columns at once. 
@@ -127,56 +124,80 @@ Notice the code is really similar to the previous code you used to convert varia
 
 This function is also a part of the base R functions, which means you don't have to install any special package to access it.
 
-After that, since I only have two levels per variable and there is no order I need them in, I am not using the levels feature that I used in Lab 6. If your variables do have a specific order they need to go in, go back to Lab 6 to see how to re-level the variables in this step.
+After that, since two levels for the `timepoint` variable related to time (pre-test and post-test), we will re-order them using the `levels` feature within `factor()` function (like we did in Lab 6). While this reorganization does not affect our results, it will make our output and visuals easier to interpret.
+
+```{r}
+df$timepoint <- factor(df$timepoint, levels =  c("pre", "post"))
+
+str(df$timepoint) #it worked!
+```
+
 
 ## 3. Data Exploration and Assumptions
+As usual, we will want to assess our data using descriptive statistics and graphical displays. See the following sections for methods to evaluate your data and whether they meet the assumptions of two-way within-subjects ANOVA.
 
-Use the `describe()` and `describeBy()` functions to explore the data.
+### 3.1 Descriptive Statistics
+We can see the overall distribution using `describe()`, focusing on the values for our DV (`score`)
+```{r}
+describe(df)
+```
 
+We can also look at more helpful statistics with `describeBy()`, examining scores by test_type and/or by student.
+```{r}
+describeBy(df, group = "timepoint")
+```
+
+### 3.2 Assessing Distribution
+
+You can start with a simple histogram to assess the distribution of our DV/
+```{r}
+ggplot(df, aes(x = score)) +
+  geom_histogram()
+```
+
+Another way to graphically check the normality of our DV data is through a Quantile-Quantile plot (Q-Q plot), show below. The Q-Q plot lines up the values within the quantiles from our DV (the black dots) along the theoretical quantiles of a normal distribution (the red line). If our DV is normally distributed, then the points on the Q-Q plot will perfectly lie on a straight line (i.e., y = x).
+
+We can use ggplot to help us do this; just plug your dependent variable in next to sample: "`sample = DV`".
+```{r}
+df %>% 
+  ggplot(aes(sample = score)) +
+    stat_qq()+
+    stat_qq_line(color = "red") +
+    theme_classic()
+```
+
+Based on these visualizations combined, it's safe to say that our DV meets the assumption of normality.
+
+### 3.3 Boxplots
 Let's use boxplots to look at the score distributions.
 ```{r}
-boxplot_attitude <- df %>% 
+df %>% 
   ggplot(aes(x = attitude, y = score)) +
   geom_boxplot() +
   coord_flip() + #this rotates the axes, which might make it easier to compare in this case
   theme_minimal() #I like using this theme because it gets rid of the gray background, but you can do any theme or none at all
-
-boxplot_attitude
 ```
 
-```{r}
-boxplots <- df %>% 
-  ggplot(aes(x = attitude, y = score)) +
-  geom_boxplot(aes(fill = intervention)) + #this groups the boxplots so you can see comparisons across both groups. can also use "group = intervention" if you don't want colors
-  coord_flip() +
-  theme_minimal() 
-
-boxplots
-```
-
-A better way to visually check the normality of data is through a QQ plot. We can use ggplot to help us do this; just plug your dependent variable in next to sample: "`sample = DV`".
 ```{r}
 df %>% 
-  ggplot(aes(sample = score)) +
-  stat_qq()+
-  stat_qq_line(color = "red") +
-  theme_classic()
+  ggplot(aes(x = attitude, y = score)) +
+  geom_boxplot(aes(fill = timepoint)) + #this groups the boxplots so you can see comparisons across both groups. can also use "group = timepoint" if you don't want colors
+  coord_flip() +
+  theme_minimal() 
 ```
 
-Using the visuals and descriptions above, discuss whether ANOVA assumptions are met.
-
+#### 3.4 Mauchly's Test and Sphericity
 **Important note about Mauchly's Test/Sphericity Assumption:**
 
-Notice that the data set I am using for this tutorial has only two levels per variable. Attitude is either emotional or intellectual and intervention is either pre or post. Therefore, the sphericity assumption does not apply for this dataset.
+Notice that the data set for this tutorial has only two levels per variable: Attitude is either emotional or intellectual, and timepoint is either pre or post. The test for sphericity only applies when there are 3+ levels to you IV. Therefore, the sphericity assumption does not apply for this dataset and the ANOVA output does not include Mauchly's Test.
 
-In the dataset for your lab, one of your variables has three levels. This means that you do need to test the sphericity assumption. In addition, since this is a two-way rather than a one-way, you will need to test the assumption for both the main effect and the interaction. 
+_However_, the data for the Lab 7 assignment includes a variable with three levels. This means that you do need to test the sphericity assumption. In addition, since this is a two-way rather than a one-way, you will need to test the assumption for both the main effect and the interaction.
 
-What this will look like for you: 
-In your ANOVA output below, you will see three sections: Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, Mauchly Tests for Sphericity, and Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
+Refer to Lab 6 for output, where the ANOVA output has three sections: (1) Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, (2) Mauchly Tests for Sphericity, and (3) Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
 
 If p-value > .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
 
-*Let us know if you have any questions about this!*
+*Contact Mark or Anwesha if you have any questions about this!*
 
 ## 4. Conducting Two-Way Within-Subjects ANOVA
 
@@ -186,46 +207,44 @@ We will still use `aov_car`, part of the `afex` package. We need to specify our 
 
 The general structure for two-way within-subjects is as follows:
 
-DV ~ IV1 + IV2 + IV1_IV2_interaction + Error(ID/IV1*IV2)
+DV ~ IV1 + IV2 + IV1:IV2 + Error(ID/IV1*IV2)
 
 Plug in the respective values into the model:
 
 ```{r}
 needs(afex)
-m1 <- afex::aov_car(score ~ attitude + intervention + attitude:intervention + Error(id/attitude*intervention),
+m1 <- afex::aov_car(score ~ attitude + timepoint + timepoint:attitude + Error(id/timepoint*attitude),
                            data=df, include_aov = F)
 summary(m1)
 
 ```
 
-Calculate the effect size (partial eta squared).
+Given that $\omega^{2}$ is robust to bias associated with sample size, we will shift to using this as our preferred effect size to describe the proportion of explained variance in our model. The following code provides partial omega squared estimates ($\omega_p^{2}$) for each IV in the model.
 ```{r}
-effectsize::eta_squared(m1)
-
 effectsize::omega_squared(m1)
 ```
 
-ANOVA results indicated no significant interaction between attitude and intervention. This means that each main effect should be interpreted for its effect on test score. The partial eta squared (pes) of .09 indicates that attitude explains about 9% of the differences in scores, while the pes of .16 indicates that intervention explains 16% of the differences in scores.
-
 ### 4.2 Displaying Means
 
-Since we don't see the actual means in the ANOVA output, we can visualize those below, by attitude and by intervention. 
+Since we don't see the actual means in the ANOVA output, we can visualize those below, by attitude and by timepoint. 
 ```{r}
 means <- df %>% 
-  group_by(attitude, intervention) %>% 
+  group_by(timepoint, attitude) %>% 
   summarise(score = mean(score))
-```
 
-```{r}
-ggplot(means, aes(x = attitude, y = score, group = intervention)) +
+ggplot(means, aes(x = timepoint, y = score, group = attitude)) +
   geom_point() +
-  geom_line(aes(color = intervention)) +
+  geom_line(aes(color = attitude)) +
   theme_minimal()
 ```
 
-For all cases, pre-test scores were lower than post-test scores. Intellectual attitudes also had lower scores on average than emotional attitudes. 
+For all cases, pre-test scores were lower than post-test scores. Intellectual attitudes also had lower scores on average than emotional attitudes.
+
+### 4.3 Interpreting ANOVA Results
+ANOVA results indicated that there was no significant interaction between attitude and the POGIL intervention (_F_(1, 212) = 1.04, _p_ = .31). That is to say, that the effect of POGIL on scores was not different between the two types of attitudes. We did find a significant main effect for the intervention, where differences between pre- and post-test measures accounted for 8% of the differences in scores (_F_(1, 212) = 38.97, _p_ < .001, $\omega_p^{2}$ = .08). We also found a significant main effect for the different types of attitude scores, where differences between emotional satisfaction and intellectual accessibility measures accounted for 4% of the differences in scores (_F_(1, 212) = 20.52, _p_ < .001, $\omega_p^{2}$ = .04). Thus, we have evidence to support that the POGIL intervention improves students’ attitudes towards chemistry; however, the extent to which intervention improves scores does not differ between types of attitudes.
 
 ## 5. Running Post-Hoc Custom Contrasts
+Though we do not need to probe our interaction any further for this tutorial, for the sake of practice, the following code will guide you through running custom contrasts for your future analyses.
 
 ### 5.1 Pairwise Comparisons
 
@@ -233,7 +252,7 @@ First, run `emmeans()` to see the order of the levels, estimates of the differen
 
 ```{r}
 needs(emmeans)
-em <- emmeans(m1, ~attitude*intervention)
+em <- emmeans(m1, ~timepoint*attitude)
 pairs(em)
 ```
 
@@ -241,9 +260,9 @@ From here, we can see that emotional and intellectual conditions are significant
 
 ### 5.2 Creating Custom Contrasts
 
-Let's say we ask the following research question: To what extent does timing of the test (pre vs. post) on test score depend on the type of test given?
+Let's say we ask the following research question: To what extent does timing of the test (pre vs. post) on test score depend on the type of attitude subscale?
 
-Set up our contrasts below:
+Set up our contrast below:
 
 ```{r}
 em #first just look at order of factors to specify coding
@@ -251,17 +270,19 @@ contrasts <- list(
   hyp1 = c(1, -1, -1, 1)
 )
 contrast(em, contrasts)
+```
 
-effectsize::t_to_eta2(
-  t = -1.022,
-  df_error = 212
-)
 
-effectsize::t_to_eta2(
-  t = -1.022,
-  df_error = 212
-)
+```{r}
+needs(MOTE)
+#Let's calculate effect size with Omega
+# First turn t-ratio into F-ratio by squaring it: t^2 = F
+(-1.022)^2
+# Fvalue = 1.044484
+
+# Second, put in values from the contrast output accordingly:
+omega.F(dfm = 1, dfe = 212,
+      Fvalue = 1.044484, n = 852, a = .05)
 ```
 
 We don't get a significant result here, which makes sense given that the interaction between the two terms was not significant when we ran the ANOVA.
-
