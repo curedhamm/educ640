@@ -1,0 +1,249 @@
+---
+title: 'Lab 8: Two-Way Mixed ANOVA'
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+## 1. Introduction
+
+This tutorial covers how to run two-way within-subjects ANOVA. 
+
+We will use data from your textbook (see ['Support Materials' on the textbook webpage](https://www.routledge.com/Design-and-Analysis-in-Educational-Research-ANOVA-Designs-in-SPSS/Strunk-Mwavita/p/book/9781138361164)) (Shannonhouse et al. 2017). For your Lab 8 assignment, you will use the data provided on Canvas.
+
+### 1.2 Background
+
+In this article, the authors report on an experimental project to improve college and university staff attitudes and competencies about suicide and suicide prevention. The authors randomly assigned participants to receive suicide intervention training or to be on a waitlist for training (with waitlist participants serving as the control group). All participants completed a pre-test set of surveys and a post-test set of surveys. 
+
+The authors tested several outcomes, but in this case study, we focus on one: attitudes about suicide.
+
+**Research Question**
+
+Related to attitudes about suicide, the research question was: 
+
+*Was there a difference in attitudes about suicide based on the interaction of pre- versus post-test and placement in the experimental versus control groups?*
+
+## 2. Data Preparation
+
+Like for repeated measures (within-subjects), we have to start by making sure our data are properly organized for a mixed ANOVA design.
+
+```{r setup, message = FALSE}
+# Importing the data
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
+df <- misty::read.sav(here("kamden-mwavita_data/mixed ANOVA - Shannonhouse et al.sav"), use.value.labels = TRUE) %>% 
+  clean_names()
+```
+
+Let's take a look at our data:
+```{r}
+head(df)
+```
+
+### 2.1 Preparing Variables and Labels
+
+Add in an ID column, if needed.
+```{r}
+df <- df %>% 
+  rowid_to_column("id")
+head(df)
+```
+
+### 2.2 Pivoting the Data from 'Wide' to 'Long'
+
+So, here are the arguments the `pivot_longer` function will take in this case:
+
+* `cols = ` : Since we are pivoting only the test scores, we will select those columns only (`c(pre_aos, post_aos)`)
+* `names_to = ` : The names are a combination of the pre- and post-test scores, so we can write `timepoint`.
+* `values_to = ` : These are where the all the scores actually go, so we can call this new column `score`.
+
+
+This is what it looks like all together:
+```{r}
+df <- df %>% 
+  pivot_longer(cols = c(pre_aos, post_aos), 
+               names_to = "timepoint",
+               values_to = "score")
+
+# Let's check if it worked:
+head(df)
+```
+
+Now we have one column for student id, one for group, one for timepoint, and one final one for the test score.
+
+We can make the data a little more clean by making the levels in the group column into lowercase/rename the levels. Also group is a bit of a confusing variable name, since R uses `group` as an argument in ggplot and other functions. 
+```{r}
+df <- df %>% 
+  rename(sample_group = group) %>% 
+  mutate(sample_group = case_when(sample_group == "Control" ~ "control",
+                                  sample_group == "Experimental" ~ "experiment"))
+head(df)
+```
+
+
+### 2.3 Checking Variable Types
+
+Now, we need to check that each variable is the right data type.
+```{r}
+str(df)
+```
+
+The ID variable, group variable, and timepoint variable should all be factors. 
+
+```{r}
+factor_cols <- c("id", "sample_group", "timepoint") #list all the columns that should be factors here
+df[factor_cols] <- lapply(df[factor_cols], as.factor) #apply the "as.factor" function to all of them
+
+str(df) #it worked!
+```
+Reminder -- the function you used above is called `lapply()` that takes a list, applies a function to it, and returns a list. Since a data frame is a type of list, `lapply()` works really well if you are trying to apply a function to multiple columns at once. 
+
+Since pre-tests come before post-tests, we will reorder the levels. See lab 6 and 7 for more information about `lapply()` and `factor()`.
+
+```{r}
+df$timepoint <- factor(df$timepoint, levels =  c("pre_aos", "post_aos"))
+
+str(df$timepoint) #it worked!
+```
+
+## 3. Data Exploration and Assumptions
+As usual, we will want to assess our data using descriptive statistics and graphical displays. See the following sections for methods to evaluate your data and whether they meet the assumptions of mixed ANOVA designs.
+
+### 3.1 Descriptive Statistics
+We can see the overall distribution using `describe()`, focusing on the values for our DV (`score`)
+```{r}
+describe(df)
+```
+
+We can also look at more helpful statistics with `describeBy()`, examining scores by test_type and/or by group.
+```{r}
+describeBy(df, group = "sample_group")
+```
+
+### 3.2 Assessing Distribution
+
+You can start with a simple histogram to assess the distribution of our DV.
+```{r}
+ggplot(df, aes(x = score)) +
+  geom_histogram(fill = "gray40") +
+  theme_light()
+```
+
+Create your Quantile-Quantile (QQ) plot with the code below. If our DV is normally distributed, then the points on the Q-Q plot will perfectly lie on a straight line (i.e., y = x).
+
+```{r}
+df %>% 
+  ggplot(aes(sample = score)) +
+    stat_qq()+
+    stat_qq_line(color = "red") +
+    theme_classic()
+```
+
+### 3.3 Boxplots
+Let's use boxplots to look at the score distributions.
+
+```{r}
+df %>% 
+  ggplot(aes(x = sample_group, y = score)) +
+  geom_boxplot(aes(fill = timepoint)) + #this groups the boxplots so you can see comparisons across both groups. can also use "group = timepoint" if you don't want colors
+  coord_flip() +
+  theme_minimal() 
+```
+
+#### 3.4 Mauchly's Test and Sphericity
+**Important note about Mauchly's Test/Sphericity Assumption:**
+
+Notice that the data set for this tutorial also only has two levels per variable: sample group is either experiment or control, and timepoint is either pre or post. The test for sphericity only applies when there are 3+ levels to you IV. Therefore, the sphericity assumption does not apply for this dataset and the ANOVA output does not include Mauchly's Test.
+
+_However_, the data for the Lab 8 assignment, just like the Lab 7 assignment, includes a variable with three levels. This means that you do need to test the sphericity assumption. In addition, since this is a two-way rather than a one-way, you will need to test the assumption for both the main effect and the interaction.
+
+Refer to Lab 6 for output, where the ANOVA output has three sections: (1) Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, (2) Mauchly Tests for Sphericity, and (3) Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
+
+If p-value > .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
+
+## 4. Conducting Two-Way Within-Subjects ANOVA
+
+We will still use `aov_car`, part of the `afex` package. We need to specify our ID variable and the independent variables within the `Error()` term.
+
+### 4.1 Creating ANOVA Model
+
+The general structure for two-way within-subjects is as follows:
+
+DV ~ IV1 + IV2 + IV1:IV2 + Error(ID/IV1),
+
+where IV1 = within-subjects variable,
+and IV2 = between-subjects variable
+
+Plug in the respective values into the model:
+
+```{r}
+needs(afex)
+m1 <- afex::aov_car(score ~ timepoint + sample_group + timepoint:sample_group + Error(id/timepoint), data=df, include_aov = F)
+summary(m1)
+
+```
+
+Given that $\omega^{2}$ is robust to bias associated with sample size, we will shift to using this as our preferred effect size to describe the proportion of explained variance in our model. The following code provides partial omega squared estimates ($\omega_p^{2}$) for each IV in the model.
+```{r}
+effectsize::omega_squared(m1)
+```
+
+### 4.2 Displaying Means
+
+Since we don't see the actual means in the ANOVA output, we can visualize those below, by sample_group and by timepoint. 
+```{r}
+means <- df %>% 
+  group_by(timepoint, sample_group) %>% 
+  summarise(score = mean(score))
+
+ggplot(means, aes(x = timepoint, y = score, group = sample_group)) +
+  geom_point() +
+  geom_line(aes(color = sample_group)) +
+  theme_minimal()
+```
+
+### 4.3 Interpreting Mixed ANOVA Results
+
+
+
+## 5. Running Post-Hoc Custom Contrasts
+The following code will guide you through running custom contrasts for your future analyses. 
+
+### 5.1 Pairwise Comparisons
+
+First, run `emmeans()` to see the order of the levels, estimates of the differences between the levels, and corresponding p-values and t-statistics.
+
+```{r}
+needs(emmeans)
+em <- emmeans(m1, ~timepoint*sample_group)
+pairs(em)
+```
+
+From here, we can see that control and experiment conditions are significantly different from each other for the post-test. Also, we can see for the experiment condition, the pre- and post-test scores are significantly different.
+
+### 5.2 Creating Custom Contrasts
+
+Let's say we ask the following research question: To what extent does exposure to the intervention (experiment vs control) depend on the timing of the test (pre vs. post)?
+
+Set up our contrast below:
+
+```{r}
+em #first just look at order of factors to specify coding
+contrasts <- list(
+  hyp1 = c(1, -1, -1, 1)
+)
+contrast(em, contrasts)
+```
+
+
+```{r}
+needs(MOTE)
+#Let's calculate effect size with Omega
+# First turn t-ratio into F-ratio by squaring it: t^2 = F
+(4.638)^2
+# Fvalue = 21.51104
+
+# Second, put in values from the contrast output accordingly:
+
+##insert Omega calculation###
+```
