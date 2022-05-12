@@ -1,0 +1,114 @@
+---
+title: "Lab 6 Key"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+## 1. Study Background [WORKING DRAFT]
+
+In an experiment, 12 fifth grade students are introduced to a set of vocabulary words by watching a lecture in each of three subject areas: physical science, social science, and history. A vocabulary test with 60 words followed each lecture. 
+
+Our research question was: “To what extent does lecture topic influence the vocabulary learning of fifth grade students?”
+
+## 2. Data Preparation
+
+To get the data in a format that is better to work with, `rename()` variables and then use `pivot_longer()` to get data in a format R can use. 
+
+```{r}
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, MOTE)
+lab6_data_raw <- misty::read.sav(here("assignments_data", "Lab6_Vocab.sav"), use.value.labels = TRUE)
+
+head(lab6_data_raw) #what it looks like before
+
+lab6_data <- lab6_data_raw %>% 
+  rename(phys = vocab1,
+         soc = vocab2,
+         hist = vocab3) %>% 
+  pivot_longer(cols = c(phys, soc, hist), names_to = "instr", values_to = "vocab_score")
+
+head(lab6_data) #what it looks like when it's clean
+```
+
+## 3. Examining Data and ANOVA Assumptions
+
+```{r}
+str(lab6_data)
+lab6_data$instr <- as.factor(lab6_data$instr)
+lab6_data$idnum <- as.factor(lab6_data$idnum)
+```
+
+
+```{r}
+describe(lab6_data)
+
+ggplot(data = lab6_data, aes(x = instr, y = vocab_score)) +
+  geom_boxplot() +
+  theme_classic()
+```
+
+Average vocabulary score is 33.5 (sd = 12.87) and is approximately normally distributed (skew and kurtosis < ±2). Average vocabulary score for physical science lecture is about 40 words, social science is 26 words, and history is 34.5 words.
+
+```{r}
+lab6_data %>% 
+  ggplot(aes(instr, vocab_score, group = idnum)) +
+  geom_point() +
+  geom_line(aes(color = idnum)) +
+  theme_bw()
+```
+
+The graph above traces each individual's scoring, from history to physical science to social science. The scores and slopes (degree of difference between one score and another) for each student can be seen here.
+
+*Assumptions:*
+
+* Average vocabulary score is 33.5 (sd = 12.87) and is approximately normally distributed (skew and kurtosis < ±2).
+* We assume that the inclusion of one participant does not affect the inclusion of another. Participant participation is independent of one another.
+* We assume homogeneity of between-subject variance (no need to check this because we have only one IV).
+* Sphericity: According to Mauchly's test below, sphericity assumption is violated since the p-value is .01.
+
+
+## 4. One-Way Within-Subjects ANOVA
+
+The assumption sphericity was not met ($W_2$ = .451, _p_ = .012), so we applied the Greenhouse-Geisser correction, where we find a significant difference in students' vocabulary score among the three types of lecture (*F* (2, 22) = 12.30, *p* = .002, $\omega_p^{2}$ = 0.18).
+
+```{r message=FALSE}
+needs(afex)
+
+m1 <- afex::aov_car(vocab_score ~ instr + Error(idnum/instr),
+                           data=lab6_data, include_aov = F) ## the correction .63101 affects degrees of freedom. multiply this by the df given to get true df, if needed
+summary(m1)
+```
+
+```{r}
+effectsize::omega_squared(m1)
+```
+
+## 5. Post-Hoc Custom Contrasts
+
+We tested the post-hoc hypothesis that the effect of physical science lecture would be significantly higher than the average vocabulary score from the other two groups combined. We found that there were significant differences between mean vocabulary scores among students in the two lecture groups (_t_ = 6.21, _p_ < .001, $\omega^{2}$ = 0.511), accounting for approximately 51.1% of variance in the model. This difference remained statistically significant after correcting for multiple comparisons using a post-hoc Bonferroni adjustment (i.e., $\alpha$ = .05/2 tests = .025). In other words, the vocabulary score for students in the physical science lecture (_M_ = 46 words) was significantly higher than the combined average of students in the social science lecture (_M_ = 38 words) and history lecture group (_M_ = 12 words).
+
+```{r}
+needs(emmeans)
+em <- emmeans(m1, ~instr)
+
+pairs(em)
+em
+```
+
+```{r}
+contrasts <- list(hyp1 = c(-.5, 1, -.5))
+contrast(em, contrasts)
+```
+
+```{r}
+#Calculate effect size with Omega
+# First turn t-ratio into F-ratio by squaring it: t^2 = F
+(6.211)^2
+# Fvalue = 38.57652
+
+# Second, put in values accordingly:
+omega.F(dfm = 1, dfe = 11,
+      Fvalue = 38.57652, n = 36, a = .025)
+```
+
