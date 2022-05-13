@@ -6,7 +6,7 @@ output:
     toc_depth: 3
 ---
 
-## 1. Study Background [WORKING DRAFT]
+## 1. Study Background
 
 In an experiment, 12 fifth grade students are introduced to a set of vocabulary words by watching a lecture in each of three subject areas: physical science, social science, and history. A vocabulary test with 60 words followed each lecture. 
 
@@ -37,12 +37,11 @@ head(lab6_data) #what it looks like when it's clean
 str(lab6_data)
 lab6_data$instr <- as.factor(lab6_data$instr)
 lab6_data$idnum <- as.factor(lab6_data$idnum)
+describe(lab6_data)
 ```
 
 
 ```{r}
-describe(lab6_data)
-
 ggplot(data = lab6_data, aes(x = instr, y = vocab_score)) +
   geom_boxplot() +
   theme_classic()
@@ -58,7 +57,7 @@ lab6_data %>%
   theme_bw()
 ```
 
-The graph above traces each individual's scoring, from history to physical science to social science. The scores and slopes (degree of difference between one score and another) for each student can be seen here.
+The graph above traces each individual's scoring, from history to physical science to social science, illustrating the differences between scores for each student.
 
 *Assumptions:*
 
@@ -70,7 +69,7 @@ The graph above traces each individual's scoring, from history to physical scien
 
 ## 4. One-Way Within-Subjects ANOVA
 
-The assumption sphericity was not met ($W_2$ = .451, _p_ = .012), so we applied the Greenhouse-Geisser correction, where we find a significant difference in students' vocabulary score among the three types of lecture (*F* (2, 22) = 12.30, *p* = .002, $\omega_p^{2}$ = 0.18).
+We used a within-subjects ANOVA (type III) to determine if 5th grade students' vocabulary scores differed after watching a lecture in each of three subject areas: physical science, social science, and history. We found that the assumption sphericity was not met for our within-subject variance ($\chi^2$(2) = .451, _p_ = .012), so we applied the Greenhouse-Geisser correction, where we found a significant difference among students' vocabulary score among the three types of lecture (*F* (2, 22) = 12.30, *p* = .002, $\omega_p^{2}$ = 0.18).
 
 ```{r message=FALSE}
 needs(afex)
@@ -86,7 +85,7 @@ effectsize::omega_squared(m1)
 
 ## 5. Post-Hoc Custom Contrasts
 
-We tested the post-hoc hypothesis that the effect of physical science lecture would be significantly higher than the average vocabulary score from the other two groups combined. We found that there were significant differences between mean vocabulary scores among students in the two lecture groups (_t_ = 6.21, _p_ < .001, $\omega^{2}$ = 0.511), accounting for approximately 51.1% of variance in the model. This difference remained statistically significant after correcting for multiple comparisons using a post-hoc Bonferroni adjustment (i.e., $\alpha$ = .05/2 tests = .025). In other words, the vocabulary score for students in the physical science lecture (_M_ = 46 words) was significantly higher than the combined average of students in the social science lecture (_M_ = 38 words) and history lecture group (_M_ = 12 words).
+We tested the post-hoc hypothesis that students' average vocabulary scores would be higher in the physical science lecture than from the combined average of social science and history lecture groups. We found evidence to support our post-hoc hypothesis, where students' vocabulary scores were significantly different comparing the physical science lecture to the other two lecture groups combined (_t_ = 6.21, _p_ < .001, $\omega^{2}$ = 0.511), accounting for approximately 51.1% of variance in the model. This difference remained statistically significant after correcting for multiple comparisons using a post-hoc Bonferroni adjustment (i.e., $\alpha$ = .05/2 tests = .025). In other words, the vocabulary score for students in the physical science lecture (_M_ = 46 words) was significantly higher than the combined average of students in the social science lecture (_M_ = 38 words) and history lecture group (_M_ = 12 words).
 
 ```{r}
 needs(emmeans)
