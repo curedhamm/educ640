@@ -69,7 +69,7 @@ The graph above traces each individual's scoring, from history to physical scien
 
 ## 4. One-Way Within-Subjects ANOVA
 
-We used a within-subjects ANOVA (type III) to determine if 5th grade students' vocabulary scores differed after watching a lecture in each of three subject areas: physical science, social science, and history. We found that the assumption sphericity was not met for our within-subject variance ($\chi^2$(2) = .451, _p_ = .012), so we applied the Greenhouse-Geisser correction, where we found a significant difference among students' vocabulary score among the three types of lecture (*F* (2, 22) = 12.30, *p* = .002, $\omega_p^{2}$ = 0.18).
+We used a within-subjects ANOVA (type III) to determine if 5th grade students' vocabulary scores differed after watching a lecture in each of three subject areas: physical science, social science, and history. We found that the assumption sphericity was not met for our within-subject variance ($\W_2$ = .451, _p_ = .012), so we applied the Greenhouse-Geisser correction, where we found a significant difference among students' vocabulary score among the three types of lecture (*F* (2, 22) = 12.30, *p* = .002, $\omega_p^{2}$ = 0.18).
 
 ```{r message=FALSE}
 needs(afex)
@@ -85,7 +85,7 @@ effectsize::omega_squared(m1)
 
 ## 5. Post-Hoc Custom Contrasts
 
-We tested the post-hoc hypothesis that students' average vocabulary scores would be higher in the physical science lecture than from the combined average of social science and history lecture groups. We found evidence to support our post-hoc hypothesis, where students' vocabulary scores were significantly different comparing the physical science lecture to the other two lecture groups combined (_t_ = 6.21, _p_ < .001, $\omega^{2}$ = 0.511), accounting for approximately 51.1% of variance in the model. This difference remained statistically significant after correcting for multiple comparisons using a post-hoc Bonferroni adjustment (i.e., $\alpha$ = .05/2 tests = .025). In other words, the vocabulary score for students in the physical science lecture (_M_ = 46 words) was significantly higher than the combined average of students in the social science lecture (_M_ = 38 words) and history lecture group (_M_ = 12 words).
+We tested the post-hoc hypothesis that students' average vocabulary scores would be higher in the physical science lecture than from the combined average of social science and history lecture groups. We found evidence to support our post-hoc hypothesis, where students' vocabulary scores were significantly different comparing the physical science lecture to the other two lecture groups combined (_t_ = 6.21, _p_ < .001, $\omega^{2}$ = 0.511), accounting for approximately 51.1% of variance in the model. This difference remained statistically significant after correcting for multiple comparisons using a post-hoc Bonferroni adjustment (i.e., $\alpha$ = .05/2 tests = .025). In other words, the vocabulary score for students in the physical science lecture (_M_ = 40 words) was significantly higher than the combined average of students in the social science lecture (_M_ = 26 words) and history lecture group (_M_ = 34.5 words).
 
 ```{r}
 needs(emmeans)

@@ -471,11 +471,14 @@ is violated since the p-value is .01.</li>
 </div>
 <div id="one-way-within-subjects-anova" class="section level2">
 <h2>4. One-Way Within-Subjects ANOVA</h2>
-<p>Using a one-way repeated-measures ANOVA (type III), we found that the
-assumption sphericity was not met (<span class="math inline">\(W_2\)</span> = .451, <em>p</em> = .012), so we
-applied the Greenhouse-Geisser correction, where we found a significant
-difference among students’ vocabulary score among the three types of
-lecture (<em>F</em> (2, 22) = 12.30, <em>p</em> = .002, <span class="math inline">\(\omega_p^{2}\)</span> = 0.18).</p>
+<p>We used a within-subjects ANOVA (type III) to determine if 5th grade
+students’ vocabulary scores differed after watching a lecture in each of
+three subject areas: physical science, social science, and history. We
+found that the assumption sphericity was not met for our within-subject
+variance (<span class="math inline">\(\W_2\)</span> = .451, <em>p</em> =
+.012), so we applied the Greenhouse-Geisser correction, where we found a
+significant difference among students’ vocabulary score among the three
+types of lecture (<em>F</em> (2, 22) = 12.30, <em>p</em> = .002, <span class="math inline">\(\omega_p^{2}\)</span> = 0.18).</p>
 <pre class="r"><code>needs(afex)
 
 m1 &lt;- afex::aov_car(vocab_score ~ instr + Error(idnum/instr),
@@ -521,20 +524,20 @@ summary(m1)</code></pre>
 </div>
 <div id="post-hoc-custom-contrasts" class="section level2">
 <h2>5. Post-Hoc Custom Contrasts</h2>
-<p>We tested the post-hoc hypothesis students’ average vocabulary scores
-would be higher in the physical science lecture than from the combined
-average of social science and history lecture groups. We found evidence
-to support our post-hoc hypothesis, where students’ vocabulary scores
-were significantly different comparing the physical science lecture to
-the other two lecture groups combined (<em>t</em> = 6.21, <em>p</em>
-&lt; .001, <span class="math inline">\(\omega^{2}\)</span> = 0.511),
-accounting for approximately 51.1% of variance in the model. This
-difference remained statistically significant after correcting for
+<p>We tested the post-hoc hypothesis that students’ average vocabulary
+scores would be higher in the physical science lecture than from the
+combined average of social science and history lecture groups. We found
+evidence to support our post-hoc hypothesis, where students’ vocabulary
+scores were significantly different comparing the physical science
+lecture to the other two lecture groups combined (<em>t</em> = 6.21,
+<em>p</em> &lt; .001, <span class="math inline">\(\omega^{2}\)</span> =
+0.511), accounting for approximately 51.1% of variance in the model.
+This difference remained statistically significant after correcting for
 multiple comparisons using a post-hoc Bonferroni adjustment (i.e., <span class="math inline">\(\alpha\)</span> = .05/2 tests = .025). In other
 words, the vocabulary score for students in the physical science lecture
-(<em>M</em> = 46 words) was significantly higher than the combined
-average of students in the social science lecture (<em>M</em> = 38
-words) and history lecture group (<em>M</em> = 12 words).</p>
+(<em>M</em> = 40 words) was significantly higher than the combined
+average of students in the social science lecture (<em>M</em> = 26
+words) and history lecture group (<em>M</em> = 34.5 words).</p>
 <pre class="r"><code>needs(emmeans)
 em &lt;- emmeans(m1, ~instr)
 
