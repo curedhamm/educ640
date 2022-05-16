@@ -30,7 +30,7 @@ Like for repeated measures (within-subjects), we have to start by making sure ou
 
 ```{r setup, message = FALSE}
 # Importing the data
-needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, effectsize, MOTE, pwr2)
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, car, effectsize, MOTE, pwr2, Superpower)
 df <- misty::read.sav(here("kamden-mwavita_data/mixed ANOVA - Shannonhouse et al.sav"), use.value.labels = TRUE) %>% 
   clean_names()
 ```
@@ -150,20 +150,24 @@ df %>%
   theme_minimal() 
 ```
 
-### 3.4 Levene's Test for Homogeneity
+### 3.4 Homogeneity of variance
+
+To examine whether equality of variances between groups is tenable within each level of the within-subjects variable (i.e., `timepoint`), we need to run Levene's test for each level of our between groups variable (i.e., `sample_group`). The following code will allow you to do this, resulting in a Levene's Test within each timepoint (i.e., pre- and post-test).
 
 ```{r}
-car::leveneTest(score ~ timepoint*sample_group, data = df, center = "mean")
+df %>%
+  group_by(timepoint) %>% # grouping data to have a levene's test per level of  timepoint variable
+  levene_test(score ~ sample_group) #`levene_test()` from `rstatix` package
 ```
 
-### 3.5 Mauchly's Test for Sphericity
-**Important note about Mauchly's Test/Sphericity Assumption:**
+To meet this assumption, Levene's test mush be passed (i.e., _p_ > .05) for each level. Recall that the null hypothesis is that the variances are equal, so the assumption is tenable when _p_ > .05.
 
-Notice that the data set for this tutorial also only has two levels per variable: sample group is either experiment or control, and timepoint is either pre or post. The test for sphericity only applies when there are 3+ levels to you IV. Therefore, the sphericity assumption does not apply for this dataset and the ANOVA output does not include Mauchly's Test.
+### 3.5 Sphericity
+As the data set for this tutorial only has two levels per variable (2x2 ANOVA), the sphericity assumption is not applicable. As you might recall, the test for sphericity only applies when there are 3+ levels to you IV, and the ANOVA output does not include Mauchly's Test.
 
-_However_, the data for the Lab 8 assignment, just like the Lab 7 assignment, includes a variable with three levels. This means that you do need to test the sphericity assumption. In addition, since this is a two-way rather than a one-way, you will need to test the assumption for both the main effect and the interaction.
+_However_, the data for the Lab 8 assignment, just like the Lab 7 assignment, include a variable with three levels. This means that you do need to test the sphericity assumption. In addition, since this is a two-way rather than a one-way, you will need to examine the assumption for both the main effect and the interaction effect.
 
-Refer to Lab 6 for output, where the ANOVA output has three sections: (1) Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, (2) Mauchly Tests for Sphericity, and (3) Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
+For interpreting the ANOVA output, refer to Lab 6 tutorial, where the ANOVA output has three sections: (1) Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, (2) Mauchly Tests for Sphericity, and (3) Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
 
 If _p_ < .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
 
@@ -219,8 +223,7 @@ ggplot(means, aes(x = timepoint, y = score, group = sample_group)) +
 
 ### 4.4 Interpreting Mixed ANOVA Results
 
-
-
+There was a significant interaction effect between sample group and timepoint (_F_(1, 70) = 21.51, _p_ < .001), where the difference in score between pre- and post-test accounted for 12% of the overall variance in scores ($\omega_p^{2}$ = .12). 
 
 ## 5. Running Post-Hoc Custom Contrasts
 The following code will guide you through running custom contrasts for your future analyses. 
@@ -246,7 +249,7 @@ Set up our contrast below:
 ```{r}
 em #first just look at order of factors to specify coding
 contrasts <- list(
-  hyp1 = c(1, -1, -1, 1)
+  hyp1 = c(-.33, -.33, -.33, 1)
 )
 contrast(em, contrasts)
 ```
@@ -255,20 +258,31 @@ contrast(em, contrasts)
 ```{r}
 #Let's calculate effect size with Omega
 # First turn t-ratio into F-ratio by squaring it: t^2 = F
-(4.638)^2
-# Fvalue = 21.51104
+# (4.639)^2
+# Fvalue = 21.52032
 
 # Second, put in values from the contrast output accordingly:
-
-##insert Omega calculation###
+omega.F(dfm = 1, dfe = 70,
+      Fvalue = 21.52032, n = 144, a = .025)
 ```
 
 #### 5.1.b Effect size: Mean differences (Cohen's _d_ & Hedge's _g_)
 
+```{r}
+design <- ANOVA_design(
+  design = "2b*2b", 
+  n = 144, 
+  mu = c(19.3, 19.2, 20.0, 23.4), 
+  sd = 2.82) # population standard deviation
+
+ANOVA_exact(design, alpha_level = 0.05)
+```
+
+
 **Cohen's _d_**
 ```{r}
 # using package `effectsize`
-hedges_g(score ~ timepoint, data = df)
+hedges_g(score ~ sample_group, data = df)
 ```
 
 **Hedge's _g_**
