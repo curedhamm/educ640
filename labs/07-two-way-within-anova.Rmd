@@ -195,7 +195,7 @@ _However_, the data for the Lab 7 assignment includes a variable with three leve
 
 Refer to Lab 6 for output, where the ANOVA output has three sections: (1) Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, (2) Mauchly Tests for Sphericity, and (3) Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
 
-If p-value > .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
+If _p_ < .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
 
 *Contact Mark or Anwesha if you have any questions about this!*
 

@@ -6,7 +6,7 @@ output:
     toc_depth: 3
 ---
 
-## 1. Introduction
+## 1. Introduction {IN PROGRESS}
 
 This tutorial covers how to run two-way within-subjects ANOVA. 
 
@@ -30,7 +30,7 @@ Like for repeated measures (within-subjects), we have to start by making sure ou
 
 ```{r setup, message = FALSE}
 # Importing the data
-needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty)
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, effectsize, MOTE, pwr2)
 df <- misty::read.sav(here("kamden-mwavita_data/mixed ANOVA - Shannonhouse et al.sav"), use.value.labels = TRUE) %>% 
   clean_names()
 ```
@@ -150,7 +150,13 @@ df %>%
   theme_minimal() 
 ```
 
-#### 3.4 Mauchly's Test and Sphericity
+### 3.4 Levene's Test for Homogeneity
+
+```{r}
+car::leveneTest(score ~ timepoint*sample_group, data = df, center = "mean")
+```
+
+### 3.5 Mauchly's Test for Sphericity
 **Important note about Mauchly's Test/Sphericity Assumption:**
 
 Notice that the data set for this tutorial also only has two levels per variable: sample group is either experiment or control, and timepoint is either pre or post. The test for sphericity only applies when there are 3+ levels to you IV. Therefore, the sphericity assumption does not apply for this dataset and the ANOVA output does not include Mauchly's Test.
@@ -159,7 +165,7 @@ _However_, the data for the Lab 8 assignment, just like the Lab 7 assignment, in
 
 Refer to Lab 6 for output, where the ANOVA output has three sections: (1) Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, (2) Mauchly Tests for Sphericity, and (3) Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
 
-If p-value > .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
+If _p_ < .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
 
 ## 4. Conducting Two-Way Within-Subjects ANOVA
 
@@ -169,7 +175,7 @@ We will still use `aov_car`, part of the `afex` package. We need to specify our 
 
 The general structure for two-way within-subjects is as follows:
 
-DV ~ IV1 + IV2 + IV1:IV2 + Error(ID/IV1),
+DV ~ IV1 + IV2 + IV1:IV2 + Error(ID/IV1)
 
 where IV1 = within-subjects variable,
 and IV2 = between-subjects variable
@@ -183,9 +189,11 @@ summary(m1)
 
 ```
 
-Given that $\omega^{2}$ is robust to bias associated with sample size, we will shift to using this as our preferred effect size to describe the proportion of explained variance in our model. The following code provides partial omega squared estimates ($\omega_p^{2}$) for each IV in the model.
+#### 4.1.a Effect size: Variation ($\omega^{2}$)
+Given that $\omega^{2}$ is robust to bias associated with sample size, we will use this as our preferred effect size to describe the proportion of explained variance in our model. The following code provides partial omega squared estimates ($\omega_p^{2}$) for each IV in the model.
 ```{r}
-effectsize::omega_squared(m1)
+# using package `effectsize`
+omega_squared(m1)
 ```
 
 ### 4.2 Displaying Means
@@ -202,7 +210,15 @@ ggplot(means, aes(x = timepoint, y = score, group = sample_group)) +
   theme_minimal()
 ```
 
-### 4.3 Interpreting Mixed ANOVA Results
+### 4.3 Examining Statistical Power
+
+```{r}
+
+```
+
+
+### 4.4 Interpreting Mixed ANOVA Results
+
 
 
 
@@ -235,9 +251,8 @@ contrasts <- list(
 contrast(em, contrasts)
 ```
 
-
+#### 5.1.a Effect size: Variation ($\omega^{2}$)
 ```{r}
-needs(MOTE)
 #Let's calculate effect size with Omega
 # First turn t-ratio into F-ratio by squaring it: t^2 = F
 (4.638)^2
@@ -247,3 +262,19 @@ needs(MOTE)
 
 ##insert Omega calculation###
 ```
+
+#### 5.1.b Effect size: Mean differences (Cohen's _d_ & Hedge's _g_)
+
+**Cohen's _d_**
+```{r}
+# using package `effectsize`
+hedges_g(score ~ timepoint, data = df)
+```
+
+**Hedge's _g_**
+```{r}
+# using package `effectsize`
+hedges_g(score ~ timepoint, data = df)
+
+```
+
