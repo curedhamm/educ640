@@ -129,6 +129,7 @@ ggplot(df, aes(x = score)) +
   theme_light()
 ```
 
+#### 3.2.a QQ plot
 Create your Quantile-Quantile (QQ) plot with the code below. If our DV is normally distributed, then the points on the Q-Q plot will perfectly lie on a straight line (i.e., y = x).
 
 ```{r}
@@ -139,7 +140,7 @@ df %>%
     theme_classic()
 ```
 
-### 3.3 Boxplots
+#### 3.2.b Boxplots
 Let's use boxplots to look at the score distributions.
 
 ```{r}
@@ -179,7 +180,7 @@ We will still use `aov_car`, part of the `afex` package. We need to specify our 
 
 The general structure for two-way within-subjects is as follows:
 
-DV ~ IV1 + IV2 + IV1:IV2 + Error(ID/IV1)
+**DV ~ IV1 + IV2 + IV1:IV2 + Error(ID/IV1)**
 
 where IV1 = within-subjects variable,
 and IV2 = between-subjects variable
@@ -214,13 +215,6 @@ ggplot(means, aes(x = timepoint, y = score, group = sample_group)) +
   theme_minimal()
 ```
 
-### 4.3 Examining Statistical Power
-
-```{r}
-
-```
-
-
 ### 4.4 Interpreting Mixed ANOVA Results
 
 There was a significant interaction effect between sample group and timepoint (_F_(1, 70) = 21.51, _p_ < .001), where the difference in score between pre- and post-test accounted for 12% of the overall variance in scores ($\omega_p^{2}$ = .12). 
@@ -234,7 +228,7 @@ First, run `emmeans()` to see the order of the levels, estimates of the differen
 
 ```{r}
 needs(emmeans)
-em <- emmeans(m1, ~timepoint*sample_group)
+em <- emmeans(m1, ~sample_group*timepoint)
 pairs(em)
 ```
 
@@ -249,7 +243,7 @@ Set up our contrast below:
 ```{r}
 em #first just look at order of factors to specify coding
 contrasts <- list(
-  hyp1 = c(-.33, -.33, -.33, 1)
+  hyp1 = c(1, -1, -1, 1)
 )
 contrast(em, contrasts)
 ```
@@ -265,30 +259,3 @@ contrast(em, contrasts)
 omega.F(dfm = 1, dfe = 70,
       Fvalue = 21.52032, n = 144, a = .025)
 ```
-
-#### 5.1.b Effect size: Mean differences (Cohen's _d_ & Hedge's _g_)
-
-```{r}
-design <- ANOVA_design(
-  design = "2b*2b", 
-  n = 144, 
-  mu = c(19.3, 19.2, 20.0, 23.4), 
-  sd = 2.82) # population standard deviation
-
-ANOVA_exact(design, alpha_level = 0.05)
-```
-
-
-**Cohen's _d_**
-```{r}
-# using package `effectsize`
-hedges_g(score ~ sample_group, data = df)
-```
-
-**Hedge's _g_**
-```{r}
-# using package `effectsize`
-hedges_g(score ~ timepoint, data = df)
-
-```
-
