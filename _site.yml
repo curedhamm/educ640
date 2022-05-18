@@ -18,7 +18,8 @@ navbar:
         href: ./labs/06-one-way-within-anova.html
       - text: "Lab 7: Two-Way Within-Subjects ANOVA"
         href: ./labs/07-two-way-within-anova.html
-      - text: "Lab 8"
+      - text: "Lab 8: Two-Way Mixed ANOVA"
+        href: ./labs/08-mixed-anova.html
   - text: Lab Keys
     menu:
       - text: "Lab 1"

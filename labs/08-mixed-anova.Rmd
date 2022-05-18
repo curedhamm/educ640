@@ -6,7 +6,7 @@ output:
     toc_depth: 3
 ---
 
-## 1. Introduction {IN PROGRESS}
+## 1. Introduction
 
 This tutorial covers how to run two-way within-subjects ANOVA. 
 
@@ -145,9 +145,8 @@ Let's use boxplots to look at the score distributions.
 
 ```{r}
 df %>% 
-  ggplot(aes(x = sample_group, y = score)) +
-  geom_boxplot(aes(fill = timepoint)) + #this groups the boxplots so you can see comparisons across both groups. can also use "group = timepoint" if you don't want colors
-  coord_flip() +
+  ggplot(aes(x = timepoint, y = score)) +
+  geom_boxplot(aes(fill = sample_group)) + #this groups the boxplots so you can see comparisons across both groups. can also use "group = timepoint" if you don't want colors
   theme_minimal() 
 ```
 
@@ -157,11 +156,11 @@ To examine whether equality of variances between groups is tenable within each l
 
 ```{r}
 df %>%
-  group_by(timepoint) %>% # grouping data to have a levene's test per level of  timepoint variable
+  group_by(timepoint) %>% # grouping data to have a levene's test per level of timepoint variable
   levene_test(score ~ sample_group) #`levene_test()` from `rstatix` package
 ```
 
-To meet this assumption, Levene's test mush be passed (i.e., _p_ > .05) for each level. Recall that the null hypothesis is that the variances are equal, so the assumption is tenable when _p_ > .05.
+To meet this assumption, Levene's test must be passed (i.e., _p_ > .05) for each level. Recall that the null hypothesis is that the variances are equal, so the assumption is tenable when _p_ > .05.
 
 ### 3.5 Sphericity
 As the data set for this tutorial only has two levels per variable (2x2 ANOVA), the sphericity assumption is not applicable. As you might recall, the test for sphericity only applies when there are 3+ levels to you IV, and the ANOVA output does not include Mauchly's Test.
@@ -170,7 +169,8 @@ _However_, the data for the Lab 8 assignment, just like the Lab 7 assignment, in
 
 For interpreting the ANOVA output, refer to Lab 6 tutorial, where the ANOVA output has three sections: (1) Univariate Type III Repeated-Measures ANOVA Assuming Sphericity, (2) Mauchly Tests for Sphericity, and (3) Greenhouse-Geisser and Huynh-Feldt Corrections for Departure from Sphericity.
 
-If _p_ < .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction. 
+If _p_ < .05 for Mauchly's (meaning your sphericity assumption was violated), you will use the corresponding test statistic from the third section for the main effect/interaction.
+
 
 ## 4. Conducting Two-Way Within-Subjects ANOVA
 
@@ -217,14 +217,14 @@ ggplot(means, aes(x = timepoint, y = score, group = sample_group)) +
 
 ### 4.4 Interpreting Mixed ANOVA Results
 
-There was a significant interaction effect between sample group and timepoint (_F_(1, 70) = 21.51, _p_ < .001), where the difference in score between pre- and post-test accounted for 12% of the overall variance in scores ($\omega_p^{2}$ = .12). 
+There was a significant interaction effect between treatment groups and timepoint (_F_(1, 70) = 21.51, _p_ < .001), where the difference in scores between pre- and post-test accounted for 12% of the overall variance in scores ($\omega_p^{2}$ = .12). Specifically, the suicide and suicide prevention attitudes and competencies improved significantly more over time for college and university staff who received suicide intervention training ($M_pretest$ = 20.0, $M_post-test$ = 23.4) compared to their peers on the waitlist, whose attitudes and competencies scores did not change ($M_pretest$ = 19.3, $M_post-test$ = 19.2).
 
-## 5. Running Post-Hoc Custom Contrasts
-The following code will guide you through running custom contrasts for your future analyses. 
+## 5. Running Post-Hoc Pairwise Comparisons and Custom Contrasts
+The following code will guide you through running custom contrasts for your future analyses, but are somewhat redundant for the 2x2 mixed ANOVA we ran in this tutorial. 
 
 ### 5.1 Pairwise Comparisons
 
-First, run `emmeans()` to see the order of the levels, estimates of the differences between the levels, and corresponding p-values and t-statistics.
+First, run `emmeans()` to see the order of the levels, estimates of the differences between the levels, and corresponding p-values and t-statistics. 
 
 ```{r}
 needs(emmeans)
@@ -236,20 +236,16 @@ From here, we can see that control and experiment conditions are significantly d
 
 ### 5.2 Creating Custom Contrasts
 
-Let's say we ask the following research question: To what extent does exposure to the intervention (experiment vs control) depend on the timing of the test (pre vs. post)?
+To illustrate and interpret a custom contrast for a two-way mixed ANOVA, we will code a contrast for the same interaction we had in the ANOVA model. So our research question is, "To what extent does participating in the suicide prevention intervention improve suicide and suicide prevention attitudes and competencies among college and university staff over time (pre- vs. post-test)?
 
-Set up our contrast below:
-
+The following code is for the custom contrast and the variation-based effect size ($\omega^{2}$):
 ```{r}
-em #first just look at order of factors to specify coding
+em # look at order of factors to specify coding
 contrasts <- list(
-  hyp1 = c(1, -1, -1, 1)
+  hyp1 = c(1, -1, -1, 1) 
 )
 contrast(em, contrasts)
-```
 
-#### 5.1.a Effect size: Variation ($\omega^{2}$)
-```{r}
 #Let's calculate effect size with Omega
 # First turn t-ratio into F-ratio by squaring it: t^2 = F
 # (4.639)^2
@@ -257,5 +253,7 @@ contrast(em, contrasts)
 
 # Second, put in values from the contrast output accordingly:
 omega.F(dfm = 1, dfe = 70,
-      Fvalue = 21.52032, n = 144, a = .025)
+      Fvalue = 21.52032, n = 144, 
+      a = .025) # Correct for multiple comparisons (2 tests), so p-adjust is .05/2 = .025
 ```
+As expected, we find a significant pairwise contrast effect. This interaction contrast is interpreted the same way as the interaction effect above in section _4.4 Interpreting Mixed ANOVA Results_, and the statistics (e.g., $F$, $\omega^{2}$) should be virtually the same.
