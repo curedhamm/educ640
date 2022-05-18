@@ -217,7 +217,7 @@ ggplot(means, aes(x = timepoint, y = score, group = sample_group)) +
 
 ### 4.4 Interpreting Mixed ANOVA Results
 
-There was a significant interaction effect between treatment groups and timepoint (_F_(1, 70) = 21.51, _p_ < .001), where the difference in scores between pre- and post-test accounted for 12% of the overall variance in scores ($\omega_p^{2}$ = .12). Specifically, the suicide and suicide prevention attitudes and competencies improved significantly more over time for college and university staff who received suicide intervention training ($M_pretest$ = 20.0, $M_post-test$ = 23.4) compared to their peers on the waitlist, whose attitudes and competencies scores did not change ($M_pretest$ = 19.3, $M_post-test$ = 19.2).
+There was a significant interaction effect between treatment groups and timepoint (_F_(1, 70) = 21.51, _p_ < .001), where the difference in scores between pre- and post-test accounted for 12% of the overall variance in scores ($\omega_p^{2}$ = .12). Specifically, the suicide and suicide prevention attitudes and competencies improved significantly more over time for college and university staff who received suicide intervention training ($M_{pre-test}$ = 20.0, $M_{post-test}$ = 23.4) compared to their peers on the waitlist, whose attitudes and competencies scores did not change ($M_{pre-test}$ = 19.3, $M_{post-test}$ = 19.2).
 
 ## 5. Running Post-Hoc Pairwise Comparisons and Custom Contrasts
 The following code will guide you through running custom contrasts for your future analyses, but are somewhat redundant for the 2x2 mixed ANOVA we ran in this tutorial. 
