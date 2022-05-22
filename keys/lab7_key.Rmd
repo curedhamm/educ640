@@ -1,0 +1,140 @@
+---
+title: "Lab 7 Key"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+## Lab 7: Two-Way Within-Subjects ANOVA
+
+### Background
+
+Eight adults are asked to learn several sets of vocabulary words within each of three time periods: 30 seconds, 60 seconds, and 180 seconds. They experienced each time period twice with differing directions for each occurrence; they were told to study by memorizing the words and then they were told to study using story and image mnemonics. A vocabulary test for the target set of words studied in a condition followed each study period. 
+
+### Instructions
+
+### Restructure Data
+To get the data in a format that is better to work with, `rename()` variables and then use `pivot_longer()` to get data in a format R can use. 
+
+```{r}
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, MOTE)
+
+lab7_data_raw <- misty::read.sav(here("assignments_data", "Lab7_Rutherford.sav"), use.value.labels = TRUE)
+
+head(lab7_data_raw) #what it looks like before
+```
+
+```{r}
+lab7_data_pivot <- lab7_data_raw %>% 
+  rename(mem_30 = A1B1,
+         mem_60 = A1B2,
+         mem_180 = A1B3,
+         mne_30 = A2B1,
+         mne_60 = A2B2,
+         mne_180 = A2B3) %>% 
+  pivot_longer(cols = -ID, values_to = "total", names_to = "condition")
+
+lab7_data <- lab7_data_pivot %>% 
+  separate(condition, into = c("condition", "study_time"), sep = "_")
+
+head(lab7_data) #what it looks like when it's clean
+```
+
+### Descriptions & Assumptions
+
+```{r}
+str(lab7_data)
+
+factor_cols <- c("ID", "condition", "study_time")
+lab7_data[factor_cols] <- lapply(lab7_data[factor_cols], as.factor) 
+
+str(lab7_data)
+```
+
+```{r}
+lab7_data$study_time <- ordered(lab7_data$study_time, levels = c("30", "60", "180")) #reorder levels
+```
+
+
+```{r}
+describe(lab7_data)
+ggplot(lab7_data, aes(x = study_time, y = total, fill = condition)) +
+  geom_boxplot() +
+  theme_light()
+```
+
+Overall, the mnemonics conditions have higher scores than their memorize counterparts, for each study time. As study time increases, the scores also seem to generally increase. Mnemonics at the 180 second condition appears to be well above any of the other conditions and times. 
+
+*Assumptions:*  
+* Average vocabulary score across all participants and conditions is 12 (sd = 6.03) and is approximately normally distributed (skew and kurtosis < ±2).  
+* We assume that the inclusion of one participant does not affect the inclusion of another. Participant participation is independent of one another.  
+* Sphericity assumption holds for the condition and study time interaction (p = .053) according to Mauchly's test below.
+
+### Two-way within-subjects ANOVA
+```{r}
+m1 <- afex::aov_car(total ~ condition + study_time + condition:study_time + Error(ID/condition*study_time),
+                           data=lab7_data, include_aov = F)
+summary(m1)
+effectsize::omega_squared(m1)
+```
+
+ANOVA results indicate a significant interaction between condition and study time, *F*(2, 14) = 17.105, *p* < .001, $\omega^2_p$ = 0.71. The partial omega squared of 0.71 indicates that condition and study time jointly explain about 71% of the difference in vocabulary learning.  
+
+The means for each condition are visualized below, first by study time and then by condition.
+
+*Plot Marginal Means*
+```{r}
+means <- lab7_data %>% 
+  group_by(condition, study_time) %>% 
+  summarise(total = mean(total)) %>% 
+  mutate(study_time = factor(study_time, c("30", "60", "180")))
+
+ggplot(means, aes(x = study_time, y = total, group = condition)) +
+  geom_point() +
+  geom_line(aes(color = condition))
+```
+
+As study time increased, vocabulary scored increased. The non-parallel lines indicate study time interaction with condition. 
+
+```{r}
+ggplot(means, aes(x = condition, y = total, group = study_time)) +
+  geom_point() +
+  geom_line(aes(color = study_time))
+```
+
+For all cases, mnemonics were associated with higher vocabulary scores than the memorize conditions.
+
+### Pairwise Comparisons
+
+```{r}
+needs(emmeans)
+em <- emmeans(m1, ~study_time*condition)
+pairs(em)
+```
+
+Pairwise comparisons were calculated using Tukey's HSD, and found that for the memorize condition, students scored about 4 points higher when given 60 seconds compared to 30 seconds (_p_ = .005) and 5 points higher when given 180 seconds compared to 30 seconds (_p_ = .006). For the mnemonics condition, students scored about 2 points higher when given 60 seconds instead of 30 seconds (_p_ = .017), 13 points higher when given 180 seconds instead of 30 seconds (_p_ = .003), and 11 points higher when given 180 seconds instead of 60 seconds (_p_ = .005).
+
+When given 30 seconds, students scored about 4 points higher in the mnemonic condition compared to the memorize condition (_p_ = .002). When given 180 seconds, students scored 12 points higher (_p_ < .001).
+
+### Contrasts: post-hoc
+“To what extent does the effect of study time on vocabulary learning depend on study method instructions for adults?” From the graphed data in the boxplot, it looks like the difference time makes (specifically from 60 to 180 seconds) may differ as a function of instruction method. Therefore, I tested this difference using a custom contrast.
+
+```{r}
+em #first just look at order of factors to specify coding
+contrasts <- list(
+  hyp1 = c(0, 1, -1, 0, -1, 1)
+)
+contrast(em, contrasts)
+
+#Calculate effect size with Omega
+# First turn t-ratio into F-ratio by squaring it: t^2 = F
+# (4.773)^2
+# Fvalue = 22.78153
+
+# Second, put in values accordingly:
+omega.F(dfm = 1, dfe = 7,
+      Fvalue = 22.78153, n = 48, a = .005)
+```
+
+With corrections, our $\alpha_{adj}$ = .05/10 = .005. The difference that time makes from 60 to 180 seconds, differs significantly by 12 points between instructional conditions and explains 76% of the difference between the 60 and 180 second conditions ($t$ = 4.54, $p$ = .002, $\omega^2_p$ = 0.76).

@@ -1,0 +1,168 @@
+---
+title: "Homework 2 Key"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, car, psych, misty, emmeans, MOTE, effectsize)
+
+hw2_data <- misty::read.sav(here("assignments_data", "HW2_ereader.sav"), use.value.labels = TRUE) %>% 
+  clean_names()
+
+```
+
+# Background
+
+You will once again be working with the results of an experiment testing whether ambient lighting levels (measured in lux; see below for more info) affect reading time when college students read the same text on an ereader, but you will now be using data from the full experiment, which compared three different ereaders. The data now includes the full sample of 60 students, who were randomly assigned to one of four lighting levels: 200 lx, 500 lx, 1000 lx, or 1500 lx. Using a factorial design, they were also each assigned to one of three ereaders: a Kindle, a Sony PRS-700, or an i-Rex 1000S (see below for more info). Reading time was used as an indicator of reading ease, where longer times indicate more fatiguing conditions, and was measured in seconds.
+
+The researchers hypothesized that reading time would be shorter under brighter reading conditions but that the effect of lighting would depend on e-reader device. They specifically hypothesized that reading time would be longer on average in the lowest lighting condition(200 lx), which is darker than the average office or classroom, than in the brightest condition (1500lx), which is equivalent to reading outdoors, but that the effect would be stronger (i.e., bigger difference between the lighting levels) for the device with the smaller display (the Sony) than for the two larger displays combined (Kindle and iRex).
+
+# Question 1. 
+#### What is the DV? What is the IV? Describe each in terms of scale (including what the levels are where applicable) and manipulation (vs. observation). – 8 points
+
+The dependent variable is college students reading time on an e-reader, measured in seconds. Reading time indicates reading ease, with longer times indicating greater fatigue. This is an observed continuous variable. The independent variable is lighting level (manipulated to the four ordinal levels or groups with 200 lx, 500 lx, 1000 lx, or 1500 lx) and type of e-reader (three categorical levels of Kindle, Sony PRS-700, or i_Rex 1000S).
+
+# Question 2. 
+#### What is the design of this study (i.e., experiment, quasi-experiment, observational)? How do you know? – 6 points
+
+This study is an experiment, since students were randomly assigned to different lighting conditions. The study uses a two-way ANOVA.
+
+# Question 3. 
+#### Examine side-by-side boxplots for the study and predict whether the researchers’ overall and specific hypotheses are likely to be upheld by statistically significant results. – 16 points
+
+```{r}
+str(hw2_data)
+hw2_data$device <- as_factor(hw2_data$device)
+hw2_data$condition <- as_factor(hw2_data$condition)
+```
+
+
+
+```{r}
+describe(hw2_data)
+describeBy(hw2_data, group = hw2_data$condition, mat = TRUE)
+```
+
+To determine if researchers’ hypotheses are likely to be upheld, we must check ANOVA assumptions: 1) independence of observations , 2) normality, and 3) homogeneity of variance.
+
+For *assumption 1*, students are only assigned to one group and do not cross groups. It is reasonable to assume students in one lighting level group do not affect those in a different lighting level group, as they are kept independent.
+
+For *assumption 2*, the skew (0.03) and kurtosis (-0.83) of the dependent variable reading time is less than the absolute value of 2, so it is reasonable to assume variable normality. This assumption also holds true for each level of the variable.
+```{r}
+leveneTest(reading_time ~ condition*device, data = hw2_data, center = "mean")
+```
+
+For assumption 3, the assumption of the homogeneity of variance holds. The insignificant result from the Levene’s test (0.9507 for condition, 0.9024 for device) suggests the error variance around the mean is roughly equal across groups.
+```{r}
+hw2_data %>% 
+  ggplot(aes(condition, reading_time)) +
+  geom_boxplot() +
+  facet_wrap(~device) +
+  theme_minimal()
+```
+
+```{r}
+hw2_data %>% 
+  ggplot(aes(reading_time, device)) +
+  geom_boxplot() +
+  facet_wrap(~condition) +
+  theme_minimal()
+```
+
+Reading time by lighting level depended on the device participants used. For iRex 1000S, increasing lighting level seemed to decrease reading time on average. For Kindle DX, increasing lighting level decreased reading time until 1000 lx, with no real difference apparent between the 1000 lx and 1500 lx conditions. For Sony PRS-7000, 200 lx and 500 lx had similar reading times, which were higher than those in the 1500 lx group and 1000 lx group, in that order.
+
+Of all devices, Sony PRS-700 were associated with higher reading times on average. iRex 1000S had the lowest reading times for the 100 lx and 1500 lx conditions, but seem about equivalent on average with the Kindle DX for the 500 lx and 1000 lx conditions.
+
+The significance of these observations are examined below.
+
+# Question 4. 
+#### Test the researchers' first hypothesis, and write a brief interpretation of your results. Remember that we always examine the interaction first, and only examine main effects if it is not significant; we also only examine pairwise comparisons if the associated F statistic is significant. – 60 points
+
+The researchers hypothesized that reading time would be shorter under brighter reading conditions but that the effect of lighting would depend on e-reader device.
+
+```{r}
+m1 <- anova_test(hw2_data, formula = reading_time ~ device + condition + device:condition, detailed = TRUE, type = 3, effect.size = "pes")
+
+```
+
+
+
+The interaction effect between device and condition is not statistically significant, indicating that the effect of different light conditions on reading time does not depend on the type of e-reader device used, F(6, 48)=0.047, _p_ = 1.00, $\omega^2_{partial}$=0.006. The partial eta squared of 0.006 indicates that the interaction between type of device and lighting condition is associated with only 0.6% of the difference in reading time.
+
+Device type and lighting condition both are significant at a significance level of .05, though there is no interaction. The following are the main effects of each variable:
+
+The type of device used accounts for 16.2% of the difference in reading time, F(2, 48)=4.648, *p*=.014, $\eta^2_{partial}$ =0.162. Additionally, the lighting level accounts for 28.9% of the difference in reading time, F(3, 48)=6.492, *p*<.001, $\eta^2_{partial}$ =0.289.
+
+Pairwise comparisons are examined below.
+
+```{r}
+rstatix::tukey_hsd(hw2_data, reading_time ~ device*condition)
+```
+
+```{r}
+#Condition
+condition_means <- hw2_data %>%
+ emmeans_test(reading_time ~ condition, p.adjust.method = "holm", detailed = TRUE)
+
+rmarkdown::paged_table(
+  get_emmeans(condition_means)
+)
+```
+
+```{r}
+#Device
+device_means <- hw2_data %>%
+ emmeans_test(reading_time ~ device, p.adjust.method = "holm", detailed = TRUE)
+
+rmarkdown::paged_table(
+  get_emmeans(device_means)
+)
+```
+
+Pairwise comparisons with the Tukey correction were examined.
+
+Reading time on the Sony PRS-700 is 1252.83 seconds, which is 220.63 more seconds than on the Kindle DX, which takes 1032.20 seconds (*p* = .038) and 238.83 more seconds than on the iRex 1000S, which takes 1014 seconds (*p* = .023). There is not a significant difference in reading times between the Kindle DX and iRex 1000S (*p* = .976).
+
+Reading time in the 200 lx low light condition takes 1306.90 seconds, which is significantly higher than the brighter light conditions: 336 seconds higher than the 970.70 seconds in the 1000 lx condition (*p* = .009) and 380 seconds higher than the 926.200 seconds in the 1500 lx condition (*p* = .002). Additionally, reading time in the 500 lx condition is 1194.90 seconds, which is 269 seconds higher than in the 1500 lx condition (*p* = .049). No other light condition differences are significant.
+
+# Question 5. 
+#### Test the researchers' second hypothesis with a hand-coded contrast matrix (including effect sizes). Again, write a brief interpretation of your results. – 40 points
+
+*Remember hypotheses*: Researchers specifically hypothesized that reading time would be longer on average in the lowest lighting condition(200 lx), which is darker than the average office or classroom, than in the brightest condition (1500lx), which is equivalent to reading outdoors, but that the effect would be stronger (i.e., bigger difference between the lighting levels) for the device with the smaller display (the Sony) than for the two larger displays combined (Kindle and iRex).
+
+```{r}
+model <- lm(reading_time ~ device + condition + condition:device, hw2_data)
+
+means <- emmeans(model, ~condition*device)
+means
+```
+
+```{r}
+# pairs(means)
+
+contrasts <- list(
+  hyp1 = c(1, 0, 0, -1, -.5, 0, 0, .5, -.5, 0, 0, .5)
+)
+
+contrast(means, contrasts)
+
+#Calculate effect size with Omega
+# 1.Convert t-ratio to F-ratio by squaring it: t^2 = F
+# (0.084)^2
+# Fvalue = 0.007056
+
+
+# 2. Plug in values accordingly:
+omega.F(dfm = 1, # groups compared - 1
+        dfe = 48, # take from contrast df
+      Fvalue = 0.007056, 
+      n = 60, # total sample size (from descriptive statistics)
+      a = .005) # p-value threshold
+```
+
+The average reading time difference of 46.7 seconds is not statistically significant ($t$ = 0.084, $p$ = .933, $\omega^2_{partial}$ = -0.017). The average reading time was not longer in the lowest lighting condition (200 lx) than in the brightest condition (1500lx), and that the effect is not stronger (i.e., bigger difference between the lighting levels) for the device with the smaller display (the Sony) than for the two larger displays combined (Kindle and iRex).

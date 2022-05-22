@@ -30,7 +30,7 @@ Like for repeated measures (within-subjects), we have to start by making sure ou
 
 ```{r setup, message = FALSE}
 # Importing the data
-needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, car, effectsize, MOTE, pwr2, Superpower)
+needs(tidyverse, rio, here, knitr, kableExtra, misty, janitor, rstatix, psych, misty, car, effectsize, MOTE)
 df <- misty::read.sav(here("kamden-mwavita_data/mixed ANOVA - Shannonhouse et al.sav"), use.value.labels = TRUE) %>% 
   clean_names()
 ```
