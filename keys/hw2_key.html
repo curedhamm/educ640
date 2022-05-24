@@ -1779,15 +1779,14 @@ mean is roughly equal across groups.</p>
 <p>Reading time by lighting level depended on the device participants
 used. For iRex 1000S, increasing lighting level seemed to decrease
 reading time on average. For Kindle DX, increasing lighting level
-decreased reading time until 1000 lx, with no real difference apparent
+decreased reading time until 1000 lx, with no apparent difference
 between the 1000 lx and 1500 lx conditions. For Sony PRS-7000, 200 lx
 and 500 lx had similar reading times, which were higher than those in
 the 1500 lx group and 1000 lx group, in that order.</p>
-<p>Of all devices, Sony PRS-700 were associated with higher reading
-times on average. iRex 1000S had the lowest reading times for the 100 lx
-and 1500 lx conditions, but seem about equivalent on average with the
-Kindle DX for the 500 lx and 1000 lx conditions.</p>
-<p>The significance of these observations are examined below.</p>
+<p>Of all devices, Sony PRS-700 had higher reading times on average.
+iRex 1000S had the lowest reading times for the 100 lx and 1500 lx
+conditions, but seem about equivalent on average with the Kindle DX for
+the 500 lx and 1000 lx conditions.</p>
 </div>
 </div>
 <div id="question-4." class="section level1">
@@ -1798,26 +1797,30 @@ interpretation of your results. Remember that we always examine the
 interaction first, and only examine main effects if it is not
 significant; we also only examine pairwise comparisons if the associated
 F statistic is significant. – 60 points</h4>
-<p>The researchers hypothesized that reading time would be shorter under
-brighter reading conditions but that the effect of lighting would depend
-on e-reader device.</p>
-<pre class="r"><code>m1 &lt;- anova_test(hw2_data, formula = reading_time ~ device + condition + device:condition, detailed = TRUE, type = 3, effect.size = &quot;pes&quot;)</code></pre>
+<pre class="r"><code>anova_test(hw2_data, formula = reading_time ~ device + condition + device:condition, detailed = TRUE, type = 3, effect.size = &quot;pes&quot;)</code></pre>
 <pre><code>## Coefficient covariances computed by hccm()</code></pre>
-<p>The interaction effect between device and condition is not
-statistically significant, indicating that the effect of different light
-conditions on reading time does not depend on the type of e-reader
-device used, F(6, 48)=0.047, <em>p</em> = 1.00, <span class="math inline">\(\omega^2_{partial}\)</span>=0.006. The partial eta
-squared of 0.006 indicates that the interaction between type of device
-and lighting condition is associated with only 0.6% of the difference in
-reading time.</p>
-<p>Device type and lighting condition both are significant at a
-significance level of .05, though there is no interaction. The following
-are the main effects of each variable:</p>
-<p>The type of device used accounts for 16.2% of the difference in
-reading time, F(2, 48)=4.648, <em>p</em>=.014, <span class="math inline">\(\eta^2_{partial}\)</span> =0.162. Additionally,
-the lighting level accounts for 28.9% of the difference in reading time,
-F(3, 48)=6.492, <em>p</em>&lt;.001, <span class="math inline">\(\eta^2_{partial}\)</span> =0.289.</p>
-<p>Pairwise comparisons are examined below.</p>
+<pre><code>## ANOVA Table (type III tests)
+## 
+##             Effect         SSn     SSd DFn DFd       F        p p&lt;.05   pes
+## 1      (Intercept) 72557062.35 3650203   1  48 954.122 2.49e-33     * 0.952
+## 2           device   706967.92 3650203   2  48   4.648 1.40e-02     * 0.162
+## 3        condition  1481063.62 3650203   3  48   6.492 8.91e-04     * 0.289
+## 4 device:condition    21543.24 3650203   6  48   0.047 1.00e+00       0.006</code></pre>
+<p>We ran a two-way between-subjects ANOVA (III) to test the
+researchers’ hypothesis that reading time would be shorter under
+brighter reading conditions but that the effect of lighting would depend
+on e-reader device. Contrary to their hypothesis, the interaction effect
+between device and condition is not statistically significant (F(6,
+48)=0.05, <em>p</em> = 1.00, <span class="math inline">\(\eta^2_{partial}\)</span> =0.004), indicating that
+the effect of different light conditions on reading time does not depend
+on the type of e-reader device used.</p>
+<p>The main effect of the type of device used was statistically
+significant and accounted for 16.2% of the difference in reading time
+(F(2, 48)= 4.648, <em>p</em>=.014, <span class="math inline">\(\eta^2_{partial}\)</span> =0.162). Additionally,
+the main effect of lighting condition was statistically significant,
+accounting for 28.9% of the difference in reading time (F(3, 48) = 6.49,
+<em>p</em> = .001, <span class="math inline">\(\eta^2_{partial}\)</span>
+=0.289).</p>
 <pre class="r"><code>rstatix::tukey_hsd(hw2_data, reading_time ~ device*condition)</code></pre>
 <pre><code>## # A tibble: 75 × 9
 ##    term             group1 group2 null.value estimate conf.low conf.high   p.adj
@@ -1857,21 +1860,24 @@ device_means &lt;- hw2_data %&gt;%
 {"columns":[{"label":["device"],"name":[1],"type":["fct"],"align":["left"]},{"label":["emmean"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["df"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["method"],"name":[7],"type":["chr"],"align":["left"]}],"data":[{"1":"Sony PRS-700","2":"1252.825","3":"67.23101","4":"57","5":"1118.1977","6":"1387.453","7":"Emmeans test"},{"1":"Kindle DX","2":"1032.199","3":"67.23101","4":"57","5":"897.5717","6":"1166.827","7":"Emmeans test"},{"1":"iRex 1000S","2":"1013.999","3":"67.23101","4":"57","5":"879.3712","6":"1148.627","7":"Emmeans test"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<p>Pairwise comparisons with the Tukey correction were examined.</p>
-<p>Reading time on the Sony PRS-700 is 1252.83 seconds, which is 220.63
-more seconds than on the Kindle DX, which takes 1032.20 seconds
-(<em>p</em> = .038) and 238.83 more seconds than on the iRex 1000S,
-which takes 1014 seconds (<em>p</em> = .023). There is not a significant
-difference in reading times between the Kindle DX and iRex 1000S
-(<em>p</em> = .976).</p>
-<p>Reading time in the 200 lx low light condition takes 1306.90 seconds,
-which is significantly higher than the brighter light conditions: 336
-seconds higher than the 970.70 seconds in the 1000 lx condition
-(<em>p</em> = .009) and 380 seconds higher than the 926.200 seconds in
-the 1500 lx condition (<em>p</em> = .002). Additionally, reading time in
-the 500 lx condition is 1194.90 seconds, which is 269 seconds higher
-than in the 1500 lx condition (<em>p</em> = .049). No other light
-condition differences are significant.</p>
+<p>To further investigate the main effects of our model, we ran pairwise
+comparisons using Tukey’s HSD to correct for family-wise error rate
+inflation from multiple comparisons. Our pairwise comparisons of showed
+that reading time on the Sony PRS-700 (M = 1252.83 seconds) was
+significantly slower than on the Kindle DX, which takes 1032.20 seconds
+(<em>p</em> = .038). reading time on the Sony PRS-700 was also
+significantly slower by 238.83 seconds,than on the iRex 1000S (M = 1014
+seconds) (<em>p</em> = .023). There was not a significant difference in
+reading times between the Kindle DX and iRex 1000S (<em>p</em> =
+.976).</p>
+<p>Reading time in the 200 lx low light condition (M = 1306.90 seconds)
+was significantly slower than the brighter light conditions by 336
+seconds than the 970.70 seconds in the 1000 lx condition (<em>p</em> =
+.009) and 380 seconds higher than the 926.200 seconds in the 1500 lx
+condition (<em>p</em> = .002). Additionally, reading time in the 500 lx
+condition is 1194.90 seconds, which is 269 seconds higher than in the
+1500 lx condition (<em>p</em> = .049). No other light condition
+differences are significant.</p>
 </div>
 </div>
 <div id="question-5." class="section level1">
@@ -1880,14 +1886,21 @@ condition differences are significant.</p>
 <h4>Test the researchers’ second hypothesis with a hand-coded contrast
 matrix (including effect sizes). Again, write a brief interpretation of
 your results. – 40 points</h4>
-<p><em>Remember hypotheses</em>: Researchers specifically hypothesized
-that reading time would be longer on average in the lowest lighting
-condition(200 lx), which is darker than the average office or classroom,
-than in the brightest condition (1500lx), which is equivalent to reading
-outdoors, but that the effect would be stronger (i.e., bigger difference
-between the lighting levels) for the device with the smaller display
-(the Sony) than for the two larger displays combined (Kindle and
-iRex).</p>
+<p><em>Researchers’ original hypothesis</em>: Reading time would be
+longer on average in the lowest lighting condition(200 lx) than in the
+brightest condition (1500 lx), but that the effect would be stronger
+(i.e., bigger difference between the lighting levels) for the device
+with the smaller display (the Sony) than for the two larger displays
+combined (Kindle and iRex).</p>
+<p>We used a post-hoc custom contrast to examine the researchers’ second
+hypothesis, that reading time would be longer in the lowest lighting
+condition (200 lx) than in the brightest condition (1500 lx), but that
+the effect would be stronger (i.e., bigger difference between the
+lighting levels) for the device with the smaller display (the Sony) than
+for the two larger displays combined (Kindle and iRex). Although the
+difference in average reading time was 46.7 seconds, the difference was
+not statistically significant (<span class="math inline">\(t\)</span> =
+0.084, <span class="math inline">\(p\)</span> = .933, <span class="math inline">\(\omega^2_{partial}\)</span> = -0.017).</p>
 <pre class="r"><code>model &lt;- lm(reading_time ~ device + condition + condition:device, hw2_data)
 
 means &lt;- emmeans(model, ~condition*device)
@@ -1954,14 +1967,6 @@ omega.F(dfm = 1, # groups compared - 1
 ## 
 ## $statistic
 ## [1] &quot;$F$(1, 48) = 0.01, $p$ = .933&quot;</code></pre>
-<p>The average reading time difference of 46.7 seconds is not
-statistically significant (<span class="math inline">\(t\)</span> =
-0.084, <span class="math inline">\(p\)</span> = .933, <span class="math inline">\(\omega^2_{partial}\)</span> = -0.017). The average
-reading time was not longer in the lowest lighting condition (200 lx)
-than in the brightest condition (1500lx), and that the effect is not
-stronger (i.e., bigger difference between the lighting levels) for the
-device with the smaller display (the Sony) than for the two larger
-displays combined (Kindle and iRex).</p>
 </div>
 </div>
 
