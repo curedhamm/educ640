@@ -536,9 +536,9 @@ summary(m1)</code></pre>
 ## 
 ## - One-sided CIs: upper bound fixed at (1).</code></pre>
 <p>ANOVA results indicate a significant interaction between condition
-and study time, <em>F</em>(2, 14) = 17.105, <em>p</em> &lt; .001, <span class="math inline">\(\omega^2_p\)</span> = 0.71. The partial omega
-squared of 0.71 indicates that condition and study time jointly explain
-about 71% of the difference in vocabulary learning.</p>
+and study time (<em>F</em>(2, 14) = 17.105, <em>p</em> &lt; .001, <span class="math inline">\(\omega^2_p\)</span> = 0.56), where the differences
+between condition and study time groups jointly explain about 56% of the
+variances among vocabulary learning scores.</p>
 <p>The means for each condition are visualized below, first by study
 time and then by condition.</p>
 <p><em>Plot Marginal Means</em></p>
@@ -623,20 +623,20 @@ contrast(em, contrasts)</code></pre>
 ##  hyp1           10 2.2  7   4.537  0.0027</code></pre>
 <pre class="r"><code>#Calculate effect size with Omega
 # First turn t-ratio into F-ratio by squaring it: t^2 = F
-# (4.773)^2
-# Fvalue = 22.78153
+# (4.537)^2
+# Fvalue = 20.58437
 
 # Second, put in values accordingly:
 omega.F(dfm = 1, dfe = 7,
-      Fvalue = 22.78153, n = 48, a = .005)</code></pre>
+      Fvalue = 20.58437, n = 48, a = .005)</code></pre>
 <pre><code>## $omega
-## [1] 0.3121389
+## [1] 0.2897766
 ## 
 ## $omegalow
 ## [1] 0
 ## 
 ## $omegahigh
-## [1] 0.8598626
+## [1] 0.8513177
 ## 
 ## $dfm
 ## [1] 1
@@ -645,20 +645,24 @@ omega.F(dfm = 1, dfe = 7,
 ## [1] 7
 ## 
 ## $F
-## [1] 22.78153
+## [1] 20.58437
 ## 
 ## $p
-## [1] 0.002028655
+## [1] 0.002677255
 ## 
 ## $estimate
-## [1] &quot;$\\omega^2$ = 0.31, 99.5\\% CI [0.00, 0.86]&quot;
+## [1] &quot;$\\omega^2$ = 0.29, 99.5\\% CI [0.00, 0.85]&quot;
 ## 
 ## $statistic
-## [1] &quot;$F$(1, 7) = 22.78, $p$ = .002&quot;</code></pre>
-<p>With corrections, our <span class="math inline">\(\alpha_{adj}\)</span> = .05/10 = .005. The
-difference that time makes from 60 to 180 seconds, differs significantly
-by 12 points between instructional conditions and explains 76% of the
-difference between the 60 and 180 second conditions (<span class="math inline">\(t\)</span> = 4.54, <span class="math inline">\(p\)</span> = .002, <span class="math inline">\(\omega^2_p\)</span> = 0.76).</p>
+## [1] &quot;$F$(1, 7) = 20.58, $p$ = .003&quot;</code></pre>
+<p>The differences between average vocabulary scores between studying
+using the mnemonic and memorization techniques were statistically
+significant (<span class="math inline">\(\alpha_{adj}\)</span> = .05/10
+= .005) between studying for 60 and 180 seconds (<span class="math inline">\(t\)</span> = 4.54, <span class="math inline">\(p\)</span> = .002, <span class="math inline">\(\omega^2_p\)</span> = 0.290), accounting for 29%
+of the variance in vocabulary scores between studying for 60 and 180
+second. Specifically, adult participants scored an average of 10 more
+points when they went from studying for a minute to three minutes using
+mnemonic devices than when they used memorization techniques.</p>
 </div>
 </div>
 
