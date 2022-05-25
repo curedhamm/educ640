@@ -536,10 +536,10 @@ summary(m1)</code></pre>
 ## 
 ## - One-sided CIs: upper bound fixed at (1).</code></pre>
 <p>ANOVA results indicate a significant interaction between condition
-and study time, <em>F</em>(2, 14) = 17.105, <em>p</em> &lt; .001, <span class="math inline">\(\omega^2_p\)</span> = 0.71. The partial eta
+and study time, <em>F</em>(2, 14) = 17.105, <em>p</em> &lt; .001, <span class="math inline">\(\omega^2_p\)</span> = 0.71. The partial omega
 squared of 0.71 indicates that condition and study time jointly explain
 about 71% of the difference in vocabulary learning.</p>
-<p>Actual means for each condition are visualized below, first by study
+<p>The means for each condition are visualized below, first by study
 time and then by condition.</p>
 <p><em>Plot Marginal Means</em></p>
 <pre class="r"><code>means &lt;- lab7_data %&gt;% 
@@ -584,19 +584,19 @@ pairs(em)</code></pre>
 ##  X60 mne - X180 mne       -11 2.299  7  -4.785  0.0159
 ## 
 ## P value adjustment: tukey method for comparing a family of 6 estimates</code></pre>
-<p>Pairwise comparisons were calculated (using Tukey’ method’s HSD) and
-found that for the memorize condition, students scored about 4 points
-higher when given 60 seconds compared to 30 seconds (p = .005) and 5
-points higher when given 180 seconds compared to 30 seconds (p = .006).
-For the mnemonics condition, students scored about 2 points higher when
-given 60 seconds instead of 30 seconds (p = .017), 13 points higher when
-given 180 seconds instead of 30 seconds (p = .003), and 11 points higher
-when given 180 seconds instead of 60 seconds (p = .005).</p>
-<p>Alternatively, when given 30 seconds, students scored about 4 points
-higher in the mnemonic condition compared to the memorize condition (p =
-.002). When given 180 seconds, students scored 12 points higher (p =
-.0004). The difference in conditions was not significant at the 60
-second level.</p>
+<p>Pairwise comparisons were calculated using Tukey’s HSD, and found
+that for the memorize condition, students scored about 4 points higher
+when given 60 seconds compared to 30 seconds (<em>p</em> = .005) and 5
+points higher when given 180 seconds compared to 30 seconds (<em>p</em>
+= .006). For the mnemonics condition, students scored about 2 points
+higher when given 60 seconds instead of 30 seconds (<em>p</em> = .017),
+13 points higher when given 180 seconds instead of 30 seconds
+(<em>p</em> = .003), and 11 points higher when given 180 seconds instead
+of 60 seconds (<em>p</em> = .005).</p>
+<p>When given 30 seconds, students scored about 4 points higher in the
+mnemonic condition compared to the memorize condition (<em>p</em> =
+.002). When given 180 seconds, students scored 12 points higher
+(<em>p</em> &lt; .001).</p>
 </div>
 <div id="contrasts-post-hoc" class="section level3">
 <h3>Contrasts: post-hoc</h3>
@@ -656,11 +656,9 @@ omega.F(dfm = 1, dfe = 7,
 ## $statistic
 ## [1] &quot;$F$(1, 7) = 22.78, $p$ = .002&quot;</code></pre>
 <p>With corrections, our <span class="math inline">\(\alpha_{adj}\)</span> = .05/10 = .005. The
-difference that time makes (from 60 to 180 seconds) differs
-significantly by 12 points between instructional conditions (<em>p</em>
-= .002). <span class="math inline">\(\omega^2_p\)</span> = 0.76
-indicates that study time explain 76% of the difference between the 60
-and 180 second conditions.</p>
+difference that time makes from 60 to 180 seconds, differs significantly
+by 12 points between instructional conditions and explains 76% of the
+difference between the 60 and 180 second conditions (<span class="math inline">\(t\)</span> = 4.54, <span class="math inline">\(p\)</span> = .002, <span class="math inline">\(\omega^2_p\)</span> = 0.76).</p>
 </div>
 </div>
 
