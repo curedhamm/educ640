@@ -41,7 +41,7 @@ navbar:
       - text: "HW 1: One-way ANOVA"
         href: ./keys/hw1_key.html
       - text: "HW 2: Two-way ANOVA"
-        href:
+        href: ./keys/hw2_key.html
       - text: "HW 3: Two-way repeated measures ANOVA"
         href:
 

@@ -58,7 +58,7 @@ For *assumption 2*, the skew (0.03) and kurtosis (-0.83) of the dependent variab
 leveneTest(reading_time ~ condition*device, data = hw2_data, center = "mean")
 ```
 
-For assumption 3, the assumption of the homogeneity of variance holds. The non-significant result from the Levene’s test (0.9507 for condition, 0.9024 for device) suggests the error variance around the mean is roughly equal across groups.
+For assumption 3, the assumption of the homogeneity of variance holds. The non-significant result from the Levene’s test (p > .05) suggests the error variance around the mean is equal across groups.
 
 ```{r}
 hw2_data %>% 
@@ -87,9 +87,7 @@ Of all devices, Sony PRS-700 had higher reading times on average. iRex 1000S had
 anova_test(hw2_data, formula = reading_time ~ device + condition + device:condition, detailed = TRUE, type = 3, effect.size = "pes")
 
 ```
-We ran a two-way between-subjects ANOVA (III) to test the researchers' hypothesis that reading time would be shorter under brighter reading conditions but that the effect of lighting would depend on e-reader device. Contrary to their hypothesis, the interaction effect between device and condition is not statistically significant (F(6, 48)=0.05, _p_ = 1.00, $\eta^2_{partial}$ =0.004), indicating that the effect of different light conditions on reading time does not depend on the type of e-reader device used. 
-
-The main effect of the type of device used was statistically significant and accounted for 16.2% of the difference in reading time (F(2, 48)= 4.648, *p*=.014, $\eta^2_{partial}$ =0.162). Additionally, the main effect of lighting condition was statistically significant, accounting for 28.9% of the difference in reading time (F(3, 48) = 6.49, *p* = .001, $\eta^2_{partial}$ =0.289).
+We ran a two-way between-subjects ANOVA (type III) to test the researchers' hypothesis that reading time would be shorter under brighter reading conditions but that the effect of lighting would depend on e-reader device. Contrary to their hypothesis, the interaction effect between device and condition is not statistically significant (F(6, 48)=0.05, _p_ = 1.00, $\eta^2_{partial}$ =0.004), indicating that the effect of different light conditions on reading time does not depend on the type of e-reader device used. 
 
 ```{r}
 rstatix::tukey_hsd(hw2_data, reading_time ~ device*condition)

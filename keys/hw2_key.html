@@ -1761,9 +1761,8 @@ also holds true for each level of the variable.</p>
 ## group 11  0.0964 0.9999
 ##       48</code></pre>
 <p>For assumption 3, the assumption of the homogeneity of variance
-holds. The insignificant result from the Levene’s test (0.9507 for
-condition, 0.9024 for device) suggests the error variance around the
-mean is roughly equal across groups.</p>
+holds. The non-significant result from the Levene’s test (p &gt; .05)
+suggests the error variance around the mean is equal across groups.</p>
 <pre class="r"><code>hw2_data %&gt;% 
   ggplot(aes(condition, reading_time)) +
   geom_boxplot() +
@@ -1806,7 +1805,7 @@ F statistic is significant. – 60 points</h4>
 ## 2           device   706967.92 3650203   2  48   4.648 1.40e-02     * 0.162
 ## 3        condition  1481063.62 3650203   3  48   6.492 8.91e-04     * 0.289
 ## 4 device:condition    21543.24 3650203   6  48   0.047 1.00e+00       0.006</code></pre>
-<p>We ran a two-way between-subjects ANOVA (III) to test the
+<p>We ran a two-way between-subjects ANOVA (type III) to test the
 researchers’ hypothesis that reading time would be shorter under
 brighter reading conditions but that the effect of lighting would depend
 on e-reader device. Contrary to their hypothesis, the interaction effect
@@ -1814,13 +1813,6 @@ between device and condition is not statistically significant (F(6,
 48)=0.05, <em>p</em> = 1.00, <span class="math inline">\(\eta^2_{partial}\)</span> =0.004), indicating that
 the effect of different light conditions on reading time does not depend
 on the type of e-reader device used.</p>
-<p>The main effect of the type of device used was statistically
-significant and accounted for 16.2% of the difference in reading time
-(F(2, 48)= 4.648, <em>p</em>=.014, <span class="math inline">\(\eta^2_{partial}\)</span> =0.162). Additionally,
-the main effect of lighting condition was statistically significant,
-accounting for 28.9% of the difference in reading time (F(3, 48) = 6.49,
-<em>p</em> = .001, <span class="math inline">\(\eta^2_{partial}\)</span>
-=0.289).</p>
 <pre class="r"><code>rstatix::tukey_hsd(hw2_data, reading_time ~ device*condition)</code></pre>
 <pre><code>## # A tibble: 75 × 9
 ##    term             group1 group2 null.value estimate conf.low conf.high   p.adj
